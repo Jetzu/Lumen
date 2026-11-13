@@ -1,0 +1,196 @@
+{
+  "evaluator": "E10 – Claude Opus 5.5 (Anthropic), re-check of E8's findings on the build after fix round 3, persona: image-analysis specialist in a bioimaging core facility who writes Fiji macros and Python daily, cares about reproducibility, provenance and ImageJ-identical results, and has used napari, QuPath and Icy",
+  "method": "I re-tested E8's six new problems (E8-1 … E8-6) and the twelve E7 items E8 left 'partly fixed' / 'not fixed', using E8's controls and sequences, then ran the regression pass the brief asks for. Nobody told me what was fixed and I read no source code, docs/USABILITY.md or other evaluators' files. Evidence: screenshots, DOM/ARIA facts, recorder lines, REST responses (/api/state, /api/recorder, /api/recorder/preview, /api/recorder/ijm, /api/script/run, all with my X-Lumen-Client header), Results/ROI counts and a TIFF tag dump. Tooling: one persistent headless Google Chrome (Playwright from the e2e venv, channel=chrome, swiftshader, 1440×900, host locale en_US with region DE), driven through a small local socket so one browser served the whole session; short viewport checks at 1000×800, 1280×800 and 1920×1080 used the same page. One second tab in the same browser was opened and closed again to see what a new tab's recorder shows. memory_pressure at the start: 58 % free. Start state: /api/state had 0 images, 0 ROIs, 0 results; File ▸ Close All from the menubar answered 'No images to close'. Walked: menubar by mouse (all eight menus, Open Sample / New / Export / Open Recent / Plugins ▸ Batch submenus) and keyboard (F10, arrows, Enter, Esc) at 1440 and 1000 px; File ▸ Open Sample ▸ Synthetic nuclei into the empty workspace; empty-state, palette and Command Reference counts; palette 'bleach'; per-channel display edits (DAPI max only, Auto, eye toggle, Viridis); Otsu threshold → Analyze Particles with Min size typed as '2,5'; Gaussian σ=500 → ⌘Z; Gaussian σ=1, Invert, Smooth, Median → History jump by keyboard; → IJM in the UI and via REST; Apply Recorded Macro to Folder sheet and /api/recorder/preview; page reload; a new tab; script editor ('lumen.', Ctrl+Space, Tab, large view); Plot Profile without selection and with an oval; T1 head → 3-D View large view; split view; Gaussian sheet '?' help and Command reference; '?' overlay; New Image 'timeseries' (256×256, 20 frames, noise) → Tracks wizard (auto threshold, 60, 84, radius '3,5'); Preferences; Set LUT sheet; full menu-label and palette-name scan; Blobs open/close by tab ×, tab switch, Z Project (on the time series and on T1 head), Invert, Smooth ×2; File ▸ Save As into eval_e10, Gaussian σ typed '1,5', ⌘S, TIFF tag dump (tifffile was not in the e2e venv; I used the project's .venv/bin/python -I only to read the file); ROI Manager and Results Clear → Undo clear and the batch preview / IJM afterwards; Median radius typed '0,25' and 'abc'; /api/script/run getuser/getcwd. Not covered: a real screen reader, several users at the same time, running a real folder batch. Clean-up: File ▸ Close All (menubar, 'Close without saving' for 4 images); ROI Manager (41) and Results (41) cleared through their confirmed Clear dialogs; my 'Particle Summary' table removed with lumen.session.tables.pop via /api/script/run because no UI showed it once the images were closed; both of my recorders cleared (DELETE /api/recorder for a6bc5657026a4e03 and c769f6fbb54c4abe); preferences and theme untouched; my Save did not add a Recent entry. Final /api/state: 0 images, 0 ROIs, 0 results, no tables. The browser and driver were closed; ps shows no Chrome or Playwright process of mine. saved_max_t1_e10.tif, tiff_tags.txt, recorder_evidence.json and menu_labels.json are kept next to this file as evidence.",
+  "reassessment": [
+    {
+      "id": "E8-1",
+      "status": "fixed",
+      "evidence": "The menubar is no longer a clipping container (.menubar overflow visible, clientHeight = scrollHeight = 27). The dropdown is now a position:fixed .menu-popover at the end of <body>. Clicking File shows the whole menu (230×474 px at y=37); elementFromPoint hits every enabled item. Submenus open beside it: Open Sample (888 px tall, scrollable, ends at y=894 in a 900 px window), New, Export, Open Recent, Plugins ▸ Batch. At 1000 px all eight triggers are visible and hit-testable, and View/Help/Plugins with their submenus stay inside the window. At 1280 and 1920 px all 25 enabled Analyze items are hit-testable. File ▸ Open Sample ▸ Synthetic nuclei and File ▸ Close All by mouse both worked. Screenshots 01_file_menu_mouse.png, 02_open_sample_submenu.png, 03_export_submenu.png, 07_narrow_1000.png, 09_narrow_plugins_sub.png, 53_menu_analyze_1280.png, 53_menu_analyze_1920.png.",
+      "severity_now": 0,
+      "comment": "The clipping is gone: menus show when opened by mouse or keyboard. Moving through items with the keyboard is now broken in a different way, which I log as regression E10-1."
+    },
+    {
+      "id": "E8-2",
+      "status": "fixed",
+      "evidence": "The client id now lives in sessionStorage['lumen-client-id'] (a6bc5657026a4e03 before and after the reload). After the reload, Script & Recorder still shows 'Recorder (17 lines)' with the original marker '# Lumen recorder – session started 2026-11-08 06:53:09', and GET /api/recorder returns the same 17 lines. A new tab starts its own empty recorder (c769f6fbb54c4abe, 'Recorder (0 lines)') with the note 'Every command you apply in this tab is recorded here…'. Screenshots 27_after_reload_recorder.png, 28_new_tab_recorder.png.",
+      "severity_now": 0,
+      "comment": "An accidental ⌘R no longer loses the session's provenance. Closing the tab still does, and no UI reaches another tab's recording. That matches Fiji's recorder window, so I don't count it."
+    },
+    {
+      "id": "E8-3",
+      "status": "fixed",
+      "evidence": "Same sequence as E8 (Gaussian σ=500 → ⌘Z, then four steps and a History jump back over all four). The IJM export (UI → IJM and GET /api/recorder/ijm) contains no run(\"Undo\") at all. The undone steps and their undo lines are dropped as pairs, and the script itself says so in a comment: '// note: 5 recorded steps the session undid were left out together with the undo / redo lines (ImageJ's Undo is single-level, so run(\"Undo\") is never written): …'. The max-only display change becomes 'Stack.setChannel(1); getMinAndMax(__lo, __hi); setMinAndMax(__lo, 1500);'. Both notes are now in the script, as the toast promises ('… 2 notes in the script'). Screenshot 29_to_ijm.png; recorder_evidence.json.",
+      "severity_now": 0,
+      "comment": "Two small inaccuracies: the toast says '10 undone steps left out' while the script note says 5 (it counts the undo lines too), and the hidden-channel hint for my 3-channel image reads 'Stack.setActiveChannels(\"1101\")' (four digits; with channel 3 hidden it should be \"110\"). Both are only in comments or toasts."
+    },
+    {
+      "id": "E8-4",
+      "status": "fixed",
+      "evidence": "Tracks ▸ Wizard ▸ Detect spots on the 20-frame noise image at threshold 60: '64 spots in 17 frames (quality ≥ 60)'. The wizard says 'The spots of the current frame are drawn on the image (step through the frames to check the others); nothing is added to the ROI Manager.' The image badge reads '4 spots on frame 1' with four circles on the image, and '4 spots on frame 2' after '>'. /api/state still held my 41 particle ROIs and no 'Spots t…' entries. The recorder writes tracking.detect_spots(…, add_to_manager=False, add_to_results=False). Screenshots 44_tracks_detect_60.png, 45_tracks_frame2.png.",
+      "severity_now": 0,
+      "comment": ""
+    },
+    {
+      "id": "E8-5",
+      "status": "fixed",
+      "evidence": "The empty state says 'Press ⌘K to search all 499 commands'. The palette footer says '499 commands + 41 UI actions + 60 LUTs', or '1 of 499 commands' when filtered. Help ▸ Command Reference says '499 commands, generated from the registry'. Screenshots 00_initial.png, 12_palette_bleach.png, 13_command_reference.png.",
+      "severity_now": 0,
+      "comment": ""
+    },
+    {
+      "id": "E8-6",
+      "status": "fixed",
+      "evidence": "File ▸ Open Sample ▸ Synthetic nuclei (3 channels) into the empty workspace opened at 136%: the 512 px image is drawn 696 px tall inside the 726 px canvas (y≈123–818), above the channel strip at y≈835, so the whole image is visible. T1 head opened later fitted at 273%. Screenshots 11_first_sample_open.png, 33_t1_head.png.",
+      "severity_now": 0,
+      "comment": ""
+    },
+    {
+      "id": "E7-5",
+      "status": "partly fixed",
+      "evidence": "Fixed: after Gaussian σ=500 → ⌘Z and four steps undone by a History jump, GET /api/recorder/preview no longer contains any of the five undone commands. They are listed under 'undone', and the sheet says '2 recorded lines … will run on every file (10 open / save / select / display / undo lines left out; 5 undone steps removed) … Undone and left out: filters.gaussian, filters.gaussian, edit.invert, process.smooth, filters.median.' The help text now says 'minus the steps you undid'. Still there: after ROI Manager ▸ Clear… → 'Undo clear' and Results ▸ Clear… → 'Undo clear', the default batch list ends with lumen.run(\"rois.clear\") and lumen.run(\"analyze.clear_results\") while rois.restore_cleared and results.restore_cleared are dropped. The IJM export does the same: roiManager(\"reset\"); run(\"Clear Results\"); with the restores as '// not converted' comments. Screenshot 23_apply_recorded_folder.png; recorder_evidence.json (preview lines and summary).",
+      "severity_now": 2,
+      "comment": "Undo is now handled the way I asked. Clear/restore pairs aren't: a clear I took back in the session would run on every file of the batch, wiping each file's ROIs and Results before 'Save Results table' can write them, and the macro would end with the ROI Manager and Results empty. Pairs that cancel each other should be dropped together, like undo pairs, or at least flagged in the summary."
+    },
+    {
+      "id": "E7-10",
+      "status": "fixed",
+      "evidence": "Palette 'bleach' and 'bleach correction' now return 'Bleach Correction...' (Image/Adjust): 'Compensate photobleaching in a time series (Fiji's Image ▸ Adjust ▸ Bleach Correction, Miura's CorrectBleach): Simple Ratio …, Exponential Fit …, Histogram Matching …'. Screenshot 12_palette_bleach.png.",
+      "severity_now": 0,
+      "comment": "The name uses '...' while the menus use '…' (see E7-13)."
+    },
+    {
+      "id": "E7-13",
+      "status": "partly fixed",
+      "evidence": "Menus are now clean: File ▸ New holds only 'Image…', 'New Text Window', 'New Table', 'Internal Clipboard…', 'System Clipboard'. File ▸ Export ends with 'Results as CSV' and 'ROIs as JSON', with no '…'-twins. A scan of all 715 menu labels finds 419 ending in '…' and none in '...'. Open Recent tells the two im_0.tif apart ('im_0.tif – …/pytest-1195/test_batch_cancel_restores_ses0' vs '…/test_batch_reports_per_file_pr0'). The Set LUT sheet's dropdown is grouped (ImageJ 14 / Fiji 28 / Perceptual (matplotlib) 14 / Labels 4). Still there in the ⌘K palette: 26 of 601 names use '...' ('Bleach Correction...', 'Process Folder...', 'Apply Recorded Macro to Folder...', 'ROIs as JSON...', 'Results Table...', 'Bio-Formats...') next to 62 with '…'. The duplicates removed from the menus are still in the palette: 'Text Window…' and 'New Text Window', 'Table…' and 'New Table…' (all labelled File/New, and File ▸ New has no 'Table…'), 'ROIs as JSON...' and 'Export ROIs'. The batch sheet's title reads 'Apply Recorded Macro to Folder...' while the menu item reads '…'. Screenshots 03_export_submenu.png, 50_set_lut_sheet.png; menu_labels.json.",
+      "severity_now": 1,
+      "comment": "The menus were cleaned but the palette wasn't. The palette is the entry point I'd teach first, so it's where the duplicates and the mixed ellipses now show most."
+    },
+    {
+      "id": "E7-14",
+      "status": "partly fixed",
+      "evidence": "Fixed: at the default inspector width the recorder header fits on one line ('Recorder (17 lines)' with the copy icon at the right). The buttons → Python / → JavaScript / → IJM / Clear sit in one row ending at x=1390, inside the 1428 px edge. Opening the large view puts focus in the textarea (1045×351 px, aria-modal dialog), and Esc returns focus to the Script & Recorder header. Tab in the editor now indents (inserts two spaces) instead of leaving the field. Unchanged: the editor is still a plain <textarea aria-label='Python code'> with no syntax highlighting. Typing 'lumen.' or pressing Ctrl+Space opens no completion. Screenshots 24_script_recorder.png, 25_editor_lumen_dot.png, 26_editor_large.png.",
+      "severity_now": 1,
+      "comment": "Good enough for pasting recorder output and small edits. For writing scripts I'd still use an external editor."
+    },
+    {
+      "id": "E7-16",
+      "status": "fixed",
+      "evidence": "Save As of MAX_t1-head.tif to eval_e10/saved_max_t1_e10.tif, then Gaussian σ=1.5 and ⌘S. Tags: Software 'Lumen 0.1.0'. ImageDescription 'ImageJ=1.54p images=1 hyperstack=true mode=color unit=pixel … min=1.0 max=42436.0'. The ImageJ Info property holds the processing log: 'Lumen processing: Lumen 0.1.0, written 2026-11-08 07:11:17 / Derived from: t1-head.tif ▸ Z Project / Source: …/eval_e10/saved_max_t1_e10.tif / 1. Invert / 2. Smooth / 3. Smooth / 4. Gaussian Blur (sigma=1.5, scaled_units=False)'. History rows now show every parameter, defaults included ('Median radius=2.0, shape='disk', scope=slice (current plane)'). tiff_tags.txt; screenshot 21_history_rows.png.",
+      "severity_now": 0,
+      "comment": "The provenance now survives in a file Fiji can open (Image ▸ Show Info). Residue, logged as E10-4: the derivation step has no parameters ('Z Project' without method/start/stop), and after Save → edit → Save the 'Source:' line names the file itself."
+    },
+    {
+      "id": "E7-18",
+      "status": "partly fixed",
+      "evidence": "Crop stays as in E8. Plot Profile without a selection: the palette row now says 'needs a line or rect selection (1–7)' (aria-disabled=true). Enter or K gives 'Plot Profile needs a line or rect selection – draw a selection first – any of rectangle (1), oval (2), polygon (3), freehand (4), line (5), segmented line (6) or points (7)'. With an oval drawn, K answers 'Plot Profile needs a line or rectangle selection'. Screenshots 30_palette_plot_profile_nosel.png, 31_plot_profile_k_nosel.png, 32_plot_profile_oval.png.",
+      "severity_now": 1,
+      "comment": "The headline is now right, but the same hint still lists oval, polygon, freehand and points (and the palette says '1–7'), which the command then refuses. The list should be 'rectangle (1), line (5), segmented line (6)'."
+    },
+    {
+      "id": "E7-19",
+      "status": "fixed",
+      "evidence": "Auto/Reset/Inv now have per-channel names: 'Auto display range of channel 2 (Cytoplasm) (saturate 0.35% of pixels)', 'Reset display range of channel 1 (DAPI) to the data range', 'Invert the lookup table of channel 3 (Spots)' (aria-pressed). The eye toggle keeps a fixed label 'Show channel 3 (Spots)' and flips aria-pressed (true → false when hidden), which reads correctly. The split-view selects are named 'Active image (this pane)' and 'Compare image (this pane)'. The 3-D large view is an aria-modal dialog '3-D view of t1-head.tif' that takes focus; Esc returns focus to the '3-D VIEW' section header. Screenshots 34_3d_section.png, 35_3d_large.png, 36_split_view.png.",
+      "severity_now": 0,
+      "comment": "After Esc, focus lands on the section header rather than on the 'Open in a large view' button itself. That's close enough to keep orientation."
+    },
+    {
+      "id": "E7-20",
+      "status": "partly fixed",
+      "evidence": "The sheet's '?' table now ends with the ImageJ equivalent and the Lumen id ('ImageJ run(\"Gaussian Blur...\") · filters.gaussian · Command reference…'). The link opens the Command reference scrolled to and highlighting the Gaussian Blur row (parameters sigma, scaled_units; 'ImageJ: run(\"Gaussian Blur...\")'). The '?' overlay is still a shortcut list only. Screenshots 37_gauss_sheet_help.png, 39_cmdref_gaussian.png, 38_help_overlay.png.",
+      "severity_now": 1,
+      "comment": "The macro name is there but not the option string (e.g. \"sigma=2 scaled\"), which is the part I'd actually need when writing a macro. The → IJM export does produce it."
+    },
+    {
+      "id": "E7-21",
+      "status": "not fixed",
+      "evidence": "Preferences still say 'saved on the server as you change them'. The Save dialog opens in ~/Coding/Lumen with Home / Desktop / Documents / Downloads / Working dir and lists the repository (docs, frontend, lumen, tests, pyproject.toml, README.md). Open Recent in my fresh Playwright profile lists other sessions' files (pytest temp paths). After File ▸ Close All, /api/state still held 41 ROIs, 41 result rows and my 'Particle Summary' table, with no image open; the table was then unreachable from the UI. POST /api/script/run 'import os, getpass; print(getpass.getuser(), os.getcwd())' returned 'lukasgerstung ~/Coding/Lumen'. Screenshots 49_preferences.png, 52_save_as_dialog.png, 57_after_close_all.png.",
+      "severity_now": 3,
+      "comment": "Fine for one person on a laptop. On a facility server every user shares preferences, ROI Manager, Results, recent files, the server's file system and unrestricted Python as the server account."
+    },
+    {
+      "id": "E7-24",
+      "status": "partly fixed",
+      "evidence": "Fixed: no point ROIs are added any more, so '1 point ROIs added' is gone. One spot now reads '1 spot in 1 frame (quality ≥ 84)'. The image shows only the current frame's spots. Still there: the seven-step wizard still lives in the 331 px inspector column (x=1109–1440). The automatic threshold (0) on the noise series again gives '0 spots in 0 frames (quality ≥ 85.87)'. Step 2 says 'keeps ≈ 1 of 1 spots'. After re-detecting at 84, step 2 kept the old 60.01 threshold (see E10-5). Screenshots 42_tracks_wizard.png, 43_tracks_detect_auto.png, 47_tracks_one_spot.png, 48_tracks_step2_stale_threshold.png.",
+      "severity_now": 1,
+      "comment": ""
+    },
+    {
+      "id": "E7-25",
+      "status": "fixed",
+      "evidence": "Gaussian Blur on the calibrated synthetic_cells.tif (166.4×166.4 µm) now has a 'Scaled units' checkbox under Advanced options ('Sigma is in the image's calibrated units: ImageJ's 'Scaled units' option divides it by the pixel width (X) and pixel height (Y)'). The Sigma hint reads 'Standard deviation in pixels, or in calibrated units with 'Scaled units''. It is recorded as scaled_units=False/True. Z Project on T1 head opens with Start 1 / Stop 10. Screenshots 19_gauss_sheet_calibrated.png, 20_gauss_advanced.png.",
+      "severity_now": 0,
+      "comment": "ImageJ shows 'Scaled units' in the main dialog. Here it sits behind 'Advanced options', but the hint under Sigma points to it."
+    },
+    {
+      "id": "E7-26",
+      "status": "fixed",
+      "evidence": "In the host locale (en_US, region DE) the Tracks wizard Spot radius now shows '2.5' and Preferences ▸ Selection stroke shows '1.5', the same '.' as the recorder, Results and statusbar. Typing what a German keyboard types is accepted and parsed: Analyze Particles Min size '2,5' → min_size=2.5 (toast 'size 2.5–∞ µm²', IJM 'size=2.5-Infinity'), Gaussian σ '1,5' → sigma=1.5, Tracks radius '3,5' → radius=3.5. Median radius '0,25' → 'radius must be between 0.5 and 1000 (got 0.25)' with Apply disabled. Screenshots 42_tracks_wizard.png, 49_preferences.png, 17_particles_minsize_comma.png, 54_median_bad_input.png.",
+      "severity_now": 0,
+      "comment": "Input that can't be parsed at all is a different story (E10-3)."
+    }
+  ],
+  "regressions": [
+    {
+      "id": "E10-1",
+      "heuristic": "User control and freedom / Accessibility (keyboard operation)",
+      "location": "Top menubar, keyboard (1440 and 1000 px)",
+      "observation": "With the clipping fixed, keyboard navigation inside the menus broke. F10 focuses 'File' and ↓ (or Enter/Space) opens the menu (aria-expanded=true), but focus stays on the trigger. More ↓, Home or Enter never reach an item, and no item is highlighted. Tab leaves for the search box. ← / → move between top-level menus but focus stays on the trigger that was focused first. If a menu was opened with the mouse, ↓ does enter the items, → / ← open and close submenus, and Enter runs the item (Help ▸ Keyboard Shortcuts worked). But ← or → on a top-level item (to reach the neighbouring menu) shows that menu and drops focus to <body>; from there no key works, and Esc closes the menu with focus still on <body>. In E8, ↓ from the keyboard reached the items (they were only clipped visually), so keyboard-only and screen-reader users have lost the menus. ⌘K is the remaining keyboard route.",
+      "severity": 2,
+      "evidence": "04_kbd_menu_file.png (menu open, focus on 'File', nothing highlighted), 10_narrow_kbd.png, 06_kbd_after_mouse_open.png; focus log: F10 → BUTTON 'File'; ↓ → BUTTON 'File' aria-expanded=true; ↓ ↓ → still 'File'; after a mouse open: ↓ → DIV menuitem 'Open…'; → → BODY with the Edit menu shown."
+    },
+    {
+      "id": "E10-2",
+      "heuristic": "Aesthetic and minimalist design / Help and documentation (regression of an E8 fix)",
+      "location": "Help ▸ Design & Research Notes; the docs dialog when opened from Help ▸ Command Reference",
+      "observation": "The internal 'Design' and 'Research' documents are back. E8 confirmed they had been removed from the docs dialog. The Help menu now has 'Design & Research Notes', and opening Help ▸ Command Reference shows five tabs (README / Commands / Fiji parity / Design / Research). 'Design' opens 'Lumen — design notes … Fiji's documented UX problems … \"Window soup\" …' and 'Research' opens 'Scientific image-analysis GUIs: a sourced review for Lumen … Lumen re-implements the Fiji/ImageJ toolbox behind a single-window, keyboard-first UI (DESIGN.md)'. That's development material, not user help. The same dialog opened from a sheet's 'Command reference…' link shows only three tabs. The tabs have no tab/aria-selected semantics.",
+      "severity": 1,
+      "evidence": "13_command_reference.png, 14_docs_design.png, 14_docs_research.png vs 39_cmdref_gaussian.png (three tabs); Help menu DOM list."
+    },
+    {
+      "id": "E10-3",
+      "heuristic": "Error prevention / Visibility of system status",
+      "location": "Operation sheets' numeric fields (seen in Median ▸ Radius)",
+      "observation": "Input that isn't a number is marked but not stopped. Out-of-range values get an inline message and a disabled Apply ('0,25' → 'radius must be between 0.5 and 1000'), but 'abc' or '2,5,1' only turn the field red (aria-invalid=true). There is no message and Apply stays enabled. Pressing Apply with 'abc' ran Median with radius=2.0, the default, which is not what the field showed. The recorder honestly writes radius=2.0, but the user believes they ran something else. A slipped key ('2,,5', '2.5.') silently gives a different filter size.",
+      "severity": 2,
+      "evidence": "54_median_bad_input.png, 55_median_abc.png; recorder after Apply: lumen.run(\"filters.median\", radius=2.0, shape='disk', scope='slice')."
+    },
+    {
+      "id": "E10-4",
+      "heuristic": "Reproducibility (provenance accuracy)",
+      "location": "Saved TIFF, ImageJ 'Info' property (new processing log)",
+      "observation": "The new processing log is a big step forward but has two inaccuracies. The derivation line has no parameters ('Derived from: t1-head.tif ▸ Z Project', without 'Max Intensity, start=1, stop=10'), unlike the numbered steps ('4. Gaussian Blur (sigma=1.5, scaled_units=False)'). After Save As → Gaussian → ⌘S, the log gained 'Source: …/eval_e10/saved_max_t1_e10.tif', i.e. the file names itself as its source, while the real origin (the T1 head sample) only appears in the derivation line.",
+      "severity": 1,
+      "evidence": "tiff_tags.txt (Info after the second save)."
+    },
+    {
+      "id": "E10-5",
+      "heuristic": "Visibility of system status / Consistency",
+      "location": "Inspector ▸ Tracks ▸ Wizard ▸ step 2 'Initial threshold' after detecting again",
+      "observation": "Detect at quality 60 → step 2 shows 60.01 (64 of 64 spots). Back, detect again at 84 (1 spot) → step 2 still shows 60.01 in the threshold field and 'Quality ≥ 60.01: keeps ≈ 1 of 1 spots', while the histogram axis now runs 84.32–84.32 and the threshold marker sits off the histogram. The slider value is stale and below every detected spot, so 'Apply threshold' would apply a number that no longer means anything for this detection.",
+      "severity": 1,
+      "evidence": "48_tracks_step2_stale_threshold.png; wizard text before and after the second detection."
+    },
+    {
+      "id": "E10-6",
+      "heuristic": "Match with ImageJ / Error prevention",
+      "location": "Image ▸ Stacks ▸ Z Project on a single-slice time series (20 frames)",
+      "observation": "On the 20-frame 'timeseries' (z=1, t=20) the sheet pre-fills Start 1 / Stop 20, then Apply answers inside the sheet 'Z Project needs a stack with more than one slice'. Nothing is recorded or logged. An 'Axis Z / T' choice exists, but only under Advanced options, and the message doesn't point to it. Fiji projects a single-slice time series over its frames, so a max-intensity-over-time projection of a time-lapse (a daily task in a facility) fails the first time for every Fiji user.",
+      "severity": 2,
+      "evidence": "51_zproject_timeseries.png, 56_zproject_timeseries_advanced.png; /api/state log has no Z Project entry."
+    }
+  ],
+  "positives": [
+    "The menubar is back: every menu and submenu opens fully with the mouse at 1000, 1280, 1440 and 1920 px, long submenus scroll inside the window, and Fiji's menu structure is browsable again.",
+    "The recorder survives a reload (client id in sessionStorage). The IJM export cancels undo pairs instead of writing run(\"Undo\"), explains that in the script, and converts a max-only display change with getMinAndMax.",
+    "The folder batch finally leaves out what I undid, lists the undone commands by name, and says so in the summary.",
+    "Saved TIFFs now carry a processing log in the ImageJ Info property ('Derived from …', numbered steps with parameters) and Software 'Lumen 0.1.0'. Fiji's Show Info will display my provenance.",
+    "History rows show every parameter, defaults included, and display edits are History steps too.",
+    "Tracks detection now behaves like TrackMate's preview: only the current frame's spots on the image, nothing dumped into the shared ROI Manager, and add_to_manager=False recorded.",
+    "Numbers are shown with '.' everywhere, and a German keyboard's '2,5' is accepted and parsed in sheets and the Tracks wizard. Out-of-range values get an inline message and a disabled Apply.",
+    "Fiji vocabulary keeps improving: Bleach Correction exists with the three Fiji methods, Gaussian has 'Scaled units', sheet help names the ImageJ command, and the Command reference jumps to the row.",
+    "Accessibility moved forward again: per-channel names for Auto/Reset/Inv, a correct pressed-state eye toggle, named split-view selects, and focus handled in the large editor and the 3-D view.",
+    "Small polish that matters: one consistent command count (499), the first image fits the viewport, the recorder header fits the inspector, the Set LUT list is grouped, and the Close All dialog names the images with unsaved changes."
+  ],
+  "overall": "Most of what I flagged after round 2 is fixed. Eleven of my 18 open items are fixed, six are narrower and one remains. The two blockers from E8 are gone: the menubar works with the mouse again, and the recorder survives a reload. The IJM export and the folder batch also finally handle undo correctly, and saved TIFFs carry a real processing log. For a single-user facility workstation I'd now hand Lumen to people who already use Fiji, with two warnings. First, the default batch list and the IJM export still replay ROI Manager and Results clears that I took back (E7-5), which can empty each file's ROIs and Results in a batch; anyone running a folder batch must read the command list before Apply. Second, a non-numeric entry in a sheet runs with the default value instead of stopping (E10-3). Keyboard-only users have lost the menus (E10-1) and must use ⌘K, and Fiji users will trip over Z Project refusing a time-lapse (E10-6). What still blocks a shared facility server is unchanged (E7-21): one set of preferences, ROI Manager, Results and recent files for everybody, the server's own file system in the Save dialog, and unrestricted Python as the server account. Fix the clear/restore pairing and the numeric validation, restore keyboard focus in the menus, and per-user separation is the last big step.",
+  "note": "Re-check of E8's open items on the build after fix round 3 (8 Nov 2026) by a separate agent of the same model family and persona, without access to the fix list; screenshots and the saved TIFF are not committed."
+}

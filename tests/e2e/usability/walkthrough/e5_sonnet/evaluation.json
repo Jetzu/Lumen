@@ -1,0 +1,180 @@
+{
+  "evaluator": "E5 - Claude Sonnet 5.5 (Anthropic model family), persona: microscopy core-facility manager who trains biologists on Fiji; judges novice time-to-productivity and irreversible-mistake risk",
+  "method": "Headless Google Chrome 1440x900 driven by Playwright against http://127.0.0.1:8766 (one browser at a time, closed after each script). Walked: multi-channel sample and per-channel adjustment, threshold + Analyze Particles (with and without threshold), rectangle + Measure, Z Project of T1 head, LUTs (menu, palette, sheet), Gaussian Blur preview/apply/undo/close-modified, Tracks wizard on a New Image 128x128x20 noise movie, palette discovery (CLAHE, fire, lut, apply lut), Preferences, help overlay, script editor, colour picker, split view, 3-D view, error on commands needing a selection, F10 menubar keyboard operation, 30-step undo depth, 8000x8000 and 20000x20000 New Image, narrow viewport, light theme, and a DOM audit of accessible names, target sizes, focus outlines and text contrast. Nielsen's 10 heuristics plus reproducibility, provenance/undo, batch/scripting, large data and accessibility. Screenshots in the eval_e5 folder. docs/USABILITY.md and earlier evaluations were not read.",
+  "problems": [
+    {
+      "id": "E5-1",
+      "heuristic": "Match between system and real world / Recognition rather than recall (Fiji muscle memory)",
+      "location": "Image > Lookup Tables submenu; command palette query 'fire' / 'viridis'",
+      "observation": "The Lookup Tables submenu lists only operations (Apply LUT, Invert LUT, Bake LUT into RGB, Show LUT, Display LUTs, Edit LUT, Apply LUT) and no LUT names. LUTs can only be chosen from a native <select> of ~75 names without colour swatches in the Display inspector section. Typing 'fire' in the palette and pressing Enter runs 'Proxy Settings…' (first fuzzy hit) and 'viridis' finds nothing but web-search rows. A trainee following the Fiji recipe 'Image > Lookup Tables > Fire' cannot find it.",
+      "severity": 3,
+      "evidence": "29_lut_menu.png"
+    },
+    {
+      "id": "E5-2",
+      "heuristic": "Consistency and standards / Error prevention",
+      "location": "Command palette: two entries named 'Apply LUT' (category Image/Lookup Tables); Image > Lookup Tables shows 'Apply LUT…' twice",
+      "observation": "One 'Apply LUT' only changes the display lookup table of the current channel (harmless); the other bakes the display range into pixel values (destructive, irreversible for the file once saved). They are indistinguishable by name; only the description line differs. 'LUT…' appears twice in the palette too (Import and Export).",
+      "severity": 3,
+      "evidence": "33_lut_cmd.png"
+    },
+    {
+      "id": "E5-3",
+      "heuristic": "Error prevention / Help users recognize and recover from errors",
+      "location": "Palette ranking, 'fire' query (Enter on first hit)",
+      "observation": "Fuzzy search ranks irrelevant commands above relevant ones and Enter executes the first hit without any hint that it is a weak match. 'fire' opened Proxy Settings. No typo tolerance either: 'clahee' returns only the two web-search rows although 'clahe' finds CLAHE (Local Contrast) first and synonyms ('contrast limited adaptive') work.",
+      "severity": 2,
+      "evidence": "30_fire.png"
+    },
+    {
+      "id": "E5-4",
+      "heuristic": "Match between system and real world / Consistency",
+      "location": "Palette: 'Open Sample' vs 'Open ImageJ Sample…'",
+      "observation": "Typing 'Open Sample' ranks 'Open ImageJ Sample…' first (a network download from imagej.net, cached in ~/.lumen/samples, needs proxy settings offline) above 'Open Sample' (11 bundled scikit-image samples). Two sample menus with near-identical names and different lists; a novice who presses Enter gets the one that may fail offline. Opened sample is also named 'synthetic_cells.tif-1' (auto-suffix) which says nothing about provenance.",
+      "severity": 2,
+      "evidence": "01_sample_sheet.png"
+    },
+    {
+      "id": "E5-5",
+      "heuristic": "Recognition rather than recall / Visibility of system status",
+      "location": "Analyze Particles sheet and Threshold section (Advanced options collapsed)",
+      "observation": "Running Analyze Particles on an unthresholded 16-bit image gives a clear error toast, but the recovery it names ('tick Auto-threshold if needed') is hidden under the collapsed 'Advanced options' of the same sheet, and the toast is drawn on top of the sheet's Cancel button. The error also disappears after a few seconds. The Threshold section on a multichannel composite never states which channel is being thresholded; in my run DAPI was hidden in the composite yet the red threshold overlay covered the DAPI nuclei, so the picture and the mask disagreed.",
+      "severity": 3,
+      "evidence": "09_ap_run_nothresh.png"
+    },
+    {
+      "id": "E5-6",
+      "heuristic": "Error prevention",
+      "location": "Display section, channel max/min number inputs (Cytoplasm max typed 50 with min 126)",
+      "observation": "Entering a maximum below the minimum is accepted silently: the sliders cross, the channel ramp inverts/vanishes (cytoplasm disappeared from the composite) with no validation, clamp or message. It is recoverable (Reset) but not obvious to a novice.",
+      "severity": 2,
+      "evidence": "05_badvalue.png"
+    },
+    {
+      "id": "E5-7",
+      "heuristic": "Visibility of system status / Reproducibility",
+      "location": "Script & Recorder section (macro recorder) vs Display section",
+      "observation": "The recorder logs commands with complete parameters (e.g. analyze.particles with all 19 arguments, threshold.apply, filters.gaussian sigma/scope, stacks.z_project) - good - but display-only edits are not recorded: channel min/max, LUT changes made in the inspector dropdown, channel visibility, composite mode, and the drawn rectangle itself (only appears as roi={} inside analyze.measure). Commands carry no image identity (no selectImage), so a replay depends on whichever image is active. The recorder is one global session-wide log persisting across reloads and mixing all images; there is no per-image or start/stop control, only Clear. A script replayed from it will not reproduce the figure the user actually saved.",
+      "severity": 3,
+      "evidence": "22_recorder.png"
+    },
+    {
+      "id": "E5-8",
+      "heuristic": "Visibility of system status / Provenance and undo depth",
+      "location": "History section; Undo button",
+      "observation": "Undo is deep and memory-budgeted (I applied 30 Inverts and undid all 30; Preferences has 'Undo memory budget') - strong. But the History list shows only the command name ('Gaussian Blur') and 'current state'; the sigma, scope (slice vs entire stack) and parameters are not shown, so provenance must be read from the separate recorder. Display changes (LUT, B&C) never enter History and leave Undo disabled, so an accidental LUT/contrast change cannot be undone with Cmd+Z, only with Reset/Auto.",
+      "severity": 2,
+      "evidence": "20_history.png"
+    },
+    {
+      "id": "E5-9",
+      "heuristic": "Error prevention",
+      "location": "Gaussian Blur sheet 'Apply to' default on a stack (t1-head)",
+      "observation": "On a 10-slice stack the sheet defaults to 'Entire stack (10 planes)' and the preview shows the current plane only; Fiji asks 'Process all N images?'. Apply is undoable and the close dialog warns, so risk is limited, but the default is the more expensive and more surprising choice and the recorder omitted scope for the stack run (sigma=6.0) while the slice run recorded scope='slice'.",
+      "severity": 1,
+      "evidence": "18_gauss_preview.png"
+    },
+    {
+      "id": "E5-10",
+      "heuristic": "Help users recognize, diagnose, recover from errors",
+      "location": "Toast for commands needing a selection (Crop, Fit Ellipse, Make Inverse, Straighten, Rotate Selection via palette)",
+      "observation": "Message reads 'Crop needs a area selection' (grammar bug 'a area'), says what is wrong but not what to do (draw a rectangle first), disappears in a few seconds, and the palette lists these commands as enabled although the menu greys them (Image > Crop is disabled). Toasts accumulate in the aria-live region text, so a screen reader would re-read earlier messages.",
+      "severity": 2,
+      "evidence": "48_err_Crop.png"
+    },
+    {
+      "id": "E5-11",
+      "heuristic": "Consistency and standards / Visibility of system status",
+      "location": "Inspector ROI Manager and Results while a different image is active (t1-head tab shows 41 polygons from synthetic_cells)",
+      "observation": "ROI Manager (41 polygons) and Results (42 rows) are global and carry over to unrelated images such as the T1 head stack and the new time series, with no source-image column in the ROI list. ROI names are ImageJ-style cryptic '0001-0025-0315'. Clicking such an ROI on another image would place nuclei outlines on the wrong data. The Results table in the narrow inspector truncates the numeric columns (Area, Mean ...) - only the pop-out arrow makes it readable.",
+      "severity": 2,
+      "evidence": "20_history.png"
+    },
+    {
+      "id": "E5-12",
+      "heuristic": "Visibility of system status / Aesthetic and minimalist design",
+      "location": "Viewport threshold badge and overlay ('threshold 148-3328' / '1395-65535')",
+      "observation": "Threshold state survives tab switches, reloads and split view: on a fresh load, synthetic_cells.tif was a solid red rectangle (threshold 148-3328 covering all pixels) and also red in the split-view compare pane, with no obvious toggle to hide the overlay except hunting for Clear in the collapsed Threshold section. In the light theme the pink badge text on white is under 3:1. A new user opening a shared server sees someone else's leftover state.",
+      "severity": 2,
+      "evidence": "47_split.png"
+    },
+    {
+      "id": "E5-13",
+      "heuristic": "Visibility of system status",
+      "location": "Tracks panel > Wizard (step 1 Detector -> Next)",
+      "observation": "On a 128x128x20 noise movie, 'Detect spots' reported '0 spots in 0 frames (quality >= 85.52)' yet step 1 gets a green check and Next lets me jump through Initial threshold, Spot filters, Linker and Track filters to Display with no warning that there is nothing to track. Steps are not gated by prerequisites. Spot radius field shows '2,5' (decimal comma) while the recorder logs radius=2.5.",
+      "severity": 2,
+      "evidence": "42_wizard_step6.png"
+    },
+    {
+      "id": "E5-14",
+      "heuristic": "Consistency and standards",
+      "location": "Preferences (Selection stroke '1,5') and Tracks wizard (Spot radius '2,5') with navigator.language en-US",
+      "observation": "Numbers are rendered with a decimal comma in some text fields while number inputs elsewhere use a point; in an en-US browser '1,5' reads as 1500. Mixed formats invite entry errors.",
+      "severity": 1,
+      "evidence": "43_prefs.png"
+    },
+    {
+      "id": "E5-15",
+      "heuristic": "Flexibility and efficiency of use / Accessibility (keyboard)",
+      "location": "Script & Recorder editor, opened with '['",
+      "observation": "Pressing '[' (which is also Fiji's brush-size key) moves focus into the code editor in the cramped 300 px inspector. Escape does not leave the editor, so every following shortcut (Shift+K, Shift+Cmd+\\, tool digits) is typed into the script ('Kimg = lumen.image' in my run). The only way back to shortcuts is a mouse click. Language select is truncated to 'Pyt', 'Recorder' label clipped, long lines scroll horizontally.",
+      "severity": 3,
+      "evidence": "46_colorpicker.png"
+    },
+    {
+      "id": "E5-16",
+      "heuristic": "Accessibility",
+      "location": "Tool rail (role=toolbar), tab strip close buttons, channel chips",
+      "observation": "Tab order passes through ~25 individual tool buttons before reaching the viewport/inspector (no roving tabindex/arrow-key navigation in the toolbar), so keyboard users need dozens of Tab presses. Close-tab buttons are 16x16 px, channel chips and tool-option buttons 17-19 px high (81 interactive targets under 24 px). Five controls have no accessible name (the three channel-name inputs and two small icon buttons); Slices and Frames number inputs in New Image lack aria-labels (Width/Height/Channels have them). Menubar trigger text contrast is 4.43:1 on the grey button background (just under 4.5).",
+      "severity": 2,
+      "evidence": "27_menu_enter.png"
+    },
+    {
+      "id": "E5-17",
+      "heuristic": "Flexibility and efficiency of use (menubar)",
+      "location": "Menubar via F10",
+      "observation": "Keyboard-only operation works but with rough edges: F10 focuses File; Left/Right/Up/Down/Home/End/Enter work and Right inside a menu hops to the neighbouring top-level menu. However Esc closes the menu but leaves focus on the menubar button (a second Esc does nothing), so there is no one-key path back to the image; the Image menu has 118 items across submenus (Stacks alone ~45) with no type-ahead evidence.",
+      "severity": 1,
+      "evidence": "26_menu_kbd_sub.png"
+    },
+    {
+      "id": "E5-18",
+      "heuristic": "Error prevention / Large-data handling",
+      "location": "New Image sheet (Width/Height up to 20000, 32-bit)",
+      "observation": "Setting 20000x20000 32-bit noise (about 1.6 GB) shows no size estimate or warning before Apply (I cancelled). A moderate 8000x8000 16-bit image (122 MB) was created in 0.5 s and the Gaussian preview ran progressively on tiles with a '1/8' badge (good), but the badge is unexplained. Slices/Frames fields have no range hint or sliders unlike Width/Height/Channels.",
+      "severity": 2,
+      "evidence": "50_huge_newimage_sheet.png"
+    },
+    {
+      "id": "E5-19",
+      "heuristic": "Help and documentation / Aesthetic and minimalist design",
+      "location": "Inspector overall (11 sections), Help overlay (?)",
+      "observation": "Up to 14 collapsible sections (Display, Threshold, Workflows, 3-D View, Orthogonal Views, ROI Manager, Pixel Classifier, Tracks, Results, Plugin Frames, Image Info, History, Script & Recorder, Log - the set varies with the image) with several open at once force constant scrolling; there is no first-run guidance, no recommended order, and the Workflows section is collapsed by default although it is the closest thing to a guided path. The shortcut overlay is excellent but clips at the bottom ('Nudge selection' cut off) and needs scrolling. The 3-D view works (MIP/Alpha/Iso/Mesh, spin, snapshot) but its icon-only cube toggle and 128/256/384 buttons are cryptic and the canvas is only 305 px wide.",
+      "severity": 1,
+      "evidence": "49_3d_view.png"
+    },
+    {
+      "id": "E5-20",
+      "heuristic": "Flexibility / responsive layout",
+      "location": "Window narrower than 1000 px",
+      "observation": "At 900x650 the document scrolls horizontally, Preferences/Help icons are clipped, the inspector takes about half the width, and the image is not re-fitted after resize (cropped). Acceptable for a desktop-only tool, but trainees on small laptops or split screens will hit it.",
+      "severity": 1,
+      "evidence": "54_narrow900.png"
+    }
+  ],
+  "positives": [
+    "Modified-image close is well designed: alertdialog with aria-modal, default focus on Cancel, buttons Cancel / Save... / Close without saving (destructive one in red), tab shows a dot for unsaved changes instead of the x, and a preference controls the prompt (24_after_enter_on_close: Enter keeps the image).",
+    "Undo is deep (30 of 30 inverts undone, memory-budgeted) and Cmd+Z / Shift+Cmd+Z buttons carry tooltips; Gaussian Blur preview is on by default, live on the image with a 'preview' badge and progressive tiling on an 8000x8000 image.",
+    "Command palette (Cmd+K) is the strongest discovery tool: found CLAHE (Local Contrast) in one keystroke group, shows description lines and category, matches synonyms ('contrast limited adaptive'), says '5 of 493 commands', has a clean no-match message with wiki/forum fallbacks, and exposes proper combobox/listbox ARIA (role=dialog, combobox, aria-activedescendant).",
+    "Operation sheets are consistent (title, help text, parameter, Advanced options, Cancel/Apply) and non-modal over the image, so previews and the image stay visible; sliders and numeric fields are paired.",
+    "Macro recorder emits fully parameterised lumen.run(...) calls (Python/JavaScript conversion buttons) and a script editor plus 'Apply Recorded Macro to Folder' exist: real batch/scripting reach.",
+    "Multi-channel handling is clear: named channels (DAPI/Cytoplasm/Spots), per-channel LUT, histogram with range handles, Auto/Reset/Inv, 'Same range for all', Composite/Color/Gray, and an explicit sentence 'Display changes never modify pixel values. Use Apply LUT / RGB Color to bake them in.'",
+    "Z Project gives a new derived image (MAX_t1-head.tif) rather than overwriting; Analyze Particles reports '41 particles' in a toast and fills ROI Manager and Results; error message for missing threshold names the exact fix.",
+    "Menubar has role=menubar/menuitem, F10 entry, arrow/Home/End/Enter navigation; focus rings are visible (2 px outline) throughout; title/aria-label tooltips on nearly all tool buttons include shortcuts; toolbar and tablist roles present.",
+    "Help overlay (?) lists ImageJ-compatible single-key shortcuts in a clear two-column layout; Preferences autosave with 'Reset to defaults'; colour picker (Shift+K), split compare view (Shift+Cmd+\\, each pane with its own image selector), and Tracks wizard (7 numbered steps, TrackMate-like) all work and open without errors.",
+    "File > Open provides a server-side file browser with Home/Desktop/Documents/Downloads shortcuts, folder-as-stack, virtual stack option and browser upload; light/dark themes both render cleanly."
+  ],
+  "overall": "Lumen is unusually capable and coherent for a browser Fiji: breadth (493 commands), a genuinely good command palette, deep memory-budgeted undo, safe close/confirm behaviour, live previews that scale to large images, a parameter-complete recorder and a TrackMate-style wizard. As a core-facility manager I would be comfortable letting a novice use it for basic measure-and-threshold work because the irreversible-mistake surface is small (preview, undo, close guard, derived images for projections). The problems cluster in discoverability and traceability rather than in core function: LUT names are not where Fiji users expect them and the palette fails on 'fire'; two different 'Apply LUT' commands (one destructive) share a name; the Threshold/Analyze Particles path hides its fix under Advanced options and never says which channel is thresholded; display edits are neither undoable nor recorded, so the recorded script cannot reproduce a published figure; ROI Manager and Results are global across images; the script editor traps keyboard focus; and the keyboard/ARIA story is good in the menubar and palette but weak in the toolbar and in small targets. Highest-value fixes: list LUT names in the Lookup Tables menu and palette and rename the baking command, record display state changes and image identity in the recorder, show parameters in History, surface channel and Auto-threshold options in the Threshold/Particles flow, make Esc leave the editor, and add roving-tabindex to the tool rail. Note: the server held leftover state from earlier sessions (5 images, a global threshold), so a true first-run experience could not be evaluated, and I left a few test images (Untitled 20-frame noise movie, modified t1-head) in that server session.",
+  "note": "Evaluation produced by a separate agent (see 'evaluator') against the running build on 8 Nov 2026; screenshots named in 'evidence' were written to the agent's scratch folder and are not committed (the earlier walkthrough screenshots are regenerated the same way). Evidence paths are relative to that folder."
+}

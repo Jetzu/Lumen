@@ -1,0 +1,3409 @@
+{
+ "persona": "a11y",
+ "url": "http://127.0.0.1:8766",
+ "observations": [
+  {
+   "location": "empty viewport",
+   "text": "status bar: '64×64 px · 8-bit · 0.0 MB\\nfg 255 · bg 0\\nmem 3.0 MB\\n1136%'; viewport text: '(no .empty-viewport)'",
+   "shot": "01_empty.png"
+  },
+  {
+   "location": "document",
+   "text": "lang='en' title='Lumen'; landmarks {'toolbar': 1, 'menubar': 1, 'menuitem': 8, 'status': 2, 'tablist': 1, 'tab': 2, 'slider': 2, 'separator': 5, 'group': 1}; headings []; skip link: False; reduced-motion rule in CSS: False"
+  },
+  {
+   "location": "keyboard, Tab from the top (no image)",
+   "text": "70 Tab stops pass through regions ['topbar', 'tabs', 'rail', 'viewport', 'inspector']; stops without a visible outline: 1; first 12: [('topbar', 'File'), ('topbar', 'Edit'), ('topbar', 'Image'), ('topbar', 'Process'), ('topbar', 'Analyze'), ('topbar', 'Plugins'), ('topbar', 'View'), ('topbar', 'Help'), ('topbar', 'Search commands… ⌘'), ('topbar', 'Toggle inspector ('), ('topbar', 'Toggle theme'), ('topbar', 'Preferences (⌘,)')]"
+  },
+  {
+   "location": "menu bar, keyboard",
+   "text": "Enter on the focused 'File' trigger opens the menu: True; after ArrowDown focus is on topbar/'File' (role menuitem); after ArrowRight topbar/'File'; focusable menu items: 0",
+   "shot": "03_menu_keyboard.png"
+  },
+  {
+   "location": "command palette (⌘K)",
+   "text": "roles: palette=None input=None list=None item=None aria-selected=None; input aria attrs []; after ArrowDown the input keeps focus (True) and aria-activedescendant=None; background inert: False",
+   "shot": "04_palette_aria.png"
+  },
+  {
+   "location": "command palette, Esc",
+   "text": "focus after closing: body/body"
+  },
+  {
+   "location": "document with an image",
+   "text": "landmarks {'toolbar': 1, 'menubar': 1, 'menuitem': 8, 'status': 2, 'slider': 6, 'separator': 5, 'group': 5}; canvases [{'role': None, 'label': None, 'w': 1062, 'h': 757, 'tabindex': None}, {'role': None, 'label': None, 'w': 307, 'h': 40, 'tabindex': None}, {'role': None, 'label': None, 'w': 307, 'h': 40, 'tabindex': None}]; live regions ['statusbar:polite', 'toasts:polite']; section heads: tag=div role=None tabindex=None aria-expanded=None; image tabs: [{'tag': 'div', 'role': None, 'tabindex': None, 'selected': None}, {'tag': 'div', 'role': None, 'tabindex': None, 'selected': None}]; animated now: []"
+  },
+  {
+   "location": "Display section sliders",
+   "text": "first sliders [{'label': 'Range minimum', 'now': '198', 'text': '198', 'min': '0', 'max': '3328', 'tabindex': '0'}, {'label': 'Range maximum', 'now': '3235', 'text': '3235', 'min': '0', 'max': '3328', 'tabindex': '0'}, {'label': 'Range minimum', 'now': '126', 'text': '126', 'min': '0', 'max': '1000', 'tabindex': '0'}, {'label': 'Range maximum', 'now': '947', 'text': '947', 'min': '0', 'max': '1000', 'tabindex': '0'}]"
+  },
+  {
+   "location": "slider keyboard",
+   "text": "ArrowRight: aria-valuenow 198 -> 231.28",
+   "shot": "05_slider_focus.png"
+  },
+  {
+   "location": "keyboard, Tab with an image open",
+   "text": "section heads reachable by Tab: False; image tabs reachable: False; regions reached ['body', 'inspector', 'rail', 'statusbar', 'viewport']"
+  },
+  {
+   "location": "unlabeled controls (image open, default sections)",
+   "text": "5: [('inspector display', 'input', 'cname'), ('inspector display', 'input', 'cname'), ('inspector display', 'input', 'cname'), ('inspector rois', 'button', 'btn sm'), ('inspector results', 'button', 'btn sm')]"
+  },
+  {
+   "location": "target sizes (image open)",
+   "text": "161 of 208 interactive elements are smaller than 24×24 CSS px: [('menu-trigger', 'File', 37, 22), ('menu-trigger', 'Edit', 39, 22), ('menu-trigger', 'Image', 53, 22), ('menu-trigger', 'Process', 64, 22), ('menu-trigger', 'Analyze', 64, 22), ('menu-trigger', 'Plugins', 60, 22), ('menu-trigger', 'View', 45, 22), ('menu-trigger', 'Help', 44, 22), ('close', 'Close', 16, 16), ('close', 'Close', 16, 16), ('close', 'Close', 16, 16), ('close', 'Close', 16, 16), ('close', 'Close', 16, 16), ('tool plugin', 'Remove Label at ', 34, 17)]"
+  },
+  {
+   "location": "contrast, dark theme",
+   "text": "7 of 29 sampled text styles below WCAG AA (4.5:1, 3:1 large): [('.hint-text', 3.83, 11.5), ('.menu-trigger', 4.43, 13), ('.results td', 3.53, 11), ('.palette input::placeholder', 3.62, 16), ('.pi-cat', 2.55, 11), ('.palette-foot', 3.53, 11), ('.palette-group', 3.53, 10.5)]"
+  },
+  {
+   "location": "contrast, light theme",
+   "text": "8 of 27 sampled text styles below WCAG AA (4.5:1, 3:1 large): [('.hint-text', 3.07, 11.5), ('.btn.primary', 4.36, 11.5), ('button.primary', 4.36, 11.5), ('.results td', 2.87, 11), ('.palette input::placeholder', 4.3, 16), ('.pi-cat', 2.52, 11), ('.palette-foot', 2.87, 11), ('.palette-group', 2.87, 10.5)]"
+  },
+  {
+   "location": "parameter sheet",
+   "text": "attrs {'role': 'dialog', 'labelledby': 'sheet-title', 'modal': None, 'title_id': True}; focus after opening: body/body/'LumenFileEditImagePr'"
+  },
+  {
+   "location": "parameter sheet, Esc",
+   "text": "focus after closing: body/body"
+  },
+  {
+   "location": "help overlay (role=dialog aria-modal)",
+   "text": "focus leaves the overlay within 40 Tabs: True (to topbar/'File')",
+   "shot": "10_help_focus.png"
+  },
+  {
+   "location": "Preferences dialog",
+   "text": "attrs {'role': None, 'modal': None, 'labelledby': None, 'tabindex': '-1'}; focus on open: modal/div; unlabeled controls inside modals: [('select', ''), ('input', ''), ('input', ''), ('input', ''), ('input', ''), ('input', ''), ('select', ''), ('input', '')]",
+   "shot": "11_prefs_a11y.png"
+  },
+  {
+   "location": "File dialog (⌘O)",
+   "text": "attrs {'role': 'dialog', 'modal': 'true', 'labelledby': 'file-dialog-title'}; focus on open: modal/div/'Open image Upload fr'; focusable file items: 0",
+   "shot": "12_file_dialog_a11y.png"
+  },
+  {
+   "location": "tool rail (role=toolbar)",
+   "text": "ArrowDown from the first tool moves focus to rail/'Select / move (V)'; Tab moves to rail/'Pan (Space or G)' (WAI-ARIA toolbar pattern expects arrow keys to move within the toolbar)"
+  },
+  {
+   "location": "image tabs",
+   "text": "[{'tag': 'DIV', 'role': None, 'tabindex': -1, 'selected': None, 'close': True, 'closeLabel': 'Close'}, {'tag': 'DIV', 'role': None, 'tabindex': -1, 'selected': None, 'close': True, 'closeLabel': 'Close'}, {'tag': 'DIV', 'role': None, 'tabindex': -1, 'selected': None, 'close': True, 'closeLabel': 'Close'}]"
+  },
+  {
+   "location": "split view",
+   "text": "{'divider_role': None, 'divider_tabindex': -1, 'heads': ['activesynthetic_cells.tift1-head.tifmito', 'comparesynthetic_cells.tift1-head.tifmit']}",
+   "shot": "13_split_view_a11y.png"
+  },
+  {
+   "location": "inspector splitter",
+   "text": "{'role': 'separator', 'tabindex': -1, 'orientation': 'vertical', 'valuenow': None}"
+  },
+  {
+   "location": "3-D View",
+   "text": "auto-rotate control {'tag': 'BUTTON', 'pressed': None, 'checked': None, 'cls': 'btn sm'}; canvas {'tabindex': -1, 'role': None, 'label': None} (keyboard orbit/zoom?)",
+   "shot": "14_volume_a11y.png"
+  },
+  {
+   "location": "animations",
+   "text": "elements animating now: []; CSS has a prefers-reduced-motion rule: False"
+  },
+  {
+   "location": "busy indicators",
+   "text": "[]"
+  },
+  {
+   "location": "viewport 640×400 (≈ 200 % zoom on a 1280 px laptop)",
+   "text": "{'scrollW': 1018, 'clientW': 640, 'inspector': True, 'inspectorWidth': 331, 'canvasW': 262, 'rail': True, 'menubar': 421}",
+   "shot": "15_narrow_640.png"
+  },
+  {
+   "location": "menu bar",
+   "text": "top-level item counts {'File': 21, 'Edit': 20, 'Image': 17, 'Process': 16, 'Analyze': 27, 'Plugins': 14, 'View': 14, 'Help': 15}; submenus {'File': ['Open Recent', 'Open Sample', 'Export', 'Page Setup', 'Export', 'Import', 'New', 'Text'], 'Edit': ['Selection', 'Options'], 'Image': ['Type', 'Adjust', 'Color', 'Stacks', 'Hyperstacks', 'Transform', 'Lookup Tables', 'Overlay', 'Drawing', 'Stacks/Tools'], 'Process': ['Filters', 'Binary', 'Math', 'Noise', 'FFT', 'Batch'], 'Analyze': ['Gels', 'Tools'], 'Plugins': ['Batch', 'Registration', 'Scripting', 'Segmentation', 'Tracking', 'Shortcuts', 'Utilities', '3D', 'Bio-Formats', 'Feature Extraction', 'Macros', 'MorphoLibJ', 'Time Lapse', 'Tools'], 'View': [], 'Help': []}"
+  },
+  {
+   "location": "File menu",
+   "text": "'Close' item shows shortcut ⌘W; the global shortcut handler has no ⌘W binding, so in a browser tab this chord closes the tab"
+  },
+  {
+   "location": "inspector",
+   "text": "12 sections present for this image: ['Display', 'Threshold', 'Workflows', '3-D View', 'Orthogonal Views', 'ROI Manager', 'Pixel Classifier', 'Results', 'Image Info', 'History', 'Script & Recorder', 'Log']; open by default: ['Display', '3-D View', 'ROI Manager', 'Results']"
+  },
+  {
+   "location": "inspector",
+   "text": "with every section expanded the inspector is 5668 px tall in a 796 px column (7.1 screens)",
+   "shot": "32_inspector_all_open.png"
+  },
+  {
+   "location": "Preferences (⌘,)",
+   "text": "28 rows in groups ['APPEARANCE', 'FONTS', 'POINTS', 'ARROWS', 'COLOURS', 'PLOTS', 'SAVING & EDITING', 'DICOM', 'ADVANCED']; focus after opening: modal",
+   "shot": "33_preferences.png"
+  },
+  {
+   "location": "Help overlay (?)",
+   "text": "1659 characters; lists ⌘K: True; lists ⌘W: False",
+   "shot": "34_help_overlay.png"
+  }
+ ],
+ "facts": {
+  "empty_state": {
+   "status": "64×64 px · 8-bit · 0.0 MB\nfg 255 · bg 0\nmem 3.0 MB\n1136%",
+   "viewport_text": "(no .empty-viewport)"
+  },
+  "landmarks_empty": {
+   "lang": "en",
+   "title": "Lumen",
+   "landmarks": {
+    "toolbar": 1,
+    "menubar": 1,
+    "menuitem": 8,
+    "status": 2,
+    "tablist": 1,
+    "tab": 2,
+    "slider": 2,
+    "separator": 5,
+    "group": 1
+   },
+   "headings": [],
+   "skipLink": false,
+   "canvases": [
+    {
+     "role": null,
+     "label": null,
+     "w": 1062,
+     "h": 757,
+     "tabindex": null
+    },
+    {
+     "role": null,
+     "label": null,
+     "w": 307,
+     "h": 40,
+     "tabindex": null
+    }
+   ],
+   "live": [
+    "statusbar:polite",
+    "toasts:polite"
+   ],
+   "sectionHeads": [
+    {
+     "text": "Display",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Threshold",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Workflows",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "ROI Manager",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Pixel Classifier",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Tracks",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Results",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Image Info",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "History",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Script & Recorder",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Log",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    }
+   ],
+   "tabs": [
+    {
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "selected": null
+    },
+    {
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "selected": null
+    },
+    {
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "selected": null
+    },
+    {
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "selected": null
+    }
+   ],
+   "reducedMotionRule": false,
+   "animated": []
+  },
+  "tab_walk_empty": [
+   {
+    "tag": "button",
+    "cls": "menu-trigger",
+    "role": "menuitem",
+    "name": "File",
+    "region": "topbar",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "menu-trigger",
+    "role": "menuitem",
+    "name": "Edit",
+    "region": "topbar",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "menu-trigger",
+    "role": "menuitem",
+    "name": "Image",
+    "region": "topbar",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "menu-trigger",
+    "role": "menuitem",
+    "name": "Process",
+    "region": "topbar",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "menu-trigger",
+    "role": "menuitem",
+    "name": "Analyze",
+    "region": "topbar",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "menu-trigger",
+    "role": "menuitem",
+    "name": "Plugins",
+    "region": "topbar",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "menu-trigger",
+    "role": "menuitem",
+    "name": "View",
+    "region": "topbar",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "menu-trigger",
+    "role": "menuitem",
+    "name": "Help",
+    "region": "topbar",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "search-btn",
+    "role": null,
+    "name": "Search commands… ⌘K",
+    "region": "topbar",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "icon-btn",
+    "role": null,
+    "name": "Toggle inspector (⌘\\)",
+    "region": "topbar",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "icon-btn",
+    "role": null,
+    "name": "Toggle theme",
+    "region": "topbar",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "icon-btn",
+    "role": null,
+    "name": "Preferences (⌘,)",
+    "region": "topbar",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "icon-btn",
+    "role": null,
+    "name": "Keyboard shortcuts (?)",
+    "region": "topbar",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "close",
+    "role": null,
+    "name": "Close",
+    "region": "tabs",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "close",
+    "role": null,
+    "name": "Close",
+    "region": "tabs",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "close",
+    "role": null,
+    "name": "Close",
+    "region": "tabs",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "close",
+    "role": null,
+    "name": "Close",
+    "region": "tabs",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "icon-btn",
+    "role": null,
+    "name": "All open images (4)",
+    "region": "tabs",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "icon-btn",
+    "role": null,
+    "name": "Split view – compare two images side by ",
+    "region": "tabs",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "icon-btn",
+    "role": null,
+    "name": "Open image (⌘O)",
+    "region": "tabs",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool active",
+    "role": null,
+    "name": "Select / move (V)",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Pan (Space or G)",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Rectangle (1)",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Oval (2)",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Polygon (3) – click points, double-click",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Freehand (4)",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Line (5)",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Segmented line (6)",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Points (7) – shift-click to add",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Wand (8) – trace a region",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Angle (Q) – click arm end, vertex, arm e",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Manual tracking (X) – click adds this fr",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Brush (9) – paint with the foreground va",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Bucket fill (U) – flood-fill with the fo",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Text (Y) – click to add an overlay label",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Arrow (J) – drag to add an overlay arrow",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Zoom (Z) – click in, alt-click out",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool",
+    "role": null,
+    "name": "Value picker (I)",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool plugin",
+    "role": null,
+    "name": "Remove Label at Point",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool plugin",
+    "role": null,
+    "name": "Classifier Trace Tool",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool plugin",
+    "role": null,
+    "name": "Spot Click Counter",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "tool plugin",
+    "role": null,
+    "name": "Measure Distance Tool",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "swatch-btn",
+    "role": null,
+    "name": "Foreground 255 / background 0 – Color Pi",
+    "region": "rail",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "div",
+    "cls": "canvas-wrap tool-pointer",
+    "role": null,
+    "name": "1136%",
+    "region": "viewport",
+    "outline": "none",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "icon-btn",
+    "role": null,
+    "name": "Zoom out (−)",
+    "region": "viewport",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "icon-btn",
+    "role": null,
+    "name": "Zoom in (+)",
+    "region": "viewport",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "icon-btn",
+    "role": null,
+    "name": "Fit (0)",
+    "region": "viewport",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "icon-btn",
+    "role": null,
+    "name": "Play through frames",
+    "region": "viewport",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "input",
+    "cls": "",
+    "role": null,
+    "name": "Time frame",
+    "region": "viewport",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "icon-btn",
+    "role": null,
+    "name": "Hide channel",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "input",
+    "cls": "cname",
+    "role": null,
+    "name": "",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "select",
+    "cls": "",
+    "role": null,
+    "name": "Lookup table",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "div",
+    "cls": "handle",
+    "role": "slider",
+    "name": "Range minimum",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "div",
+    "cls": "handle",
+    "role": "slider",
+    "name": "Range maximum",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "input",
+    "cls": "",
+    "role": null,
+    "name": "Display minimum",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "btn sm",
+    "role": null,
+    "name": "Auto: saturate 0.35% of pixels",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "btn sm",
+    "role": null,
+    "name": "Reset to the data range",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "btn sm",
+    "role": null,
+    "name": "Invert LUT",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "input",
+    "cls": "",
+    "role": null,
+    "name": "Display maximum",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "btn sm",
+    "role": null,
+    "name": "Reset all",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "btn sm",
+    "role": null,
+    "name": "Enhance Contrast (apply to pixels or dis",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "btn sm primary",
+    "role": null,
+    "name": "Add current selection (T)",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "btn sm",
+    "role": null,
+    "name": "Measure selected (or all) ROIs",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "btn sm",
+    "role": null,
+    "name": "Show all ROIs on the image",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "div",
+    "cls": "roi-list",
+    "role": null,
+    "name": "10001-25-315polygon20002-28-27polygon300",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "btn sm",
+    "role": null,
+    "name": "Union of the selected ROIs as a selectio",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "btn sm",
+    "role": null,
+    "name": "AND",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "btn sm",
+    "role": null,
+    "name": "XOR",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "btn sm",
+    "role": null,
+    "name": "Burn as overlay",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   },
+   {
+    "tag": "button",
+    "cls": "btn sm",
+    "role": null,
+    "name": "Import ROIs (JSON)",
+    "region": "inspector",
+    "outline": "solid",
+    "visible": true
+   }
+  ],
+  "palette_aria": {
+   "palette_role": null,
+   "modal": null,
+   "input_role": null,
+   "input_aria": [],
+   "list_role": null,
+   "item_role": null,
+   "item_selected": null,
+   "items": 35,
+   "backdrop_inert": false,
+   "active": true,
+   "activedescendant": null,
+   "sel": "Threshold…"
+  },
+  "landmarks_image": {
+   "lang": "en",
+   "title": "Lumen",
+   "landmarks": {
+    "toolbar": 1,
+    "menubar": 1,
+    "menuitem": 8,
+    "status": 2,
+    "slider": 6,
+    "separator": 5,
+    "group": 5
+   },
+   "headings": [],
+   "skipLink": false,
+   "canvases": [
+    {
+     "role": null,
+     "label": null,
+     "w": 1062,
+     "h": 757,
+     "tabindex": null
+    },
+    {
+     "role": null,
+     "label": null,
+     "w": 307,
+     "h": 40,
+     "tabindex": null
+    },
+    {
+     "role": null,
+     "label": null,
+     "w": 307,
+     "h": 40,
+     "tabindex": null
+    },
+    {
+     "role": null,
+     "label": null,
+     "w": 307,
+     "h": 40,
+     "tabindex": null
+    }
+   ],
+   "live": [
+    "statusbar:polite",
+    "toasts:polite"
+   ],
+   "sectionHeads": [
+    {
+     "text": "Display",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Threshold",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Workflows",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "ROI Manager",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Pixel Classifier",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Results",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Image Info",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "History",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Script & Recorder",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    },
+    {
+     "text": "Log",
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "expanded": null
+    }
+   ],
+   "tabs": [
+    {
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "selected": null
+    },
+    {
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "selected": null
+    },
+    {
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "selected": null
+    },
+    {
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "selected": null
+    },
+    {
+     "tag": "div",
+     "role": null,
+     "tabindex": null,
+     "selected": null
+    }
+   ],
+   "reducedMotionRule": false,
+   "animated": []
+  },
+  "tab_walk_image_regions": [
+   [
+    "body",
+    ""
+   ],
+   [
+    "inspector",
+    ""
+   ],
+   [
+    "inspector",
+    "btn sm"
+   ],
+   [
+    "inspector",
+    "btn sm danger"
+   ],
+   [
+    "inspector",
+    "btn sm primary"
+   ],
+   [
+    "inspector",
+    "cname"
+   ],
+   [
+    "inspector",
+    "handle"
+   ],
+   [
+    "inspector",
+    "icon-btn"
+   ],
+   [
+    "inspector",
+    "on"
+   ],
+   [
+    "inspector",
+    "roi-list"
+   ],
+   [
+    "inspector",
+    "table-wrap"
+   ],
+   [
+    "rail",
+    "swatch-btn"
+   ],
+   [
+    "rail",
+    "tool"
+   ],
+   [
+    "rail",
+    "tool plugin"
+   ],
+   [
+    "statusbar",
+    "pill color-chi"
+   ],
+   [
+    "statusbar",
+    "pill mem"
+   ],
+   [
+    "viewport",
+    ""
+   ],
+   [
+    "viewport",
+    "canvas-wrap to"
+   ],
+   [
+    "viewport",
+    "chip on"
+   ],
+   [
+    "viewport",
+    "chip on curren"
+   ],
+   [
+    "viewport",
+    "icon-btn"
+   ],
+   [
+    "viewport",
+    "on"
+   ]
+  ],
+  "unlabeled_image": [
+   {
+    "tag": "input",
+    "type": null,
+    "cls": "cname",
+    "where": "inspector display",
+    "html": "<input class=\"cname\" spellcheck=\"false\" value=\"DAPI\" style=\"\">"
+   },
+   {
+    "tag": "input",
+    "type": null,
+    "cls": "cname",
+    "where": "inspector display",
+    "html": "<input class=\"cname\" spellcheck=\"false\" value=\"Cytoplasm\" style=\"\">"
+   },
+   {
+    "tag": "input",
+    "type": null,
+    "cls": "cname",
+    "where": "inspector display",
+    "html": "<input class=\"cname\" spellcheck=\"false\" value=\"Spots\" style=\"\">"
+   },
+   {
+    "tag": "button",
+    "type": null,
+    "cls": "btn sm",
+    "where": "inspector rois",
+    "html": "<button class=\"btn sm\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill"
+   },
+   {
+    "tag": "button",
+    "type": null,
+    "cls": "btn sm",
+    "where": "inspector results",
+    "html": "<button class=\"btn sm\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill"
+   }
+  ],
+  "targets_image": {
+   "total": 208,
+   "small": [
+    {
+     "tag": "button",
+     "cls": "menu-trigger",
+     "name": "File",
+     "w": 37,
+     "h": 22
+    },
+    {
+     "tag": "button",
+     "cls": "menu-trigger",
+     "name": "Edit",
+     "w": 39,
+     "h": 22
+    },
+    {
+     "tag": "button",
+     "cls": "menu-trigger",
+     "name": "Image",
+     "w": 53,
+     "h": 22
+    },
+    {
+     "tag": "button",
+     "cls": "menu-trigger",
+     "name": "Process",
+     "w": 64,
+     "h": 22
+    },
+    {
+     "tag": "button",
+     "cls": "menu-trigger",
+     "name": "Analyze",
+     "w": 64,
+     "h": 22
+    },
+    {
+     "tag": "button",
+     "cls": "menu-trigger",
+     "name": "Plugins",
+     "w": 60,
+     "h": 22
+    },
+    {
+     "tag": "button",
+     "cls": "menu-trigger",
+     "name": "View",
+     "w": 45,
+     "h": 22
+    },
+    {
+     "tag": "button",
+     "cls": "menu-trigger",
+     "name": "Help",
+     "w": 44,
+     "h": 22
+    },
+    {
+     "tag": "button",
+     "cls": "close",
+     "name": "Close",
+     "w": 16,
+     "h": 16
+    },
+    {
+     "tag": "button",
+     "cls": "close",
+     "name": "Close",
+     "w": 16,
+     "h": 16
+    },
+    {
+     "tag": "button",
+     "cls": "close",
+     "name": "Close",
+     "w": 16,
+     "h": 16
+    },
+    {
+     "tag": "button",
+     "cls": "close",
+     "name": "Close",
+     "w": 16,
+     "h": 16
+    },
+    {
+     "tag": "button",
+     "cls": "close",
+     "name": "Close",
+     "w": 16,
+     "h": 16
+    },
+    {
+     "tag": "button",
+     "cls": "tool plugin",
+     "name": "Remove Label at Point",
+     "w": 34,
+     "h": 17
+    },
+    {
+     "tag": "button",
+     "cls": "tool plugin",
+     "name": "Classifier Trace Tool",
+     "w": 34,
+     "h": 17
+    },
+    {
+     "tag": "button",
+     "cls": "tool plugin",
+     "name": "Spot Click Counter",
+     "w": 34,
+     "h": 17
+    },
+    {
+     "tag": "button",
+     "cls": "tool plugin",
+     "name": "Measure Distance Tool",
+     "w": 34,
+     "h": 17
+    },
+    {
+     "tag": "button",
+     "cls": "chip on current",
+     "name": "Click: toggle visibility · Alt-click",
+     "w": 59,
+     "h": 19
+    },
+    {
+     "tag": "button",
+     "cls": "chip on",
+     "name": "Click: toggle visibility · Alt-click",
+     "w": 91,
+     "h": 19
+    },
+    {
+     "tag": "button",
+     "cls": "chip on",
+     "name": "Click: toggle visibility · Alt-click",
+     "w": 64,
+     "h": 19
+    },
+    {
+     "tag": "button",
+     "cls": "on",
+     "name": "Overlay all visible channels",
+     "w": 75,
+     "h": 17
+    },
+    {
+     "tag": "button",
+     "cls": "",
+     "name": "One channel with its LUT",
+     "w": 45,
+     "h": 17
+    },
+    {
+     "tag": "button",
+     "cls": "",
+     "name": "One channel in gray",
+     "w": 41,
+     "h": 17
+    },
+    {
+     "tag": "button",
+     "cls": "on",
+     "name": "Composite",
+     "w": 75,
+     "h": 17
+    },
+    {
+     "tag": "button",
+     "cls": "",
+     "name": "Color",
+     "w": 45,
+     "h": 17
+    },
+    {
+     "tag": "button",
+     "cls": "",
+     "name": "Gray",
+     "w": 41,
+     "h": 17
+    },
+    {
+     "tag": "button",
+     "cls": "icon-btn",
+     "name": "Hide channel",
+     "w": 22,
+     "h": 22
+    },
+    {
+     "tag": "input",
+     "cls": "cname",
+     "name": "",
+     "w": 156,
+     "h": 20
+    },
+    {
+     "tag": "select",
+     "cls": "",
+     "name": "Lookup table",
+     "w": 92,
+     "h": 21
+    },
+    {
+     "tag": "div",
+     "cls": "handle",
+     "name": "Range minimum",
+     "w": 14,
+     "h": 14
+    },
+    {
+     "tag": "div",
+     "cls": "handle",
+     "name": "Range maximum",
+     "w": 14,
+     "h": 14
+    },
+    {
+     "tag": "input",
+     "cls": "",
+     "name": "Display minimum",
+     "w": 76,
+     "h": 20
+    },
+    {
+     "tag": "button",
+     "cls": "btn sm",
+     "name": "Auto: saturate 0.35% of pixels",
+     "w": 43,
+     "h": 21
+    },
+    {
+     "tag": "button",
+     "cls": "btn sm",
+     "name": "Reset to the data range",
+     "w": 49,
+     "h": 21
+    },
+    {
+     "tag": "button",
+     "cls": "btn sm",
+     "name": "Invert LUT",
+     "w": 34,
+     "h": 21
+    },
+    {
+     "tag": "input",
+     "cls": "",
+     "name": "Display maximum",
+     "w": 76,
+     "h": 20
+    },
+    {
+     "tag": "button",
+     "cls": "icon-btn",
+     "name": "Hide channel",
+     "w": 22,
+     "h": 22
+    },
+    {
+     "tag": "input",
+     "cls": "cname",
+     "name": "",
+     "w": 156,
+     "h": 20
+    },
+    {
+     "tag": "select",
+     "cls": "",
+     "name": "Lookup table",
+     "w": 92,
+     "h": 21
+    },
+    {
+     "tag": "div",
+     "cls": "handle",
+     "name": "Range minimum",
+     "w": 14,
+     "h": 14
+    }
+   ]
+  },
+  "contrast": {
+   "dark_theme_attr": "dark",
+   "dark": [
+    {
+     "sel": ".statusbar",
+     "text": "512×512 px (166.4×166.4 µm) · ",
+     "fg": "rgb(154,163,184)",
+     "bg": "rgb(19,22,29)",
+     "ratio": 7.16,
+     "px": 11.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".statusbar .pill",
+     "text": "fg 255 · bg 0",
+     "fg": "rgb(154,163,184)",
+     "bg": "rgb(34,39,51)",
+     "ratio": 5.91,
+     "px": 11.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".section-head",
+     "text": "Display3ch",
+     "fg": "rgb(154,163,184)",
+     "bg": "rgb(19,22,29)",
+     "ratio": 7.16,
+     "px": 12,
+     "weight": 600,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".section-head .badge",
+     "text": "3ch",
+     "fg": "rgb(154,163,184)",
+     "bg": "rgb(34,39,51)",
+     "ratio": 5.91,
+     "px": 10.5,
+     "weight": 500,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".hint-text",
+     "text": "Display changes never modify p",
+     "fg": "rgb(107,115,137)",
+     "bg": "rgb(19,22,29)",
+     "ratio": 3.83,
+     "px": 11.5,
+     "weight": 400,
+     "large": false,
+     "passAA": false,
+     "passUI": true
+    },
+    {
+     "sel": ".menu-trigger",
+     "text": "File",
+     "fg": "rgb(232,234,240)",
+     "bg": "rgb(107,107,107)",
+     "ratio": 4.43,
+     "px": 13,
+     "weight": 400,
+     "large": false,
+     "passAA": false,
+     "passUI": true
+    },
+    {
+     "sel": ".tab",
+     "text": "synthetic_cells.tif512×512 · 3",
+     "fg": "rgb(154,163,184)",
+     "bg": "rgb(19,22,29)",
+     "ratio": 7.16,
+     "px": 12.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".tab.active",
+     "text": "synthetic_cells.tif-1512×512 ·",
+     "fg": "rgb(232,234,240)",
+     "bg": "rgb(13,15,20)",
+     "ratio": 15.94,
+     "px": 12.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".btn",
+     "text": "Auto",
+     "fg": "rgb(232,234,240)",
+     "bg": "rgb(26,30,39)",
+     "ratio": 13.87,
+     "px": 11.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".btn.primary",
+     "text": "Add",
+     "fg": "rgb(11,31,23)",
+     "bg": "rgb(16,185,129)",
+     "ratio": 6.77,
+     "px": 11.5,
+     "weight": 600,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": "button.primary",
+     "text": "Add",
+     "fg": "rgb(11,31,23)",
+     "bg": "rgb(16,185,129)",
+     "ratio": 6.77,
+     "px": 11.5,
+     "weight": 600,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".icon-btn",
+     "text": "",
+     "fg": "rgb(154,163,184)",
+     "bg": "rgb(19,22,29)",
+     "ratio": 7.16,
+     "px": 13,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".kbd",
+     "text": "⌘K",
+     "fg": "rgb(154,163,184)",
+     "bg": "rgb(19,22,29)",
+     "ratio": 7.16,
+     "px": 10.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".k",
+     "missing": true
+    },
+    {
+     "sel": ".v",
+     "missing": true
+    },
+    {
+     "sel": ".dimbar .chip",
+     "text": "DAPI",
+     "fg": "rgb(232,234,240)",
+     "bg": "rgb(34,39,51)",
+     "ratio": 12.42,
+     "px": 11.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".hud-chip",
+     "missing": true
+    },
+    {
+     "sel": ".empty-viewport",
+     "missing": true
+    },
+    {
+     "sel": ".toast",
+     "missing": true
+    },
+    {
+     "sel": ".results td",
+     "text": "1",
+     "fg": "rgb(107,115,137)",
+     "bg": "rgb(26,30,39)",
+     "ratio": 3.53,
+     "px": 11,
+     "weight": 400,
+     "large": false,
+     "passAA": false,
+     "passUI": true
+    },
+    {
+     "sel": ".roi-item",
+     "text": "10001-25-315polygon",
+     "fg": "rgb(232,234,240)",
+     "bg": "rgb(26,30,39)",
+     "ratio": 13.87,
+     "px": 12,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".hist-item",
+     "missing": true
+    },
+    {
+     "sel": ".console-out",
+     "missing": true
+    },
+    {
+     "sel": ".palette input::placeholder",
+     "text": "",
+     "fg": "rgb(117,117,117)",
+     "bg": "rgb(26,30,39)",
+     "ratio": 3.62,
+     "px": 16,
+     "weight": 400,
+     "large": false,
+     "passAA": false,
+     "passUI": true
+    },
+    {
+     "sel": ".pi-desc",
+     "text": "256-bin histogram of the curre",
+     "fg": "rgb(154,163,184)",
+     "bg": "rgb(30,59,57)",
+     "ratio": 4.77,
+     "px": 11.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".pi-cat",
+     "text": "Image/Adjust",
+     "fg": "rgb(107,115,137)",
+     "bg": "rgb(30,59,57)",
+     "ratio": 2.55,
+     "px": 11,
+     "weight": 400,
+     "large": false,
+     "passAA": false,
+     "passUI": false
+    },
+    {
+     "sel": ".palette-foot",
+     "text": "↑↓ navigate↵ runesc close488 c",
+     "fg": "rgb(107,115,137)",
+     "bg": "rgb(26,30,39)",
+     "ratio": 3.53,
+     "px": 11,
+     "weight": 400,
+     "large": false,
+     "passAA": false,
+     "passUI": true
+    },
+    {
+     "sel": ".palette-group",
+     "text": "33 results",
+     "fg": "rgb(107,115,137)",
+     "bg": "rgb(26,30,39)",
+     "ratio": 3.53,
+     "px": 10.5,
+     "weight": 400,
+     "large": false,
+     "passAA": false,
+     "passUI": true
+    },
+    {
+     "sel": ".sheet h3",
+     "text": "Gaussian Blur",
+     "fg": "rgb(232,234,240)",
+     "bg": "rgb(26,30,39)",
+     "ratio": 13.87,
+     "px": 14,
+     "weight": 650,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".sheet label",
+     "text": "Sigma0–200",
+     "fg": "rgb(154,163,184)",
+     "bg": "rgb(26,30,39)",
+     "ratio": 6.6,
+     "px": 12,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".sheet-desc",
+     "text": "Smooth with a Gaussian kernel ",
+     "fg": "rgb(154,163,184)",
+     "bg": "rgb(26,30,39)",
+     "ratio": 6.6,
+     "px": 12,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".advanced-toggle",
+     "missing": true
+    },
+    {
+     "sel": ".sheet-foot .switch",
+     "text": "Preview",
+     "fg": "rgb(154,163,184)",
+     "bg": "rgb(26,30,39)",
+     "ratio": 6.6,
+     "px": 12,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": "input[type=number]",
+     "text": "",
+     "fg": "rgb(232,234,240)",
+     "bg": "rgb(26,30,39)",
+     "ratio": 13.87,
+     "px": 12,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": "select",
+     "text": "Current plane only (channel 1)",
+     "fg": "rgb(232,234,240)",
+     "bg": "rgb(26,30,39)",
+     "ratio": 13.87,
+     "px": 13,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".help-overlay h2",
+     "text": "Keyboard shortcuts",
+     "fg": "rgb(232,234,240)",
+     "bg": "rgb(26,30,39)",
+     "ratio": 13.87,
+     "px": 16,
+     "weight": 700,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".help-overlay .kbd",
+     "text": "⌘K",
+     "fg": "rgb(154,163,184)",
+     "bg": "rgb(19,22,29)",
+     "ratio": 7.16,
+     "px": 10.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    }
+   ],
+   "light": [
+    {
+     "sel": ".statusbar",
+     "text": "512×512 px (166.4×166.4 µm) · ",
+     "fg": "rgb(90,98,117)",
+     "bg": "rgb(255,255,255)",
+     "ratio": 6.11,
+     "px": 11.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".statusbar .pill",
+     "text": "fg 255 · bg 0",
+     "fg": "rgb(90,98,117)",
+     "bg": "rgb(236,238,243)",
+     "ratio": 5.26,
+     "px": 11.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".section-head",
+     "text": "Display3ch",
+     "fg": "rgb(90,98,117)",
+     "bg": "rgb(255,255,255)",
+     "ratio": 6.11,
+     "px": 12,
+     "weight": 600,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".section-head .badge",
+     "text": "3ch",
+     "fg": "rgb(90,98,117)",
+     "bg": "rgb(236,238,243)",
+     "ratio": 5.26,
+     "px": 10.5,
+     "weight": 500,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".hint-text",
+     "text": "Display changes never modify p",
+     "fg": "rgb(139,147,167)",
+     "bg": "rgb(255,255,255)",
+     "ratio": 3.07,
+     "px": 11.5,
+     "weight": 400,
+     "large": false,
+     "passAA": false,
+     "passUI": true
+    },
+    {
+     "sel": ".menu-trigger",
+     "text": "File",
+     "fg": "rgb(22,24,29)",
+     "bg": "rgb(239,239,239)",
+     "ratio": 15.44,
+     "px": 13,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".tab",
+     "text": "synthetic_cells.tif512×512 · 3",
+     "fg": "rgb(90,98,117)",
+     "bg": "rgb(255,255,255)",
+     "ratio": 6.11,
+     "px": 12.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".tab.active",
+     "text": "synthetic_cells.tif-1512×512 ·",
+     "fg": "rgb(22,24,29)",
+     "bg": "rgb(243,244,247)",
+     "ratio": 16.15,
+     "px": 12.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".btn",
+     "text": "Auto",
+     "fg": "rgb(22,24,29)",
+     "bg": "rgb(246,247,250)",
+     "ratio": 16.58,
+     "px": 11.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".btn.primary",
+     "text": "Add",
+     "fg": "rgb(255,255,255)",
+     "bg": "rgb(11,138,95)",
+     "ratio": 4.36,
+     "px": 11.5,
+     "weight": 600,
+     "large": false,
+     "passAA": false,
+     "passUI": true
+    },
+    {
+     "sel": "button.primary",
+     "text": "Add",
+     "fg": "rgb(255,255,255)",
+     "bg": "rgb(11,138,95)",
+     "ratio": 4.36,
+     "px": 11.5,
+     "weight": 600,
+     "large": false,
+     "passAA": false,
+     "passUI": true
+    },
+    {
+     "sel": ".icon-btn",
+     "text": "",
+     "fg": "rgb(90,98,117)",
+     "bg": "rgb(255,255,255)",
+     "ratio": 6.11,
+     "px": 13,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".kbd",
+     "text": "⌘K",
+     "fg": "rgb(90,98,117)",
+     "bg": "rgb(255,255,255)",
+     "ratio": 6.11,
+     "px": 10.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".k",
+     "missing": true
+    },
+    {
+     "sel": ".v",
+     "missing": true
+    },
+    {
+     "sel": ".dimbar .chip",
+     "text": "DAPI",
+     "fg": "rgb(22,24,29)",
+     "bg": "rgb(236,238,243)",
+     "ratio": 15.3,
+     "px": 11.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".hud-chip",
+     "missing": true
+    },
+    {
+     "sel": ".empty-viewport",
+     "missing": true
+    },
+    {
+     "sel": ".toast",
+     "missing": true
+    },
+    {
+     "sel": ".results td",
+     "text": "1",
+     "fg": "rgb(139,147,167)",
+     "bg": "rgb(246,247,250)",
+     "ratio": 2.87,
+     "px": 11,
+     "weight": 400,
+     "large": false,
+     "passAA": false,
+     "passUI": false
+    },
+    {
+     "sel": ".roi-item",
+     "text": "10001-25-315polygon",
+     "fg": "rgb(22,24,29)",
+     "bg": "rgb(246,247,250)",
+     "ratio": 16.58,
+     "px": 12,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".hist-item",
+     "missing": true
+    },
+    {
+     "sel": ".console-out",
+     "missing": true
+    },
+    {
+     "sel": ".palette input::placeholder",
+     "text": "",
+     "fg": "rgb(117,117,117)",
+     "bg": "rgb(246,247,250)",
+     "ratio": 4.3,
+     "px": 16,
+     "weight": 400,
+     "large": false,
+     "passAA": false,
+     "passUI": true
+    },
+    {
+     "sel": ".pi-desc",
+     "text": "256-bin histogram of the curre",
+     "fg": "rgb(90,98,117)",
+     "bg": "rgb(218,236,233)",
+     "ratio": 5.01,
+     "px": 11.5,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".pi-cat",
+     "text": "Image/Adjust",
+     "fg": "rgb(139,147,167)",
+     "bg": "rgb(218,236,233)",
+     "ratio": 2.52,
+     "px": 11,
+     "weight": 400,
+     "large": false,
+     "passAA": false,
+     "passUI": false
+    },
+    {
+     "sel": ".palette-foot",
+     "text": "↑↓ navigate↵ runesc close488 c",
+     "fg": "rgb(139,147,167)",
+     "bg": "rgb(246,247,250)",
+     "ratio": 2.87,
+     "px": 11,
+     "weight": 400,
+     "large": false,
+     "passAA": false,
+     "passUI": false
+    },
+    {
+     "sel": ".palette-group",
+     "text": "33 results",
+     "fg": "rgb(139,147,167)",
+     "bg": "rgb(246,247,250)",
+     "ratio": 2.87,
+     "px": 10.5,
+     "weight": 400,
+     "large": false,
+     "passAA": false,
+     "passUI": false
+    },
+    {
+     "sel": ".sheet h3",
+     "text": "Gaussian Blur",
+     "fg": "rgb(22,24,29)",
+     "bg": "rgb(246,247,250)",
+     "ratio": 16.58,
+     "px": 14,
+     "weight": 650,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".sheet label",
+     "text": "Sigma0–200",
+     "fg": "rgb(90,98,117)",
+     "bg": "rgb(246,247,250)",
+     "ratio": 5.7,
+     "px": 12,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".sheet-desc",
+     "text": "Smooth with a Gaussian kernel ",
+     "fg": "rgb(90,98,117)",
+     "bg": "rgb(246,247,250)",
+     "ratio": 5.7,
+     "px": 12,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": ".advanced-toggle",
+     "missing": true
+    },
+    {
+     "sel": ".sheet-foot .switch",
+     "text": "Preview",
+     "fg": "rgb(90,98,117)",
+     "bg": "rgb(246,247,250)",
+     "ratio": 5.7,
+     "px": 12,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": "input[type=number]",
+     "text": "",
+     "fg": "rgb(22,24,29)",
+     "bg": "rgb(246,247,250)",
+     "ratio": 16.58,
+     "px": 12,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    },
+    {
+     "sel": "select",
+     "text": "Current plane only (channel 1)",
+     "fg": "rgb(22,24,29)",
+     "bg": "rgb(246,247,250)",
+     "ratio": 16.58,
+     "px": 13,
+     "weight": 400,
+     "large": false,
+     "passAA": true,
+     "passUI": true
+    }
+   ]
+  },
+  "menus": {
+   "File": [
+    {
+     "label": "Open…",
+     "kbd": "⌘O",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Open Recent",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Open Next",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Open the next image file in the folder of the current image"
+    },
+    {
+     "label": "Open Previous",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Open the previous image file in the folder of the current image"
+    },
+    {
+     "label": "Open Sample",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "New…",
+     "kbd": "N",
+     "submenu": false,
+     "disabled": false,
+     "title": "Create a blank image (optionally pre-filled with a ramp, gradient, checkerboard, sine grating or noise)."
+    },
+    {
+     "label": "New from System Clipboard",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Open the image on the system clipboard as a new image (press ⌘V in the viewport when the browser cannot read it directly)"
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Save",
+     "kbd": "⌘S",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Save As…",
+     "kbd": "⇧⌘S",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Export",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Page Setup",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Print…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Print the current view with its name, size, calibration and a scale bar"
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Close",
+     "kbd": "⌘W",
+     "submenu": false,
+     "disabled": false,
+     "title": "Close the current image."
+    },
+    {
+     "label": "Close All",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Close every image."
+    },
+    {
+     "label": "New ▸ Internal Clipboard…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Open the internal clipboard (the pixels copied with Edit ▸ Copy / Cut) as a new image; a non-rectangular copy becomes its selection."
+    },
+    {
+     "label": "Open Recent…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Re-open one of the recently opened files (newest first)."
+    },
+    {
+     "label": "Revert",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Reload the image from disk, discarding all changes."
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Export",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Import",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "New",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Text",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    }
+   ],
+   "Edit": [
+    {
+     "label": "Undo",
+     "kbd": "⌘Z",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Redo",
+     "kbd": "⇧⌘Z",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Repeat Last Command",
+     "kbd": "⇧R",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Cut",
+     "kbd": "⌘X",
+     "submenu": false,
+     "disabled": true,
+     "title": "Copy the selection (all channels of the current plane) to the internal clipboard and clear it to the background value."
+    },
+    {
+     "label": "Copy",
+     "kbd": "⌘C",
+     "submenu": false,
+     "disabled": false,
+     "title": "Copy the selection's pixels (all channels of the current plane) to the internal clipboard."
+    },
+    {
+     "label": "Copy to System",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Copy the current view (or the selection's bounding box) to the system clipboard as PNG"
+    },
+    {
+     "label": "Paste",
+     "kbd": "⌘V",
+     "submenu": false,
+     "disabled": false,
+     "title": "Paste the clipboard into the current plane, at the selection (or centred)."
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Set Foreground Value…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Set only the foreground value (used by the value-picker tool); the background value is left unchanged."
+    },
+    {
+     "label": "Set Background Value…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Set only the background value (used by the value-picker tool with Alt); the foreground value is left unchanged."
+    },
+    {
+     "label": "Fill…",
+     "kbd": "F",
+     "submenu": false,
+     "disabled": true,
+     "title": "Fill the selection with the foreground value."
+    },
+    {
+     "label": "Clear",
+     "kbd": "",
+     "submenu": false,
+     "disabled": true,
+     "title": "Set the selection to the background value."
+    },
+    {
+     "label": "Clear Outside",
+     "kbd": "",
+     "submenu": false,
+     "disabled": true,
+     "title": "Set everything outside the selection to the background value."
+    },
+    {
+     "label": "Draw…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": true,
+     "title": "Burn the selection outline into the pixels."
+    },
+    {
+     "label": "Paste Control…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Set how Paste combines the clipboard with the image (ImageJ's Paste Control transfer modes)."
+    },
+    {
+     "label": "Paste (with transfer mode)…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Paste the clipboard into the current plane (at the selection, or centred) combining it with the pixels using the Paste Control transfer mode."
+    },
+    {
+     "label": "Invert",
+     "kbd": "⇧I",
+     "submenu": false,
+     "disabled": false,
+     "title": "Invert pixel values (range-aware)."
+    },
+    {
+     "label": "Paint Stroke…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Burn a brush stroke (polyline with round caps) into the current plane using the foreground value. Used by the brush tool."
+    },
+    {
+     "label": "Flood Fill…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Fill the connected region of similar pixels around a point with the foreground value (the bucket tool)."
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Selection",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Options",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    }
+   ],
+   "Image": [
+    {
+     "label": "Crop",
+     "kbd": "⇧X",
+     "submenu": false,
+     "disabled": true,
+     "title": "Crop the whole stack to the bounding box of the selection."
+    },
+    {
+     "label": "Duplicate…",
+     "kbd": "⇧D",
+     "submenu": false,
+     "disabled": false,
+     "title": "Copy the image (or the current plane / channel) into a new tab."
+    },
+    {
+     "label": "Scale…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Resize by factors (or to a target size) with interpolation; updates the calibration."
+    },
+    {
+     "label": "Rotate…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Rotate by an arbitrary angle (degrees, clockwise positive)."
+    },
+    {
+     "label": "Properties / Set Scale…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Set the spatial / temporal calibration of the image."
+    },
+    {
+     "label": "Set Scale from Line…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": true,
+     "title": "Calibrate using a line selection of known length."
+    },
+    {
+     "label": "Rename…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Rename the image tab."
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Type",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Adjust",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Color",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Stacks",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Hyperstacks",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Transform",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Lookup Tables",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Overlay",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Drawing",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Stacks/Tools",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    }
+   ],
+   "Process": [
+    {
+     "label": "Image Calculator…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Pixel-wise arithmetic between two images: result = image1 ⊕ image2."
+    },
+    {
+     "label": "Enhance Contrast…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Stretch the display range (or the pixel values) so a given fraction of pixels saturate; optionally equalize the histogram."
+    },
+    {
+     "label": "CLAHE (Local Contrast)…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Contrast-limited adaptive histogram equalization."
+    },
+    {
+     "label": "Subtract Background…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Rolling-ball (or sliding paraboloid / top-hat) background subtraction."
+    },
+    {
+     "label": "Smooth",
+     "kbd": "⇧S",
+     "submenu": false,
+     "disabled": false,
+     "title": "3×3 mean filter."
+    },
+    {
+     "label": "Sharpen",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "3×3 sharpening kernel."
+    },
+    {
+     "label": "Find Edges",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Sobel edge magnitude."
+    },
+    {
+     "label": "Laplacian of Gaussian…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Blob / edge detector: −σ²·∇²G."
+    },
+    {
+     "label": "Shadows…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Emboss-like relief with light coming from the chosen direction."
+    },
+    {
+     "label": "Retinex…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Multi-scale retinex with colour restoration (MSRCR) – compresses the dynamic range and enhances local contrast; grayscale images use plain multi-scale retinex (Fiji's Retinex)."
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Filters",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Binary",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Math",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Noise",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "FFT",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Batch",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    }
+   ],
+   "Analyze": [
+    {
+     "label": "Analyze Skeleton…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Fiji's Analyze Skeleton: tag the pixels of a binary skeleton (end points, slabs, junctions), trace its branches and report branches, junctions, end points and branch lengths per skeleton plus a Branches table; per plane (2D) or on the whole z-stack (3D)."
+    },
+    {
+     "label": "Skeleton Longest Shortest Path…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Binary mask of the longest shortest path of every skeleton (Fiji's Analyze Skeleton 'longest shortest path': the longest of all shortest vertex-to-vertex paths); the Results and Branches tables are filled as by Analyze Skeleton."
+    },
+    {
+     "label": "Colocalization (Costes)…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Coloc 2-style colocalization of two channels within the selection: Costes automatic thresholds (orthogonal regression), Pearson (whole and above thresholds), thresholded Manders tM1/tM2, Spearman and the Costes block-scrambling significance test."
+    },
+    {
+     "label": "Measure",
+     "kbd": "M",
+     "submenu": false,
+     "disabled": false,
+     "title": "Measure the selection (or the whole plane) and append a row to the Results table (on the 'Redirect to' image of Set Measurements when one is set)."
+    },
+    {
+     "label": "Measure Stack…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Measure the selection on every slice / frame of the current channel."
+    },
+    {
+     "label": "Set Measurements…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Choose which columns Measure and Analyze Particles report, and how coordinates and labels are reported."
+    },
+    {
+     "label": "Clear Results",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Empty the Results table."
+    },
+    {
+     "label": "Analyze Particles…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Find connected objects in a binary (or thresholded) image, filter them by size and circularity, measure them, and add outlines to the ROI manager."
+    },
+    {
+     "label": "Histogram…",
+     "kbd": "H",
+     "submenu": false,
+     "disabled": false,
+     "title": "Histogram of the current plane (or selection) with statistics – ImageJ's Histogram dialog: bins, fixed X range, fixed Y max, log scale, stack histogram, list to Results."
+    },
+    {
+     "label": "Plot Profile…",
+     "kbd": "K",
+     "submenu": false,
+     "disabled": true,
+     "title": "Intensity profile along a line, or column/row averages of a rectangle."
+    },
+    {
+     "label": "Find Maxima…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Local maxima with a prominence (noise tolerance) criterion, like ImageJ's Find Maxima."
+    },
+    {
+     "label": "Summarize Results…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Mean, SD, min and max of every numeric Results column (optionally per group of a label column)."
+    },
+    {
+     "label": "Measure Labels…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Measure every object of a label image (as produced by Label Connected Components)."
+    },
+    {
+     "label": "Colocalization (2 channels)…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Pearson, Spearman and Manders coefficients between two channels (within the selection)."
+    },
+    {
+     "label": "Distribution…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Histogram of a Results-table column (ImageJ Analyze ▸ Distribution: automatic binning or a fixed number of bins and range)."
+    },
+    {
+     "label": "Calibrate (intensity)…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Fit a function mapping pixel values to known standards (density calibration); Measure Calibrated then reports calibrated Mean/Min/Max."
+    },
+    {
+     "label": "Calibrated Values (32-bit)",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "New 32-bit image whose pixels are the calibrated values (after Analyze ▸ Calibrate) of this image."
+    },
+    {
+     "label": "Measure (calibrated values)",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Measure like Measure, but with Mean / StdDev / Min / Max / Median / Mode / IntDen (and Skew, Kurt, XM, YM) computed from the calibrated pixel values (Analyze ▸ Calibrate); RawIntDen stays raw, like ImageJ."
+    },
+    {
+     "label": "Angle",
+     "kbd": "",
+     "submenu": false,
+     "disabled": true,
+     "title": "Angle of a line selection (degrees, counter-clockwise), or the angle at the vertex of a 3-point segmented line (the angle tool)."
+    },
+    {
+     "label": "Curve Fitting…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Least-squares fit of x/y data (two Results columns, the last plot, or typed values) to a line, polynomial, exponential, power, log, Gaussian, error function, sigmoid, Rodbard, rational, Michaelis-Menten … or a user-defined equation (ImageJ CurveFitter parity)."
+    },
+    {
+     "label": "Fractal Box Count…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Box-counting fractal dimension of the binary (or thresholded) current plane: slope of log(count) vs log(1/size)."
+    },
+    {
+     "label": "Surface Plot…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "3-D surface rendering of the current plane (or the selection) as a new RGB image."
+    },
+    {
+     "label": "Stack Histogram…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Histogram (and statistics) of every slice and frame of the current channel, within the selection."
+    },
+    {
+     "label": "Multi Measure (ROI Manager)…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Measure every ROI of the ROI Manager on every slice / frame of the current channel (ROI Manager ▸ Multi Measure)."
+    },
+    {
+     "label": "Labels… (ROI names / values as overlay)…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Add a text overlay item to every ROI-Manager ROI (or the selection, or every ROI-shaped overlay item) showing its index, name, a measurement or the pixel value, with ImageJ's Overlay ▸ Labels… options (use names, font size, bold, colour, background, centroid / bounding box). Labels of ROIs pinned to a plane stay on that plane."
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Gels",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Tools",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    }
+   ],
+   "Plugins": [
+    {
+     "label": "Batch",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Registration",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Scripting",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Segmentation",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Tracking",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Shortcuts",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Utilities",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "3D",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Bio-Formats",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Feature Extraction",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Macros",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "MorphoLibJ",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Time Lapse",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Tools",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    }
+   ],
+   "View": [
+    {
+     "label": "Command Palette",
+     "kbd": "⌘K",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Toggle Inspector",
+     "kbd": "⌘\\",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Toggle Theme",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Zoom In",
+     "kbd": "+",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Zoom Out",
+     "kbd": "−",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Fit to Window",
+     "kbd": "0",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Actual Size (100%)",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Zoom to Selection",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Synchronize Views",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Split View (Compare Two Images)",
+     "kbd": "⇧⌘\\",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Show Overlay",
+     "kbd": "⇧O",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Show Track Labels",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Show Future Track Points",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Show ROI Manager overlay",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    }
+   ],
+   "Help": [
+    {
+     "label": "Keyboard Shortcuts",
+     "kbd": "?",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Lumen README",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Command Reference",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Fiji Parity",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Design & Research Notes",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "ImageJ Website ↗",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "https://imagej.net/ij/"
+    },
+    {
+     "label": "ImageJ User Guide ↗",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "https://imagej.net/ij/docs/guide/"
+    },
+    {
+     "label": "Fiji Wiki ↗",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "https://imagej.net/software/fiji/"
+    },
+    {
+     "label": "image.sc Forum ↗",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "https://forum.image.sc/"
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "About Plugins",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "List every loaded command module (built-in and ~/.lumen/plugins) with its command count, plus modules that failed to import."
+    },
+    {
+     "label": "About Lumen",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Lumen / ImageJ Links",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "A table of documentation links for Lumen, ImageJ, Fiji and the Python imaging stack."
+    },
+    {
+     "label": "Command Help…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Describe a command: its id, menu, kind, shortcut and a table of its parameters with types, defaults and choices."
+    },
+    {
+     "label": "Check for Updates…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Compare the running Lumen version with the source tree's pyproject.toml and, when the network is allowed, with the latest lumen-imaging release on PyPI. Nothing is installed: upgrade with `pip install -U lumen-imaging` (or `git pull` in a checkout)."
+    },
+    {
+     "label": "Update Lumen…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Update the running Lumen in place: `git pull --ff-only` in a git checkout, `python -m pip install --upgrade lumen-imaging` for a package install (a plain source folder without git cannot be updated automatically). The command's output goes to the Log and an 'Update' table. The server is never restarted – restart `lumen` afterwards to run the new version (ImageJ's Help ▸ Update ImageJ… / Fiji's Update…)."
+    }
+   ]
+  },
+  "sections": {
+   "titles": [
+    "Display",
+    "Threshold",
+    "Workflows",
+    "3-D View",
+    "Orthogonal Views",
+    "ROI Manager",
+    "Pixel Classifier",
+    "Results",
+    "Image Info",
+    "History",
+    "Script & Recorder",
+    "Log"
+   ],
+   "open": [
+    "Display",
+    "3-D View",
+    "ROI Manager",
+    "Results"
+   ]
+  },
+  "hint:Display": [
+   "Display changes never modify pixel values. Use Apply LUT / RGB Color to bake them in."
+  ],
+  "hint:Threshold": [
+   "Red pixels are inside the range. Drag the handles, or pick a method and press Auto. Local (adaptive) methods: ⌘K → “Auto Local Threshold”."
+  ],
+  "hint:3-D View": [
+   "256 × 256 × 60 voxels · z/xy 1.12 · Drag to orbit, wheel to zoom, ⇧-drag / right-drag to pan, double-click to reset."
+  ],
+  "hint:Orthogonal Views": [
+   "Sections through the image centre; draw a point or area selection to move them. Click or drag in a section to change the current slice. Z is"
+  ],
+  "hint:ROI Manager": [
+   "Click to select, ⇧/⌘-click for multiple, double-click to rename. Selecting a ROI jumps to its slice."
+  ],
+  "hint:Pixel Classifier": [
+   "Traces are ROI-manager entries named class:<name> on the plane they were drawn on. Weka loop: trace → Train → look at the overlay → add trac"
+  ],
+  "hint:History": [
+   "No changes yet. Every applied command can be undone."
+  ],
+  "inspector_scroll": {
+   "scrollHeight": 5668,
+   "clientHeight": 796,
+   "viewport": {
+    "width": 1440,
+    "height": 900
+   }
+  },
+  "prefs": {
+   "groups": [
+    "APPEARANCE",
+    "FONTS",
+    "POINTS",
+    "ARROWS",
+    "COLOURS",
+    "PLOTS",
+    "SAVING & EDITING",
+    "DICOM",
+    "ADVANCED"
+   ],
+   "rows": 28,
+   "active": {
+    "tag": "div",
+    "cls": "dialog prefs",
+    "role": null,
+    "name": "Preferencessaved on the server as you ch",
+    "region": "modal",
+    "outline": "none",
+    "visible": true
+   }
+  },
+  "help_overlay": {
+   "chars": 1659,
+   "has_cmdk": true,
+   "has_cmdw": false,
+   "head": "Keyboard shortcuts\nLumen keeps ImageJ's single-letter command shortcuts and adds a command palette for everything else.\nGENERAL\nCommand palette\n⌘K\nOpen file\n⌘O\nSave / Save as\n⌘S / ⇧⌘S\nUndo / Redo\n⌘Z / ⇧⌘Z\nRepeat last command\n⇧R\nPreferences\n⌘,\nToggle inspector\n⌘\\\nSplit view\n⇧⌘\\\nPrint\n⌘P\nScript editor"
+  }
+ },
+ "console": []
+}

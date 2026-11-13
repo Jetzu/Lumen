@@ -1,0 +1,268 @@
+{
+  "evaluator": "E7 – Claude (Anthropic, Opus family), persona: image-analysis specialist in a bioimaging core facility who writes Fiji macros and Python every day, cares about reproducibility, provenance and ImageJ-identical results, and has used napari, QuPath and Icy",
+  "method": "Heuristic evaluation (Nielsen's 10 plus reproducibility, provenance/undo depth, batch/scripting reach, large-data handling, accessibility), using a scripted walkthrough. Tooling: one persistent headless Google Chrome (Playwright, channel=chrome, 1440×900, host locale) driving the running server at http://127.0.0.1:8766. After each step I inspected the DOM/ARIA (roles, names, aria-expanded/pressed, focus), computed WCAG contrast ratios, read the History, Log and Script & Recorder text, and took screenshots (≈70, under eval_e7/). Clean start: Close All, ROI Manager and Results cleared, page reloaded. Tasks walked: Open Sample via palette → 3-channel synthetic cells, per-channel min/max/Auto/hide/LUT; Otsu threshold → Analyze Particles; rectangle + M; T1 head → Z Project; LUTs via menu, palette and inspector; Gaussian Blur with preview → apply → ⌘Z, multi-step undo, History jump, persistence after reload; New Image (20 frames) → Tracks panel and wizard (detection, step 2); palette search for CLAHE and other Fiji names; Preferences, '?' overlay, script editor '[', Python and ImageJ-macro scripts, recorder → Python, API help, error cases; colour picker ⇧K; split view ⇧⌘\\; 3-D View section and large view; Save As to TIFF plus a dump of the TIFF tags; closing a modified image and Close All; keyboard-only menubar (F10, arrows, submenus, type-ahead, Home/End, Esc); selection-requiring commands without a selection (K, Crop); out-of-range parameter values; brush '[' conflict; light theme. Not covered: a real screen reader, truly large data (the server is shared, so only a 20000×512 image and the virtual-stack preferences were checked), and real tracking data (noise was used, as briefed). The browser was closed afterwards and ps showed none of my Chrome processes remaining.",
+  "problems": [
+    {
+      "id": "E7-1",
+      "heuristic": "Reproducibility (recorder fidelity) / Error prevention",
+      "location": "Script & Recorder section (inspector) – recorded lines after switching image tabs",
+      "observation": "Switching the active image by clicking a tab is not recorded, and lumen.run(\"file.close\") lines carry no image identifier. Sequence I performed: file.new 'timeseries' → detect spots → closed blobs.tif → clicked the MAX_t1-head.tif tab → Invert, Smooth, Smooth, Median, Subtract Background. Recorder shows: file.new(...timeseries...), tracking.detect_spots(...), file.close, selection.none, edit.invert, process.smooth ×2, filters.median, process.subtract_background – nothing selects MAX_t1-head. Replaying this (or 'Apply Recorded Macro to Folder') runs the filters on whatever image happens to be active, i.e. silently on the wrong image. Fiji records selectImage()/selectWindow() and close(\"title\").",
+      "severity": 4,
+      "evidence": "58_history_multi.png ; 41_recorder_to_python.png"
+    },
+    {
+      "id": "E7-2",
+      "heuristic": "Reproducibility / Provenance",
+      "location": "Edit ▸ Undo (⌘Z) vs. Script & Recorder",
+      "observation": "Undo is not recorded. I applied Gaussian Blur σ=5 to MAX_t1-head.tif and undid it (toast 'Undo Gaussian Blur', History shows a redo entry), but the recorder still ends with lumen.run(\"filters.gaussian\", sigma=5.0, scope='slice'). The same happens after jumping back in History (four steps undone, all four still recorded). The recorded script therefore does not reproduce the image the user ends up with.",
+      "severity": 3,
+      "evidence": "27_gauss_undone.png ; 59_history_jump.png"
+    },
+    {
+      "id": "E7-3",
+      "heuristic": "Reproducibility / Consistency",
+      "location": "Inspector ▸ Display (per-channel min/max fields, Auto, Inv, LUT dropdown, eye toggle) vs. Image ▸ Lookup Tables ▸ Apply LUT…",
+      "observation": "Display changes made in the inspector are recorded nowhere: typing DAPI max = 1500, Auto on Cytoplasm, hiding Spots and choosing 'Viridis' in the LUT dropdown left the recorder and History untouched. Choosing 'Fire' through the Image ▸ Lookup Tables ▸ Apply LUT… sheet *is* recorded as color.lut(lut='Fire'). Same visual action, two different provenance outcomes. Fiji records setMinAndMax()/run(\"Fire\") so figure appearance is reproducible.",
+      "severity": 3,
+      "evidence": "08_channels_adjusted.png ; 22_lut_fire_applied.png"
+    },
+    {
+      "id": "E7-4",
+      "heuristic": "Reproducibility / Visibility of system status",
+      "location": "Script & Recorder ▸ Recorder pane and '→ Python' / '→ JavaScript'",
+      "observation": "The recorder is one global, server-persisted log rather than a per-session or per-image record. After a page reload and closing all images it already held about 65 lines from earlier sessions (file.close ×8, samples, gaussians I never ran). '→ Python' put 104 lines in the editor, mostly other people's steps. There is no session marker, no timestamps, and the pane does not auto-scroll to the newest line, so you can't tell where your own work starts. Commands run from Python scripts aren't recorded, but ImageJ-macro runs are (as one script.run_ij_macro blob).",
+      "severity": 3,
+      "evidence": "10_recorder_section.png ; 41_recorder_to_python.png"
+    },
+    {
+      "id": "E7-5",
+      "heuristic": "Error prevention / Reproducibility (batch reach)",
+      "location": "Plugins ▸ Batch ▸ Apply Recorded Macro to Folder… sheet",
+      "observation": "The sheet says it runs 'the commands recorded so far (minus open/save/sample lines)' on every file, but it never shows those commands. With the global recorder (E7-4), un-recorded undos (E7-2) and missing image targeting (E7-1), a folder batch would apply undone and foreign steps (other users' gaussians, file.close, file.new…) to every input file. A preview or editable list is needed before Apply.",
+      "severity": 3,
+      "evidence": "65_apply_recorded_macro_folder.png"
+    },
+    {
+      "id": "E7-6",
+      "heuristic": "Error prevention / User control and freedom",
+      "location": "Inspector ▸ ROI Manager ▸ Clear and Inspector ▸ Results ▸ Clear",
+      "observation": "Clear deleted all 41 ROIs and, separately, all 43 result rows at once. There was no confirmation, ⌘Z restored nothing (tested with an image open) and neither action was recorded. Fiji asks 'Delete all items on the list?' and offers to save unsaved measurements, and it records roiManager(\"reset\")/run(\"Clear Results\").",
+      "severity": 3,
+      "evidence": "03_roi_clear.png ; 71_roi_clear_undo.png"
+    },
+    {
+      "id": "E7-7",
+      "heuristic": "Error prevention / Visibility of system status / Match with Fiji",
+      "location": "Operation sheets with numeric limits (Process ▸ Filters ▸ Gaussian Blur 'Sigma 0–200'; File ▸ New 'Width 1–20000')",
+      "observation": "Out-of-range values are silently clamped. I typed sigma = 500: the field is HTML-invalid but has no inline error and Apply stays enabled. The blur ran with sigma = 200, which you only find out from the recorder line filters.gaussian(sigma=200.0). New Image width 30000 opened a 20000×512 image without a message. Changing an analysis parameter behind the user's back is a correctness risk, and Fiji accepts sigma = 500.",
+      "severity": 3,
+      "evidence": "63_sigma_500.png ; 60_new_width_30000.png ; 61_new_width_30000_apply.png"
+    },
+    {
+      "id": "E7-8",
+      "heuristic": "Error prevention (scripting API) / Help users recognize errors",
+      "location": "Script & Recorder editor, Python",
+      "observation": "lumen.run(\"filters.gaussian\", sigmaa=1.0) (typo) ran without error or warning, presumably with the default sigma, and the script continued ('after' printed; History gained a second indistinguishable 'Gaussian Blur'). An unknown command id produces a raw server traceback with internal paths (/Users/…/lumen/core/registry.py …) and no 'did you mean filters.gaussian?'. A Python API should reject unknown kwargs.",
+      "severity": 3,
+      "evidence": "43_script_error.png ; 44_script_unknown_cmd.png"
+    },
+    {
+      "id": "E7-9",
+      "heuristic": "Consistency and standards / Match with Fiji",
+      "location": "Image ▸ Lookup Tables submenu and ⌘K palette ('apply lut')",
+      "observation": "Two different commands are both called 'Apply LUT…'. The first only changes the channel's LUT (non-destructive). The second bakes the display range into the pixels (destructive, ImageJ semantics). The palette lists them as two identical names. The submenu doesn't list the LUTs themselves (Fiji: Image ▸ Lookup Tables ▸ Fire), and the first sheet doesn't preview the LUT before Run, unlike other sheets. A Fiji user who wants a LUT can easily pick the destructive one, and the reverse.",
+      "severity": 3,
+      "evidence": "19_lut_menu.png ; 23_palette_apply_lut.png ; 21_lut_fire_before_run.png"
+    },
+    {
+      "id": "E7-10",
+      "heuristic": "Match between system and the real world / Recognition rather than recall",
+      "location": "Command palette (⌘K)",
+      "observation": "The palette doesn't know Fiji's own names. 'enhance local contrast' (Fiji: Process ▸ Enhance Local Contrast (CLAHE)) does not find CLAHE, which only shows up for 'clahe'/'local contrast', even though the in-app Fiji-parity map contains exactly this mapping. 'bleach' (Bleach Correction) returns only web-search rows. The exact query 'Open Sample' ranks 'Open ImageJ Sample…' first, and the header says '4 RESULTS' while the footer says '6 of 493'. Fuzzy noise appears too: 'clahe' → Colocalization, Marker-controlled Watershed.",
+      "severity": 2,
+      "evidence": "37_palette_clahe.png ; 05_palette_open_sample.png"
+    },
+    {
+      "id": "E7-11",
+      "heuristic": "Visibility of system status / Reproducibility",
+      "location": "Inspector ▸ Threshold, Analyze Particles, Measure on a 3-channel composite (synthetic_cells.tif)",
+      "observation": "Nothing tells you which channel the threshold histogram, Analyze Particles or Measure act on (it was DAPI, the current channel). Result rows carry no channel. The recorded threshold.compute(method='Otsu', dark_background=True) has no channel argument and no channel switch is recorded, so replay depends on hidden UI state.",
+      "severity": 2,
+      "evidence": "12_threshold_otsu.png ; 14_particles_result.png"
+    },
+    {
+      "id": "E7-12",
+      "heuristic": "Aesthetic and minimalist design / Consistency / Accessibility (contrast)",
+      "location": "Top menubar (File … Help)",
+      "observation": "The menubar CSS targets '.menubar > .menu-trigger', but every trigger is wrapped in a <div style='position:relative'>, so the rule never applies. The triggers render as default browser buttons: grey rgb(107,107,107) blocks in dark theme and bordered grey buttons in light theme. There is no hover or open state, so the open menu's trigger looks like all the others, and text contrast is 4.43:1, below the 4.5:1 AA threshold.",
+      "severity": 2,
+      "evidence": "00_initial.png ; 53_kbd_menu_open.png ; 69_light_theme.png"
+    },
+    {
+      "id": "E7-13",
+      "heuristic": "Consistency / Aesthetic and minimalist design",
+      "location": "File menu; channel LUT dropdowns",
+      "observation": "The File menu has duplicates and mixed hierarchy: 'Open Recent' (submenu) and 'Open Recent…', 'Export' twice, 'New…' plus a 'New' submenu plus a flattened 'New ▸ Internal Clipboard…'. The 60-entry LUT dropdown is unsorted and ungrouped, with near-duplicates (Viridis/mpl-viridis, Magma/mpl-magma, Cool/cool, Thal/Thallium).",
+      "severity": 2,
+      "evidence": "01_file_menu.png"
+    },
+    {
+      "id": "E7-14",
+      "heuristic": "Flexibility and efficiency of use",
+      "location": "Inspector ▸ Script & Recorder editor",
+      "observation": "For someone who writes macros every day, the editor is a 283×147 px plain textarea inside the inspector: no syntax highlighting, completion or tabs. The language select is truncated to 'Pyth'/'Ima', the filename field to 'u.', and the 'Recorder' label is clipped by the copy icon. On focus the textarea scrolled horizontally and hid the start of the lines. You can widen it with the inspector splitter, but the splitter is an invisible 9 px strip, mouse-only. The recorder can't output ImageJ macro language (only '→ Python' / '→ JavaScript'), although IJM runs in the same editor.",
+      "severity": 3,
+      "evidence": "40_script_editor.png ; 10_recorder_section.png ; 50_inspector_widened.png"
+    },
+    {
+      "id": "E7-15",
+      "heuristic": "User control and freedom",
+      "location": "Script & Recorder ▸ '→ Python', '→ JavaScript', 'API help'",
+      "observation": "These buttons replace the editor's whole content without asking. My script was overwritten by 104 recorder lines, and then again by the 2-line API-help snippet. ⌘Z in the editor did not bring the old text back.",
+      "severity": 2,
+      "evidence": "41_recorder_to_python.png"
+    },
+    {
+      "id": "E7-16",
+      "heuristic": "Provenance / undo depth",
+      "location": "Inspector ▸ History; saved TIFF; Image Info",
+      "observation": "Undo depth is good, but provenance is thin. History shows only command names: two 'Gaussian Blur' entries (σ=1 and the typo run) look identical, and the tooltip says only 'Undo back to before “Gaussian Blur”', with no parameters. History rows are DIVs with tabIndex -1 and no role, so keyboard users can't reach them. The history is never exported: the saved saved_max_t1.tif contains only IJ metadata (ImageDescription 'ImageJ=1.11a … min=1.0 max=42436.0', LUT, ranges). It has no processing log, no source file (t1-head.tif → Z Project), and the ImageJ version string is misleading. Image Info lists 'Path' but not where the image came from.",
+      "severity": 2,
+      "evidence": "26_gauss_applied_history.png ; 59_history_jump.png ; saved_max_t1.tif"
+    },
+    {
+      "id": "E7-17",
+      "heuristic": "Consistency / Match with Fiji (macro parity)",
+      "location": "File ▸ Save As… then tab title, Image Info, getTitle()",
+      "observation": "After saving MAX_t1-head.tif as saved_max_t1.tif, the tab, Image Info 'Name' and the macro's getTitle() all still say 'MAX_t1-head.tif', while Image Info 'Path' points to saved_max_t1.tif. Fiji renames the window on Save As, so macros that use getTitle() after saving behave differently.",
+      "severity": 2,
+      "evidence": "66_ijm_run.png"
+    },
+    {
+      "id": "E7-18",
+      "heuristic": "Consistency / Error prevention / Help users recover from errors",
+      "location": "⌘K palette vs. menubar for selection-dependent commands (Crop, Plot Profile)",
+      "observation": "With no selection, Image ▸ Crop is greyed out in the menu, but the palette offers it as enabled, and the in-app command reference claims such commands are greyed out. Running it gives the toast 'Crop needs a area selection' (sic). 'Plot Profile needs a selection' doesn't say which kind (line/rectangle) or which tool key to use.",
+      "severity": 2,
+      "evidence": "56_palette_crop_nosel.png ; 57_crop_nosel_result.png ; 55_plot_profile_no_sel.png"
+    },
+    {
+      "id": "E7-19",
+      "heuristic": "Accessibility (ARIA / keyboard)",
+      "location": "Statusbar; Display section controls; inspector splitter; large 3-D view",
+      "observation": "The statusbar is role=status aria-live=polite and contains the cursor x/y/value readout, which updates on every mouse move, so a screen reader would announce constantly. Each channel's sliders are just 'Range minimum'/'Range maximum' with no channel name, and aria-valuenow exposes floats such as 3068.599999999999. Eye toggles have only title='Hide channel' with no aria-pressed or channel name, and the min/max number inputs and the script filename input are unlabelled. The inspector splitter (role=separator) can't be focused. The 'Open in a large view' 3-D overlay isn't a dialog and doesn't take focus (Esc does close it).",
+      "severity": 2,
+      "evidence": "08_channels_adjusted.png ; 48_3d_expanded.png"
+    },
+    {
+      "id": "E7-20",
+      "heuristic": "Help and documentation",
+      "location": "Sheet header '?' button; '?' overlay",
+      "observation": "The sheet's '?' opens the command reference scrolled to the row, but that row lists only parameter names: no meaning, defaults, units or ImageJ-macro equivalent. The same dialog exposes internal 'Design' and 'Research' documents. The '?' key overlay is only a shortcut list. There is no conceptual help, for example on what 'Composite rois' or 'scope' mean.",
+      "severity": 2,
+      "evidence": "67_sheet_help.png ; 39_help_overlay.png"
+    },
+    {
+      "id": "E7-21",
+      "heuristic": "Error prevention / deployment fit (facility server)",
+      "location": "Server-side shared state: ROI Manager, Results, Preferences ('saved on the server'), Save/Open dialog",
+      "observation": "On my 'clean start' (fresh page, all images closed), the ROI Manager still held 41 ROIs and Results 43 rows from an earlier session, attached to no open image. Preferences are stored on the server for everyone. The Save dialog opens on the server's source directory (/Users/…/Coding/Lumen) and lets you browse Home/Desktop/Documents, and Python scripts are exec()'d on the server. On a shared facility server, users would see, overwrite and run code in each other's environment. Fine for one person on a laptop, risky for my use case.",
+      "severity": 3,
+      "evidence": "02_after_close_all.png ; 64_save_as.png ; 38_preferences.png"
+    },
+    {
+      "id": "E7-22",
+      "heuristic": "Visibility of system status",
+      "location": "Split view (⇧⌘\\) compare pane",
+      "observation": "The compare pane opens synthetic_cells.tif at its own 149% zoom instead of fitting the half-width pane, so the image is offset and cropped (left ~150 px empty, right side cut off).",
+      "severity": 1,
+      "evidence": "46_split_view.png"
+    },
+    {
+      "id": "E7-23",
+      "heuristic": "Consistency / Error prevention (shortcuts)",
+      "location": "Keyboard: '[' key",
+      "observation": "The help overlay lists '[' as 'Script editor' and '[ / ]' as 'Brush size' without saying it depends on the tool. With the brush active, '[' changed the size from 10 to 9 instead of opening the editor.",
+      "severity": 1,
+      "evidence": "39_help_overlay.png ; 70_brush_bracket.png"
+    },
+    {
+      "id": "E7-24",
+      "heuristic": "Consistency / Visibility (Tracks wizard)",
+      "location": "Inspector ▸ Tracks ▸ Wizard (time series created with New Image, 20 frames)",
+      "observation": "Step 1 reports '1 spots in 1 frame (quality ≥ 85.96)' (grammar), step 2 says 'Quality ≥ 92.42 … median 92.42' for the same detection. The detected spot is not drawn on frame 1, and the seven-step wizard is squeezed into the ~330 px inspector next to unrelated sections.",
+      "severity": 1,
+      "evidence": "35_tracks_detect.png ; 36_tracks_step2.png"
+    },
+    {
+      "id": "E7-25",
+      "heuristic": "Match with Fiji (dialog details)",
+      "location": "Image ▸ Stacks ▸ Z Project sheet; Gaussian Blur sheet",
+      "observation": "Z Project shows Stop = 0 with the hint '0 = last slice' instead of the real slice count (Fiji shows 10). Gaussian Blur lacks Fiji's 'Scaled units (microns)' option, so you can't enter sigma in calibrated units the way existing macros do.",
+      "severity": 1,
+      "evidence": "17_zproject_sheet.png ; 24_gauss_sheet.png"
+    },
+    {
+      "id": "E7-26",
+      "heuristic": "Consistency (number formatting)",
+      "location": "Number inputs (Tracks wizard Spot radius, Preferences Selection stroke, threshold value)",
+      "observation": "Number inputs follow the browser locale ('2,5', '1,5', '92,424'), while Results, the recorder and the statusbar use '.', so the same screen mixes decimal separators.",
+      "severity": 1,
+      "evidence": "34_tracks_wizard.png ; 38_preferences.png"
+    },
+    {
+      "id": "E7-27",
+      "heuristic": "Aesthetic and minimalist design (layout stability)",
+      "location": "Tool rail → tool-options bar above the viewport",
+      "observation": "Choosing a drawing tool inserts a ~30 px options bar above the canvas and pushes the image down (compare the image top in 14 and 16), so the click target moves right after switching tools.",
+      "severity": 1,
+      "evidence": "14_particles_result.png ; 16_rect_drawn.png"
+    }
+  ],
+  "positives": [
+    "Dialogs feel familiar to a Fiji user. Analyze Particles has the full IJ option set (Show, Exclude on edges, Include holes, Record starts, In situ show, Composite ROIs, 'Measure intensities on' redirect), Z Project names its output MAX_<title>, and Particle Summary has Count/Total Area/Average Size/%Area/Mean.",
+    "The recorder writes explicit keyword-argument calls with every parameter (analyze.particles with 17 kwargs, analyze.measure with the ROI geometry, selection.none), which is more readable than macro option strings.",
+    "ImageJ macro language really runs in the editor: getTitle(), run(\"Gaussian Blur...\", \"sigma=2\"), setAutoThreshold(\"Otsu dark\"), run(\"Measure\"), nResults and getResult() all worked. Python is available too, with lumen.commands()/lumen.help() for discovery.",
+    "Per-image multi-level undo with a visible History, click-to-jump, redo entries and persistence across a browser reload, plus an 'Undo Gaussian Blur' toast and a modified dot on tabs.",
+    "Live preview is on by default and shows a 'preview' badge on the canvas. Repeat last command (⇧R) works.",
+    "Closing a modified image asks first, with Cancel focused by default, a Save… option and an explicit 'Close without saving'. Close All collapses into one dialog ('Close 4 images?') that names the unsaved image.",
+    "The command palette is a real ARIA combobox (aria-activedescendant, listbox). Rows show the menu path and a one-line description, and it falls back to an imagej.net / image.sc search when nothing matches.",
+    "The menubar works fully from the keyboard: F10, roving tabindex, ←/→ between menus, ↓ to open, → into submenus, type-ahead letters, Home/End, and Esc closing one level at a time and returning focus to the trigger. Dialogs are aria-modal with a working focus trap, toasts use role=alert, and the tool rail is role=toolbar with aria-pressed.",
+    "The statusbar shows calibrated coordinates and all channel values of a composite at once (value=2378, 845, 280), plus a memory indicator. Contrast of muted text in dark theme is 5.5–7.2:1.",
+    "Channel handling is good: Composite/Color/Gray modes, a histogram per channel with draggable and keyboard-operable range handles, numeric min/max, Auto/Reset/Inv per channel, 'Same range for all', and channel chips under the viewport that stay in sync with the inspector.",
+    "3-D rendering (MIP/Alpha/Iso/Mesh, cut/gain, landmarks) is available inline and in a large view, with no plugin install. Orthogonal Views, a TrackMate-style Tracks wizard (LoG/DoG detection, TrackMate XML import/export, feature tables) and guided Workflows ('Count nuclei', 'Measure intensity per cell', …) are built in.",
+    "Batch reach exists: Process Folder (Python), Batch Measure, Apply Pixel Classifier to Folder, plus preferences for virtual stacks and plane cache.",
+    "Error feedback for missing selections is immediate and non-modal (toast), and the menubar greys out Crop when there is no area selection.",
+    "The Save dialog says what is preserved ('calibration, LUTs and display ranges') and writes ImageJ-hyperstack TIFFs that carry IJ metadata (LUT, ranges)."
+  ],
+  "comparison": {
+    "better_than_fiji": [
+      "The command palette with descriptions and menu paths beats Fiji's Command Finder and the nested menus for discoverability.",
+      "Multi-level visual undo and History, persistent across reloads, against Fiji's single-level undo.",
+      "Consistent live preview with an on-canvas badge, and a single tabbed window with split-view compare instead of floating AWT windows.",
+      "Recorder output is explicit kwargs with complete parameters and ROI geometry, which is easier to read than Fiji's option strings.",
+      "Keyboard and ARIA support (menubar, palette, dialogs, toolbar) is far better than Fiji's AWT/Swing for assistive technology.",
+      "3-D view, TrackMate-like tracking, pixel classifier and guided workflows are all there without update sites. Python and IJM run in one editor without Jython quirks."
+    ],
+    "worse_than_fiji": [
+      "Recorder fidelity, the core of reproducibility, is worse. Image switches (selectImage/selectWindow) are not recorded, file.close has no target, undo is not recorded, inspector display/LUT changes are not recorded (Fiji records setMinAndMax/LUT), ROI Manager reset and Clear Results are not recorded, and the log is global across sessions instead of local.",
+      "The recorder can't emit ImageJ macro language, only Python/JS, so recorded steps can't be pasted into existing .ijm pipelines.",
+      "ROI Manager and Results can be wiped without confirmation or undo. Fiji confirms 'Delete all items' and offers to save results.",
+      "Parameters are silently clamped (sigma 500 runs as 200) and the Python API silently ignores misspelled kwargs, where Fiji accepts sigma 500.",
+      "Fiji vocabulary doesn't carry over. 'Enhance Local Contrast' can't be found, Lookup Tables doesn't list the LUTs, two different commands are named 'Apply LUT…', Bleach Correction is missing, and Save As keeps the old title, so getTitle() differs from Fiji.",
+      "The script editor is far weaker than Fiji's: no syntax highlighting, completion, tabs or separate window, and only 283×147 px by default.",
+      "No plugin ecosystem or update sites. Fiji's breadth (≈1000+ commands plus update sites) against 493 here."
+    ],
+    "vs_napari": [
+      "Better than napari: a full ImageJ-style operations library with parameter sheets and preview out of the box (napari needs plugins for thresholding, particle analysis, measurements), plus a native ROI Manager, Results table and Particle Summary.",
+      "Better than napari: a built-in recorder → script path and an IJM interpreter. napari has no action recorder, so reproducibility relies on the user writing code.",
+      "Better than napari: no Python environment to manage, since it runs in a browser against a server. Per-channel contrast with Auto/Reset and Fiji LUTs is quicker than napari's layer controls.",
+      "Worse than napari: napari's in-process console gives the live viewer and numpy arrays, and works in Jupyter. Lumen's Python runs remotely through lumen.run('<string id>') in a small textarea, which is harder to combine with my own notebooks.",
+      "Worse than napari: napari's layer model (image/labels/points/shapes/tracks layers with properties) keeps derived data attached to its source and visible as layers. Lumen's ROI Manager and Results are global and outlived the images they came from.",
+      "Worse than napari: in napari 3-D is a first-class viewer mode (ndisplay=3) for every layer. In Lumen it is a separate small panel or overlay, apart from the 2-D viewport and its ROIs.",
+      "Not verified: napari's lazy dask/zarr handling for very large data. Lumen offers virtual-stack thresholds and a memory monitor, but I couldn't stress-test on the shared server."
+    ]
+  },
+  "overall": "As an interactive Fiji replacement, Lumen is impressive and pleasant. The palette, multi-step persistent undo, live previews, ImageJ-faithful dialogs, a working IJM interpreter, keyboard-accessible menus and built-in 3-D and tracking make day-to-day exploration faster than in Fiji, and much more batteries-included than napari. For my facility persona, though, it fails the property I care about most: the recorded script is not a faithful account of what I did. Tab switches and close targets are missing, so replay can process the wrong image (severity 4). Undos and inspector display/LUT changes are not recorded. The log is global across sessions and users, and 'Apply Recorded Macro to Folder' would batch that log blindly. Add silent parameter clamping (sigma 500 → 200), a Python API that swallows misspelled kwargs, irreversible unconfirmed clears of ROI Manager and Results, and server-global state (ROIs, results, preferences, file system, code execution), and I couldn't yet hand Lumen to facility users for analyses that have to be reproducible or shared. Fix image targeting and undo in the recorder, scope the recorder per session/image with an IJM export, record or explicitly mark display changes, validate parameters loudly, guard the destructive clears, and resolve the naming collisions (two 'Apply LUT…', Fiji names missing from the palette, title after Save As). Then Lumen would be better than Fiji for most of my daily interactive work. The menubar styling bug, the cramped script editor and the ARIA details are cheaper polish items.",
+  "note": "Evaluation produced by a separate agent (see 'evaluator') against the running build on 8 Nov 2026; screenshots named in 'evidence' were written to the agent's scratch folder and are not committed (the earlier walkthrough screenshots are regenerated the same way). Evidence paths are relative to that folder."
+}

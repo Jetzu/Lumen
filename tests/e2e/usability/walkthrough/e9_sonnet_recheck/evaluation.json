@@ -1,0 +1,201 @@
+{
+  "evaluator": "E9 – Claude Sonnet 5.5, re-evaluation of E5's findings on the fixed build, persona: microscopy core-facility manager who trains biologists on Fiji; judges novice time-to-productivity and irreversible-mistake risk",
+  "method": "One headless Google Chrome 156 (channel chrome, swiftshader flags, 1440x900) started on a private CDP port with a throw-away profile in eval_e9/, driven from Playwright (connect_over_cdp, e2e-venv python) against http://127.0.0.1:8766 in several short scripts; browser killed at the end and no process left. Clean start: File > Close All > 'Close without saving' (3 images incl. a modified one removed), Results had 2 rows, ROI Manager empty; the welcome screen then showed an empty session. Re-walked each E5 problem with the same control/sequence: palette queries, Image > Lookup Tables menu, Display min/max inputs (Cytoplasm max 50, Spots min 5000), Analyze Particles with and without threshold (DAPI hidden), ROI Manager/Results across images, Gaussian Blur plane/stack, History, recorder via GET /api/recorder with the page's own client id, palette error commands without selection, threshold persistence/reload/split view/light theme, New Image 20000x20000 32-bit (cancelled at the confirmation), Tracks wizard on a 128x128x20 noise movie, Preferences, '[' script-editor focus trap, F10 menubar, DOM audit (names, target sizes, tab order, contrast), narrow viewports 900x650 and 760x600, help overlay, Workflows and 3-D view. Also checked modified-image close, rectangle + Measure, Z Project, Apply Display Range sheet. Not tested: 'Apply recorded macro to folder', real file open/save dialogs, JavaScript/IJM replay of recorded lines, colour picker, composite-mode/dropdown LUT recording separately, screen-reader output. Clean-up: Close All, ROI Manager and Results cleared with their confirmations, leftover 'Particle Summary' table removed via the scripting API, server state verified empty (no images, 0 ROIs, 0 rows, no thresholds). Images I viewed with the Read tool are screenshots only and nothing remains open in the app. docs/USABILITY.md, other evaluators' files and source code not read.",
+  "reassessment": [
+    {
+      "id": "E5-1",
+      "status": "fixed",
+      "evidence": "Image > Lookup Tables now lists the ImageJ LUTs by name (Grays, Red, ... Fire, Ice, Spectrum, 3-3-2 RGB, Red/Green, HiLo) plus Fiji / Perceptual (matplotlib) / Labels submenus (06_lut_menu.png). Clicking Fire set the DAPI channel LUT to Fire (state lut='Fire', 07_fire.png). Palette 'fire' -> 'LUT: Fire' first, 'viridis' -> 'LUT: Viridis' first (03_pal_fire.png, 03_pal_viridis.png).",
+      "severity_now": "0",
+      "comment": "Menu click acts on the current channel only; the recorder line colour.lut ... all_channels=False does not name the channel (see E5-7)."
+    },
+    {
+      "id": "E5-2",
+      "status": "fixed",
+      "evidence": "Palette 'apply lut' now lists 'Apply Display Range to Pixels (Apply LUT)' (Image/Lookup Tables) and 'Apply Display Range to Pixels (B&C Apply)' (Image/Adjust; description starts 'DESTRUCTIVE: bake ...... To only change the colour map use Set LUT'), plus 'Set LUT' described as 'display only, the pixel values stay unchanged' (42_pal_apply_lut.png, 42_pal_bake.png). Import/Export LUT are separate names. Running the B&C Apply command opens a sheet headed with the DESTRUCTIVE text and an 'All channels' option (43_apply_range.png).",
+      "severity_now": "1",
+      "comment": "Two baking commands remain (Apply LUT / B&C Apply) but both are honestly named and no longer collide with the harmless display-only command. The sheet's 'All channels' label wraps awkwardly."
+    },
+    {
+      "id": "E5-3",
+      "status": "fixed",
+      "evidence": "'fire' -> first row 'LUT: Fire'; 'Fire LUT' -> 'LUT: Fire'; 'clahee' (typo) -> 'CLAHE (Local Contrast)' first; 'gausian blur' -> 'Gaussian Blur' first; 'watershed', 'scale bar', 'z project' all put the obvious command first (03_pal_fire.png, 03_pal_clahee.png, e9 palette runs).",
+      "severity_now": "1",
+      "comment": "Weak matches are still listed after the good ones ('Proxy Settings…' third for 'fire'); 'threshhold' ranks 'Apply Threshold → Mask' above Threshold; 'fiji lut ice' returns only web-search rows."
+    },
+    {
+      "id": "E5-4",
+      "status": "fixed",
+      "evidence": "Palette 'Open Sample' -> 'Open Sample' first, 'Open ImageJ Sample…' second (03_pal_Open_Sample.png). Opened sample is named 'synthetic_cells.tif' with no '-1' suffix (state names, 05_synth.png). The Open Sample sheet lists the 11 bundled samples.",
+      "severity_now": "0",
+      "comment": "'sample' alone still ranks 'Open ImageJ Sample…' above 'Open Sample'; harmless now."
+    },
+    {
+      "id": "E5-5",
+      "status": "fixed",
+      "evidence": "Analyze Particles on an unthresholded image: the error is now an inline, persistent red box inside the sheet (no toast on the Cancel button) with two buttons 'Auto-threshold and run' and 'Open the Threshold panel' (12_ap_nothresh.png). It stayed after 8 s. 'Auto-threshold and run' gave '41 particles'; recorder line has auto_threshold=True, channel=1 (13_ap_autorun.png). The Threshold section now says 'Channel 1 · DAPI is thresholded (the current channel – switch with the channel chips below the image)' and, with DAPI hidden, shows 'This channel is hidden in the composite: the red overlay marks pixels you cannot see.' with a 'Show channel 1' button (10_threshold_open.png).",
+      "severity_now": "0",
+      "comment": "The sheet's own error and the '41 particles' toast do not name the channel that was auto-thresholded (here the hidden DAPI); the Threshold panel does."
+    },
+    {
+      "id": "E5-6",
+      "status": "fixed",
+      "evidence": "Typed Cytoplasm max 50 with min 126 + Enter: state unchanged (126/947), inline red message 'must be above the min…' under the field (08_maxlessthanmin.png). Spots min 5000 > max 1785: state unchanged, message 'must be below the maximum (1785)' (09_minabovemax.png). On Tab-away the field reverts to the real value (171) and the message disappears (44 test).",
+      "severity_now": "1",
+      "comment": "The message is clipped / overlapped by the next row and the row layout shifts (Auto/Reset/Inv and the max box are pushed to the edge) while the error shows – cosmetic (E9-1)."
+    },
+    {
+      "id": "E5-7",
+      "status": "partly fixed",
+      "evidence": "Recorder now logs display edits with the image named: lumen.display(\"synthetic_cells.tif\", channel=2, max=500), channel=3 min=200, channel=1 visible=False/True; LUT change as lumen.run(\"color.lut\", lut='Fire', all_channels=False); image switches as lumen.select(\"synthetic_cells.tif\"); analyze.particles now carries channel=1; analyze.measure carries the rectangle as roi={...} (GET /api/recorder, e9_s35 output; Script & Recorder panel 32_bracket.png). Also offers -> Python / -> JavaScript / -> IJM and Clear.",
+      "severity_now": "1",
+      "comment": "Still one global session-wide log (no per-image log, no start/stop, only Clear); color.lut does not say which channel or image; I did not test composite-mode or the inspector LUT dropdown separately. Hidden-channel state needs a note in the IJM export (the export warns about it)."
+    },
+    {
+      "id": "E5-8",
+      "status": "partly fixed",
+      "evidence": "History now shows parameters beside the command (17_history.png): after Gaussian sigma=2 (scope current plane) and sigma=3 (entire stack) it lists 'Gaussian Blur scope=plane' and 'Gaussian Blur sigma=3.0'. Display edits (LUT, min/max, visibility) still do not enter History and Undo stays disabled after them (Undo button disabled=True after the Fire / max / min / hide sequence, e9_s12 output; History on synthetic_cells reads 'No changes yet').",
+      "severity_now": "2",
+      "comment": "History shows only non-default parameters, so row 1 hides its sigma (2.0) and row 2 does not say 'entire stack'; provenance is still not complete in the list. Accidental display changes are recoverable only via Reset / Reset all."
+    },
+    {
+      "id": "E5-9",
+      "status": "fixed",
+      "evidence": "Gaussian Blur sheet on T1 head (10 slices): 'Apply to' now defaults to 'Current plane only' with the hint 'Only the plane shown now – choose “Entire stack” to process all 10 planes.' (16_gauss.png). Recorder: plane run -> scope='plane'; stack run -> no scope (API default = stack) (GET /api/recorder).",
+      "severity_now": "0",
+      "comment": "The cheaper, less surprising option is now the default; the recorder omitting scope for the stack run is consistent with the API default."
+    },
+    {
+      "id": "E5-10",
+      "status": "fixed",
+      "evidence": "Palette rows for Crop / Fit Ellipse / Make Inverse / Straighten / Rotate Selection with no selection show an amber 'needs an area selection (1, 2, 3, 4)' tag and disabled styling (aria-disabled=true) (18_pal_Crop.png). Enter gives 'Crop needs an area selection – draw a rectangle (1), oval (2), polygon (3) or freehand (4) selection first' (role=alert) – grammar fixed and next step named (19_err_*.png). aria-live regions are empty afterwards.",
+      "severity_now": "1",
+      "comment": "The toast still vanishes within seconds and several toasts stack when commands are fired repeatedly; the palette still lets Enter run a disabled-looking row."
+    },
+    {
+      "id": "E5-11",
+      "status": "fixed",
+      "evidence": "ROI Manager and Results have a 'This image only' checkbox on by default. On T1 head: 'No ROIs of this image. 41 ROIs of other images are in the manager – untick \"This image only\" to list them.' and 'No rows of this image. 41 rows of other images…' (15_t1head.png). ROIs are named 'Particle 1 (x 315, y 25)' with type column, Results Label column carries 'synthetic_cells.tif:1' (14_roi_results.png).",
+      "severity_now": "1",
+      "comment": "Results table in the 300 px inspector still truncates the numeric columns (Area, M…) – the pop-out arrow is needed to read it; the manager's tally is still global (0 / 41)."
+    },
+    {
+      "id": "E5-12",
+      "status": "fixed",
+      "evidence": "Threshold state is per image: after Analyze/auto-threshold on synthetic_cells (thresholds keyed by image id), a new image (T1 head, Untitled) and the split-view compare pane show no overlay (23_split.png). On reload the overlay returns only for the image it was set on (22_thr_reload.png), with a visible badge 'threshold 1395–65535' and a header chip '1395–65535' on the Threshold section; pane compare shows no leaked red. Light theme: the badge is a dark chip with pink text (computed colour rgb(248,113,113) on rgba(13,15,20,.78), ~7:1) (24_light.png).",
+      "severity_now": "1",
+      "comment": "The overlay can still only be removed from the 'Clear' button inside the Threshold section (the viewport badge is not clickable)."
+    },
+    {
+      "id": "E5-13",
+      "status": "fixed",
+      "evidence": "Tracks wizard on a 128x128x20 noise movie, 'Detect spots' -> '0 spots in 0 frames (quality ≥ 2.193e+04)'; step 1 chip now shows a '!' instead of a check; Next is disabled with title 'Detect spots first (a run with 0 spots does not count)' and the warning 'Detect spots first (a run with 0 spots does not count)' (29_wizard_detect.png). Spot radius shows '2.5' (decimal point).",
+      "severity_now": "1",
+      "comment": "The numbered step chips can still be clicked to jump straight to later steps (e.g. 6 Display, 30_wizard_jump.png) although Next is gated."
+    },
+    {
+      "id": "E5-14",
+      "status": "fixed",
+      "evidence": "Preferences: Selection stroke '1.5' and Tracks wizard Spot radius '2.5' now use a decimal point with navigator.language en-US (31_prefs.png, 28_wizard1.png).",
+      "severity_now": "0",
+      "comment": "Only these two places were re-checked."
+    },
+    {
+      "id": "E5-15",
+      "status": "fixed",
+      "evidence": "Clicked the viewport, pressed '[': focus moves to the 'Python code' textarea in the Script panel (32_bracket.png). Escape now returns focus to the canvas (document.activeElement = canvas-wrap) and Shift+K then opened the colour picker without typing into the script (editor text unchanged: 'img = lumen.image…'; 33_after_shiftk.png). The language select now shows 'Python' in full; the help overlay lists 'Leave the script editor – Esc' (36_help.png).",
+      "severity_now": "0",
+      "comment": ""
+    },
+    {
+      "id": "E5-16",
+      "status": "partly fixed",
+      "evidence": "DOM audit (e9_s24): 0 interactive elements without an accessible name (was 5); Slices/Frames inputs have aria-labels; channel-name inputs have aria-labels. Tool rail has roving tabindex (2 tab stops among 23 buttons) and ArrowDown/End move through tools (Select -> Pan -> Rectangle -> Measure Distance Tool). Tab-close buttons are 24x24. Menubar trigger contrast 7.16:1 (was 4.43:1).",
+      "severity_now": "1",
+      "comment": "24 of 80 interactive elements are still under 24 px (channel chips 17-19 px high, plugin tool buttons 34x17, threshold buttons 21 px, 13 px 'dark bg' checkbox, 14 px threshold handles)."
+    },
+    {
+      "id": "E5-17",
+      "status": "fixed",
+      "evidence": "F10 focuses File; Down opens it; first Esc closes the menu and leaves focus on the trigger; second Esc returns focus to the canvas (document.activeElement = canvas-wrap) (e9_s36 output; help lists 'Menu bar F10 / ⌥ tap'). Type-ahead exists: in the Image menu typing 'Lo' moves focus to a menuitem (it landed on Overlay).",
+      "severity_now": "1",
+      "comment": "Type-ahead appears to cycle by first letter rather than buffer a prefix ('Lo' did not land on Lookup Tables)."
+    },
+    {
+      "id": "E5-18",
+      "status": "fixed",
+      "evidence": "New Image sheet now states 'Size: 0 MB in memory (0.00% of 24.0 GB RAM)'; with 20000x20000 32-bit it turns amber: 'Size: 1.5 GB in memory (6% of 24.0 GB RAM) – large: a confirmation follows, and every undo step costs the same again' (26_newimage_big.png). Apply opens an alertdialog 'Create a 1.5 GB image?' with Cancel / 'Create 1.5 GB image' (27_bigconfirm.png); I cancelled, no image was created. Slices and Frames have '≥ 1' hints.",
+      "severity_now": "0",
+      "comment": "Slices/Frames still have no sliders (only a hint)."
+    },
+    {
+      "id": "E5-19",
+      "status": "partly fixed",
+      "evidence": "Welcome screen on an empty session has 'Open file…', three sample buttons and 'Press ⌘K to search all 499 commands' (02_empty.png). Workflows section now has a chooser and cards with step counts and 'Requires: needs a time series / two or more channels' (38_workflows.png). The help overlay documents Esc from the editor. 3-D view (MIP/Alpha/Iso/Mesh, Spin, Snapshot) works and has sub-sections (39_3d.png).",
+      "severity_now": "1",
+      "comment": "Still 13 collapsible sections on a stack and Workflows is collapsed by default; the help overlay is 826 px tall at top 108 px so its last ~36 px lie below a 900 px window (36_help.png); the cube toggle in the 3-D view is still icon-only."
+    },
+    {
+      "id": "E5-20",
+      "status": "fixed",
+      "evidence": "At 900x650 and 760x600: no horizontal page scroll (scrollWidth == innerWidth), the image is re-fitted (179% in view), the inspector is a normal half-width panel (40_narrow900.png, 41_narrow760.png).",
+      "severity_now": "1",
+      "comment": "At narrow widths the theme / Preferences / Help icons are dropped from the top bar (still reachable with ⌘, and ?) and the bottom of the tool rail is cut off (E9-3)."
+    }
+  ],
+  "new_problems": [
+    {
+      "id": "E9-1",
+      "heuristic": "Error prevention / Aesthetic and minimalist design",
+      "location": "Display section, channel min/max validation message",
+      "observation": "The new inline messages ('must be above the min…', 'must be below the maximum (1785)') are drawn into the same row: the text is clipped by the row below and the Auto / Reset / Inv buttons and the max box shift right to the inspector edge while the error is shown.",
+      "severity": "1",
+      "evidence": "08_maxlessthanmin.png, 09_minabovemax.png"
+    },
+    {
+      "id": "E9-2",
+      "heuristic": "Visibility of system status",
+      "location": "Analyze Particles run with 'Auto-threshold and run' on a multichannel composite; Results row label",
+      "observation": "The run is performed on channel 1 (DAPI, hidden in the composite) – recorded only as channel=1 – but neither the '41 particles' toast, the sheet nor the Results label ('synthetic_cells.tif:1', 'synthetic_cells.tif' for a rectangle Measure) names the channel; only the Threshold panel does.",
+      "severity": "1",
+      "evidence": "13_ap_autorun.png, 46_measure.png, recorder lines in e9_s16/e9_s47 output"
+    },
+    {
+      "id": "E9-3",
+      "heuristic": "Flexibility / responsive layout",
+      "location": "Top bar and tool rail at 900x650",
+      "observation": "Instead of clipping, the theme, Preferences and Help icons are dropped from the top bar and the tool rail is cut off after the Fill tool (Text/Arrow/zoom/pipette not visible without scrolling).",
+      "severity": "1",
+      "evidence": "40_narrow900.png"
+    },
+    {
+      "id": "E9-4",
+      "heuristic": "Help and documentation",
+      "location": "Command palette ranking for multi-word / misspelt queries",
+      "observation": "'threshhold' puts 'Apply Threshold → Mask' above Threshold; 'fiji lut ice' returns only the two web-search rows although 'LUT: Ice' exists (extra words are not ignored).",
+      "severity": "1",
+      "evidence": "e9_s44 output (palette lists)"
+    },
+    {
+      "id": "E9-5",
+      "heuristic": "Consistency and standards",
+      "location": "Tracks wizard step chips",
+      "observation": "Next is correctly gated after a 0-spot detection, but the numbered chips 2-7 are still clickable and open later steps (e.g. step 6 Display, step 4 Linker) without any prerequisite warning on the chip.",
+      "severity": "1",
+      "evidence": "30_wizard_jump.png"
+    }
+  ],
+  "positives": [
+    "Palette now carries state hints: rows that need a selection show 'needs an area selection (1, 2, 3, 4)' and disabled styling before the user presses Enter; typos (clahee, gausian) are tolerated and LUT names are first-class commands ('LUT: Fire').",
+    "Analyze Particles on an unthresholded image gives a persistent inline error with a one-click 'Auto-threshold and run' and 'Open the Threshold panel' – the exact recovery a trainee needs.",
+    "The Threshold section names the channel being thresholded and warns, with a 'Show channel 1' button, when that channel is hidden in the composite.",
+    "ROI Manager and Results default to 'This image only' with explicit counts of hidden rows from other images, descriptive ROI names and image-prefixed result labels.",
+    "Size estimate in New Image plus a confirmation dialog ('Create a 1.5 GB image?') for large allocations; Clear ROIs / Clear Results ask first and offer Undo clear.",
+    "Recorder now captures display edits, channel visibility, image selection and ROI-bearing measure calls with the image named, and exports Python / JavaScript / IJM.",
+    "Esc leaves the script editor and the menubar; the tool rail has roving tabindex and arrow-key navigation; all interactive controls have accessible names; menubar contrast is 7:1.",
+    "Modified-image close dialog (alertdialog, aria-modal, default focus Cancel, 'Close without saving' last) still works; history shows parameters; Gaussian preview with safe 'Current plane only' default.",
+    "No horizontal scroll and the image re-fits at 900 and 760 px widths."
+  ],
+  "overall": "I would now let a trainee follow a Fiji recipe for LUTs, threshold + Analyze Particles, measure and Gaussian blur without standing next to them: the LUT names are where Fiji users look, the destructive 'Apply Display Range' commands are labelled as such, errors tell the trainee what to do, and ROI/Results no longer bleed across images. What still keeps it from being fully hands-off is traceability and accessibility polish: display edits are still not undoable and not in History, History hides default-valued parameters, the recorder is still one global log, 24 controls are below 24 px, and a few layout rough edges remain (min/max error overlap, help overlay clipped at 900 px, narrow-window icons dropped).",
+  "note": "Re-evaluation of E5's findings on the build after fix round 3 (8 Nov 2026) by a separate agent of the same model family and persona, without access to the fix list; screenshots are not committed."
+}

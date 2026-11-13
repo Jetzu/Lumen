@@ -1,0 +1,5 @@
+.venv-build/
+dist/
+build/__pycache__/
+lumen_desktop/__pycache__/
+__pycache__/

@@ -1,0 +1,1355 @@
+{
+ "persona": "biologist",
+ "url": "http://127.0.0.1:8766",
+ "observations": [
+  {
+   "location": "empty viewport",
+   "text": "status bar: '64×64 px · 8-bit · 0.0 MB\\nfg 255 · bg 0\\nmem 3.0 MB\\n938%'; viewport text: '(no .empty-viewport)'",
+   "shot": "01_empty.png"
+  },
+  {
+   "location": "File ▸ Open Sample ▸ …",
+   "text": "image opened from the menu; status '512×512 px (166.4×166.4 µm) · 16-bit · 1.5 MB\\nfg 255 · bg 0\\nmem 4.5 MB\\n117%'; tab tooltip 'synthetic_cells.tif-1\\n512×512 · 3c · 16-bit\\nDrag to reorder · middle-click to close · right-click fo'",
+   "shot": "03_after_open_menu.png"
+  },
+  {
+   "location": "Image ▸ Adjust",
+   "text": "submenu entries ['Color Threshold…', 'Window/Level…', 'Coordinates (origin)…', 'Apply Display Range (B&C Apply)…', 'Auto Crop…', 'Auto Crop (selection)…', 'Compute Auto Threshold…', 'Set Threshold… ⇧T', 'Apply Threshold → Mask…', 'Auto Local Threshold…', 'Threshold Histogram', 'Canvas Size…']",
+   "shot": "04_menu_image_adjust.png"
+  },
+  {
+   "location": "Image ▸ Adjust",
+   "text": "contains a Brightness/Contrast entry: False"
+  },
+  {
+   "location": "palette",
+   "text": "'brightness' -> ['Brightness / Contrast', 'Apply Display Range (B&C Apply)', 'Enhance Contrast', 'Window/Level', 'Color Clustering']"
+  },
+  {
+   "location": "⌘⇧C (Fiji's Brightness/Contrast chord)",
+   "text": "Display section open: True; sheet: none; toast: ''",
+   "shot": "05_after_bc_menu.png"
+  },
+  {
+   "location": "Display section",
+   "text": "visible labels ['Mode']; hint ['Display changes never modify pixel values. Use Apply LUT / RGB Color to bake them in.']",
+   "shot": "06_display_panel.png"
+  },
+  {
+   "location": "Display ▸ Auto, then Undo button",
+   "text": "Undo enabled before False / after a display change False (display changes are not undo steps; 'Reset' is the way back)"
+  },
+  {
+   "location": "Threshold section",
+   "text": "'Particles…' enabled before a threshold exists: False; buttons ['Auto', 'Apply → mask', 'Create selection', 'Particles…', 'Clear']",
+   "shot": "07_threshold_panel.png"
+  },
+  {
+   "location": "Analyze ▸ Analyze Particles… without a threshold",
+   "text": "sheet opened with button ['Run']; error before running: ''",
+   "shot": "08_particles_no_threshold.png"
+  },
+  {
+   "location": "Analyze Particles ▸ Run without a threshold",
+   "text": "sheet error ''; toast '41 particles'; sheet still open: False",
+   "shot": "09_particles_error.png"
+  },
+  {
+   "location": "Analyze Particles sheet",
+   "text": "fields ['Min size (calibrated units²)', 'Max size (0 = ∞)', 'Min circularity\\n0–1', 'Max circularity\\n0–1', 'Show', 'Display results', 'Clear results', 'Summarize', 'Add to manager', 'Exclude on edges', 'Include holes', 'Process whole stack', 'Measure intensities on', \"Pixel units\\nSize and circularity limits in pixels² / pixels instead of calibrated units (ImageJ 'Pixel units')\", 'Record starts\\nAdd XStart / YStart (first pixel of each particle, pixel coordinates, for doWand) to the Results', 'In situ show\\nThe Show image replaces the processed plane(s) of this image instead of opening a new window', \"Composite rois\\nParticles with holes (Include holes off) become exact mask ROIs; off = outer outline polygons (ImageJ's default ROIs)\"]; buttons ['Help on this command (command reference)', 'Cancel (Esc)', 'Cancel', 'Run']; description 'Find connected objects in a binary (or thresholded) image, filter them by size and circularity, measure them, and add outlines to the ROI manager.'",
+   "shot": "10_particles_sheet.png"
+  },
+  {
+   "location": "after Analyze Particles",
+   "text": "164 ROIs; sections with badges: ['DISPLAY\\n3ch', 'THRESHOLD\\n1378–3328', 'ROI MANAGER\\n164', 'RESULTS\\n165', 'PARTICLE SUMMARY\\n1']",
+   "shot": "11_after_particles.png"
+  },
+  {
+   "location": "tool rail",
+   "text": "tools ['Select / move (V)', 'Pan (Space or G)', 'Rectangle (1)', 'Oval (2)', 'Polygon (3) – click points, double-click to close', 'Freehand (4)', 'Line (5)', 'Segmented line (6)', 'Points (7) – shift-click to add', 'Wand (8) – trace a region', 'Angle (Q) – click arm end, vertex, arm end', \"Manual tracking (X) – click adds this frame's point and advances, ⌥-click deletes it\", 'Brush (9) – paint with the foreground value; [ ] size, ⌥-drag erases', 'Bucket fill (U) – flood-fill with the foreground value', 'Text (Y) – click to add an overlay label', 'Arrow (J) – drag to add an overlay arrow', 'Zoom (Z) – click in, alt-click out', 'Value picker (I)', \"Remove Label at Point (plugin tool) – Remove the label under a point (Label Edition's click-to-remove; as a tool, every click on the image removes the label under the cursor).\", \"Classifier Trace Tool (plugin tool) – A plugin tool (tool rail) for Weka-style training traces: drag on the image to add a pen stroke, click to add a dot – each becomes a ROI-manager entry 'class:<name>' on the current plane, in the class colour; ⌥-click removes the nearest trace of the class. The Pixel Classifier panel sets the class, width and colour.\", 'Spot Click Counter (plugin tool) – A plugin tool (tool rail): click on the image to mark a spot – an overlay marker plus a Results row with its position, value and the running count; a drag marks the release point; ⌥-click removes the nearest spot; ⇧-click only reports the value. Shows how a tool=True command receives clicks (x, y, x2, y2, button, shift, alt, ctrl, event).', 'Measure Distance Tool (plugin tool) – A plugin tool (tool rail): drag on the image to measure the distance between two points in calibrated units – a Results row with the end points, length (unit) and angle, the line as the selection and optionally a labelled overlay line. A plain click reports the pixel position and value.', 'Foreground 255 / background 0 – Color Picker (⇧K)']; active by default ['Select / move (V)']",
+   "shot": "12_tool_rail.png"
+  },
+  {
+   "location": "canvas drag with the default tool",
+   "text": "status bar after the drag: '512×512 px (166.4×166.4 µm) · 16-bit · 1.5 MB\\nx=256 y=255 (83.2, 82.88 µm) · value=2729, 944, 563\\nrect x=87 y=149 w=169 h=106\\nfg 255 · bg 0\\nmem 4.5 MB\\n117%' (no selection pill = the drag panned or did nothing)",
+   "shot": "13_drag_default_tool.png"
+  },
+  {
+   "location": "Analyze ▸ Measure",
+   "text": "one row added to Results",
+   "shot": "14_after_measure.png"
+  },
+  {
+   "location": "Process ▸ Filters ▸ Gaussian Blur…",
+   "text": "fields ['Sigma\\n0–200', 'Apply to', 'Preview']; buttons ['Help on this command (command reference)', 'Cancel (Esc)', 'Cancel', 'Apply']; preview on by default: True",
+   "shot": "15_gaussian_sheet_menu.png"
+  },
+  {
+   "location": "viewport HUD during preview",
+   "text": "chips ['preview', 'threshold 1378–3328']",
+   "shot": "16_preview_hud.png"
+  },
+  {
+   "location": "Edit ▸ Undo",
+   "text": "undo from the menu worked"
+  },
+  {
+   "location": "image tab",
+   "text": "tab title after a modification: 'synthetic_cells.tif\\n512×512 · 3c · 16-bit\\nDrag to reorder · middle-click to close · right-click for more'; tab text 'synthetic_cells.tif\\n512×512 · 3c · 16-bit'"
+  },
+  {
+   "location": "File ▸ Close on a modified image",
+   "text": "confirmation dialog: False; image still open: False; toast 'Undo Gaussian Blur | Redo Gaussian Blur'",
+   "shot": "17_close_modified.png"
+  },
+  {
+   "location": "File ▸ Save As…",
+   "text": "server-side file dialog; quick links ['Home', 'Desktop', 'Documents', 'Downloads', 'Working dir']; text head 'Save “blobs.tif”\\nHome\\nDesktop\\nDocuments\\nDownloads\\nWorking dir\\ndocs\\nfrontend\\nlumen\\nlumen_imaging.egg-info\\nscripts\\ntests\\npyproject.toml\\n2 KB\\nR'",
+   "shot": "18_save_as_dialog.png"
+  },
+  {
+   "location": "Workflows section",
+   "text": "10 guided workflows: ['Count nuclei', 'Measure intensity per cell', 'Track cells', 'Train a pixel classifier', 'Colocalization', 'Stitch tiles', 'Z-stack to figure', 'Batch over a folder', 'Register a time-lapse', 'Edit labels']",
+   "shot": "19_workflows.png"
+  },
+  {
+   "location": "Workflows ▸ first card",
+   "text": "steps ['1\\nWork on a copy\\noptional', '2\\nSmooth', '3\\nSubtract background\\noptional', '4\\nChoose a threshold', '5\\nMake a mask', '6\\nFill holes']",
+   "shot": "20_workflow_open.png"
+  },
+  {
+   "location": "Help menu",
+   "text": "items ['Keyboard Shortcuts', 'Lumen README', 'Command Reference', 'Fiji Parity', 'Design & Research Notes', 'ImageJ Website ↗', 'ImageJ User Guide ↗', 'Fiji Wiki ↗', 'image.sc Forum ↗', 'About Plugins', 'About Lumen', 'Lumen / ImageJ Links', 'Command Help…', 'Check for Updates…', 'Update Lumen…']"
+  },
+  {
+   "location": "Help ▸ README",
+   "text": "docs modal",
+   "shot": "21_docs_readme.png"
+  },
+  {
+   "location": "Plugins ▸ Tracking",
+   "text": "entries ['Optic Flow (Dense)…', 'Detect Spots…', 'Link Spots (LAP)…', 'Track (detect + link)…', 'Export Tracks (CSV)…', 'Kymograph…', 'Clear Tracks…', 'Filter Tracks…', 'Manual Tracking: New Track…', 'Manual Tracking: Add Point…', 'Manual Tracking: Delete Point…', 'Export Tracks (TrackMate XML)…', 'Import Tracks (TrackMate XML)…', 'Tracks to ROIs…', 'Filter Spots…', 'Feature Tables (Spots / Edges / Tracks)…', 'Export Feature Tables (CSV)…', 'Split Track at Frame…', 'Merge Two Tracks…', 'Link Two Spots…', 'Unlink Two Spots…', 'Add Spot…', 'Delete Spot…', 'Undo Track Edit', 'Track Display Settings…']",
+   "shot": "22_menu_tracking.png"
+  },
+  {
+   "location": "Tracks section before tracking",
+   "text": "buttons ['The tracks of this image', 'TrackMate wizard: Detector → Initial threshold → Spot filters → Linker → Track filters → Display → Export', 'Draw only the selected tracks while a selection exists', 'Zoom the view to all tracks', 'Keep only the tracks passing length / duration / displacement / speed criteria', 'Export the tracks as CSV (TrackMate or Lumen layout)', 'Delete the selected track(s)', 'Lineage graph (frames × tracks with splits and merges): click a spot to select and jump, edit links, colour by feature, export as SVG', 'No track edit to undo', \"TrackMate's Spots / Edges / Track statistics tables\", 'Colour by a track / spot feature with a colormap, track display mode, tail length, spot radius and names']",
+   "shot": "23_tracks_empty.png"
+  },
+  {
+   "location": "Tracks ▸ TrackMate wizard",
+   "text": "step text 'Detector\\nLoG\\nDoG\\nFind maxima\\nSpot radius\\nQuality threshold\\nSub-pixel localization\\nMedian filter (3×3) first\\nUnits\\npixels\\ncalibrated'",
+   "shot": "24_track_wizard.png"
+  },
+  {
+   "location": "dimension bar",
+   "text": "chips ['Membrane', 'Nuclei']"
+  },
+  {
+   "location": "3-D View section",
+   "text": "labels ['Cut', 'Gain', 'Cut', 'Gain', 'point ROIs']",
+   "shot": "25_volume_section.png"
+  },
+  {
+   "location": "Orthogonal Views section",
+   "text": "opened",
+   "shot": "26_ortho_section.png"
+  },
+  {
+   "location": "Pixel Classifier section",
+   "text": "text head '2-D\\n3-D\\nbackground (background)\\n0\\nforeground\\n0\\nAdd class\\nTrace mode\\nPen\\nLine\\nArea\\npx\\nAdd selection\\nTraces\\nTrain\\nPlane\\nStack\\nApply\\nOverlay\\nGet probability\\nCreate result\\nOther image…\\nsynthetic_cells.tif'",
+   "shot": "27_classifier_panel.png"
+  },
+  {
+   "location": "menu bar",
+   "text": "top-level item counts {'File': 21, 'Edit': 20, 'Image': 17, 'Process': 16, 'Analyze': 27, 'Plugins': 14, 'View': 14, 'Help': 15}; submenus {'File': ['Open Recent', 'Open Sample', 'Export', 'Page Setup', 'Export', 'Import', 'New', 'Text'], 'Edit': ['Selection', 'Options'], 'Image': ['Type', 'Adjust', 'Color', 'Stacks', 'Hyperstacks', 'Transform', 'Lookup Tables', 'Overlay', 'Drawing', 'Stacks/Tools'], 'Process': ['Filters', 'Binary', 'Math', 'Noise', 'FFT', 'Batch'], 'Analyze': ['Gels', 'Tools'], 'Plugins': ['Batch', 'Registration', 'Scripting', 'Segmentation', 'Tracking', 'Shortcuts', 'Utilities', '3D', 'Bio-Formats', 'Feature Extraction', 'Macros', 'MorphoLibJ', 'Time Lapse', 'Tools'], 'View': [], 'Help': []}"
+  },
+  {
+   "location": "File menu",
+   "text": "'Close' item shows shortcut ⌘W; the global shortcut handler has no ⌘W binding, so in a browser tab this chord closes the tab"
+  },
+  {
+   "location": "inspector",
+   "text": "13 sections present for this image: ['Display', 'Threshold', 'Workflows', '3-D View', 'Orthogonal Views', 'ROI Manager', 'Pixel Classifier', 'Results', 'Particle Summary', 'Image Info', 'History', 'Script & Recorder', 'Log']; open by default: ['Display', 'Threshold', 'Workflows', '3-D View', 'Orthogonal Views', 'ROI Manager', 'Pixel Classifier', 'Results', 'Particle Summary']"
+  },
+  {
+   "location": "inspector",
+   "text": "with every section expanded the inspector is 5295 px tall in a 664 px column (8.0 screens)",
+   "shot": "45_inspector_all_open.png"
+  },
+  {
+   "location": "Preferences (⌘,)",
+   "text": "28 rows in groups ['APPEARANCE', 'FONTS', 'POINTS', 'ARROWS', 'COLOURS', 'PLOTS', 'SAVING & EDITING', 'DICOM', 'ADVANCED']; focus after opening: modal",
+   "shot": "46_preferences.png"
+  },
+  {
+   "location": "Help overlay (?)",
+   "text": "1659 characters; lists ⌘K: True; lists ⌘W: False",
+   "shot": "47_help_overlay.png"
+  }
+ ],
+ "facts": {
+  "empty_state": {
+   "status": "64×64 px · 8-bit · 0.0 MB\nfg 255 · bg 0\nmem 3.0 MB\n938%",
+   "viewport_text": "(no .empty-viewport)"
+  },
+  "menus": {
+   "File": [
+    {
+     "label": "Open…",
+     "kbd": "⌘O",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Open Recent",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Open Next",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Open the next image file in the folder of the current image"
+    },
+    {
+     "label": "Open Previous",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Open the previous image file in the folder of the current image"
+    },
+    {
+     "label": "Open Sample",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "New…",
+     "kbd": "N",
+     "submenu": false,
+     "disabled": false,
+     "title": "Create a blank image (optionally pre-filled with a ramp, gradient, checkerboard, sine grating or noise)."
+    },
+    {
+     "label": "New from System Clipboard",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Open the image on the system clipboard as a new image (press ⌘V in the viewport when the browser cannot read it directly)"
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Save",
+     "kbd": "⌘S",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Save As…",
+     "kbd": "⇧⌘S",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Export",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Page Setup",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Print…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Print the current view with its name, size, calibration and a scale bar"
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Close",
+     "kbd": "⌘W",
+     "submenu": false,
+     "disabled": false,
+     "title": "Close the current image."
+    },
+    {
+     "label": "Close All",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Close every image."
+    },
+    {
+     "label": "New ▸ Internal Clipboard…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Open the internal clipboard (the pixels copied with Edit ▸ Copy / Cut) as a new image; a non-rectangular copy becomes its selection."
+    },
+    {
+     "label": "Open Recent…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Re-open one of the recently opened files (newest first)."
+    },
+    {
+     "label": "Revert",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Reload the image from disk, discarding all changes."
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Export",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Import",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "New",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Text",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    }
+   ],
+   "Edit": [
+    {
+     "label": "Undo",
+     "kbd": "⌘Z",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Redo",
+     "kbd": "⇧⌘Z",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Repeat Last Command",
+     "kbd": "⇧R",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Cut",
+     "kbd": "⌘X",
+     "submenu": false,
+     "disabled": true,
+     "title": "Copy the selection (all channels of the current plane) to the internal clipboard and clear it to the background value."
+    },
+    {
+     "label": "Copy",
+     "kbd": "⌘C",
+     "submenu": false,
+     "disabled": false,
+     "title": "Copy the selection's pixels (all channels of the current plane) to the internal clipboard."
+    },
+    {
+     "label": "Copy to System",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Copy the current view (or the selection's bounding box) to the system clipboard as PNG"
+    },
+    {
+     "label": "Paste",
+     "kbd": "⌘V",
+     "submenu": false,
+     "disabled": false,
+     "title": "Paste the clipboard into the current plane, at the selection (or centred)."
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Set Foreground Value…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Set only the foreground value (used by the value-picker tool); the background value is left unchanged."
+    },
+    {
+     "label": "Set Background Value…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Set only the background value (used by the value-picker tool with Alt); the foreground value is left unchanged."
+    },
+    {
+     "label": "Fill…",
+     "kbd": "F",
+     "submenu": false,
+     "disabled": true,
+     "title": "Fill the selection with the foreground value."
+    },
+    {
+     "label": "Clear",
+     "kbd": "",
+     "submenu": false,
+     "disabled": true,
+     "title": "Set the selection to the background value."
+    },
+    {
+     "label": "Clear Outside",
+     "kbd": "",
+     "submenu": false,
+     "disabled": true,
+     "title": "Set everything outside the selection to the background value."
+    },
+    {
+     "label": "Draw…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": true,
+     "title": "Burn the selection outline into the pixels."
+    },
+    {
+     "label": "Paste Control…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Set how Paste combines the clipboard with the image (ImageJ's Paste Control transfer modes)."
+    },
+    {
+     "label": "Paste (with transfer mode)…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Paste the clipboard into the current plane (at the selection, or centred) combining it with the pixels using the Paste Control transfer mode."
+    },
+    {
+     "label": "Invert",
+     "kbd": "⇧I",
+     "submenu": false,
+     "disabled": false,
+     "title": "Invert pixel values (range-aware)."
+    },
+    {
+     "label": "Paint Stroke…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Burn a brush stroke (polyline with round caps) into the current plane using the foreground value. Used by the brush tool."
+    },
+    {
+     "label": "Flood Fill…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Fill the connected region of similar pixels around a point with the foreground value (the bucket tool)."
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Selection",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Options",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    }
+   ],
+   "Image": [
+    {
+     "label": "Crop",
+     "kbd": "⇧X",
+     "submenu": false,
+     "disabled": true,
+     "title": "Crop the whole stack to the bounding box of the selection."
+    },
+    {
+     "label": "Duplicate…",
+     "kbd": "⇧D",
+     "submenu": false,
+     "disabled": false,
+     "title": "Copy the image (or the current plane / channel) into a new tab."
+    },
+    {
+     "label": "Scale…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Resize by factors (or to a target size) with interpolation; updates the calibration."
+    },
+    {
+     "label": "Rotate…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Rotate by an arbitrary angle (degrees, clockwise positive)."
+    },
+    {
+     "label": "Properties / Set Scale…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Set the spatial / temporal calibration of the image."
+    },
+    {
+     "label": "Set Scale from Line…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": true,
+     "title": "Calibrate using a line selection of known length."
+    },
+    {
+     "label": "Rename…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Rename the image tab."
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Type",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Adjust",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Color",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Stacks",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Hyperstacks",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Transform",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Lookup Tables",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Overlay",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Drawing",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Stacks/Tools",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    }
+   ],
+   "Process": [
+    {
+     "label": "Image Calculator…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Pixel-wise arithmetic between two images: result = image1 ⊕ image2."
+    },
+    {
+     "label": "Enhance Contrast…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Stretch the display range (or the pixel values) so a given fraction of pixels saturate; optionally equalize the histogram."
+    },
+    {
+     "label": "CLAHE (Local Contrast)…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Contrast-limited adaptive histogram equalization."
+    },
+    {
+     "label": "Subtract Background…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Rolling-ball (or sliding paraboloid / top-hat) background subtraction."
+    },
+    {
+     "label": "Smooth",
+     "kbd": "⇧S",
+     "submenu": false,
+     "disabled": false,
+     "title": "3×3 mean filter."
+    },
+    {
+     "label": "Sharpen",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "3×3 sharpening kernel."
+    },
+    {
+     "label": "Find Edges",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Sobel edge magnitude."
+    },
+    {
+     "label": "Laplacian of Gaussian…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Blob / edge detector: −σ²·∇²G."
+    },
+    {
+     "label": "Shadows…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Emboss-like relief with light coming from the chosen direction."
+    },
+    {
+     "label": "Retinex…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Multi-scale retinex with colour restoration (MSRCR) – compresses the dynamic range and enhances local contrast; grayscale images use plain multi-scale retinex (Fiji's Retinex)."
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Filters",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Binary",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Math",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Noise",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "FFT",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Batch",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    }
+   ],
+   "Analyze": [
+    {
+     "label": "Analyze Skeleton…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Fiji's Analyze Skeleton: tag the pixels of a binary skeleton (end points, slabs, junctions), trace its branches and report branches, junctions, end points and branch lengths per skeleton plus a Branches table; per plane (2D) or on the whole z-stack (3D)."
+    },
+    {
+     "label": "Skeleton Longest Shortest Path…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Binary mask of the longest shortest path of every skeleton (Fiji's Analyze Skeleton 'longest shortest path': the longest of all shortest vertex-to-vertex paths); the Results and Branches tables are filled as by Analyze Skeleton."
+    },
+    {
+     "label": "Colocalization (Costes)…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Coloc 2-style colocalization of two channels within the selection: Costes automatic thresholds (orthogonal regression), Pearson (whole and above thresholds), thresholded Manders tM1/tM2, Spearman and the Costes block-scrambling significance test."
+    },
+    {
+     "label": "Measure",
+     "kbd": "M",
+     "submenu": false,
+     "disabled": false,
+     "title": "Measure the selection (or the whole plane) and append a row to the Results table (on the 'Redirect to' image of Set Measurements when one is set)."
+    },
+    {
+     "label": "Measure Stack…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Measure the selection on every slice / frame of the current channel."
+    },
+    {
+     "label": "Set Measurements…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Choose which columns Measure and Analyze Particles report, and how coordinates and labels are reported."
+    },
+    {
+     "label": "Clear Results",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Empty the Results table."
+    },
+    {
+     "label": "Analyze Particles…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Find connected objects in a binary (or thresholded) image, filter them by size and circularity, measure them, and add outlines to the ROI manager."
+    },
+    {
+     "label": "Histogram…",
+     "kbd": "H",
+     "submenu": false,
+     "disabled": false,
+     "title": "Histogram of the current plane (or selection) with statistics – ImageJ's Histogram dialog: bins, fixed X range, fixed Y max, log scale, stack histogram, list to Results."
+    },
+    {
+     "label": "Plot Profile…",
+     "kbd": "K",
+     "submenu": false,
+     "disabled": true,
+     "title": "Intensity profile along a line, or column/row averages of a rectangle."
+    },
+    {
+     "label": "Find Maxima…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Local maxima with a prominence (noise tolerance) criterion, like ImageJ's Find Maxima."
+    },
+    {
+     "label": "Summarize Results…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Mean, SD, min and max of every numeric Results column (optionally per group of a label column)."
+    },
+    {
+     "label": "Measure Labels…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Measure every object of a label image (as produced by Label Connected Components)."
+    },
+    {
+     "label": "Colocalization (2 channels)…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Pearson, Spearman and Manders coefficients between two channels (within the selection)."
+    },
+    {
+     "label": "Distribution…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Histogram of a Results-table column (ImageJ Analyze ▸ Distribution: automatic binning or a fixed number of bins and range)."
+    },
+    {
+     "label": "Calibrate (intensity)…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Fit a function mapping pixel values to known standards (density calibration); Measure Calibrated then reports calibrated Mean/Min/Max."
+    },
+    {
+     "label": "Calibrated Values (32-bit)",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "New 32-bit image whose pixels are the calibrated values (after Analyze ▸ Calibrate) of this image."
+    },
+    {
+     "label": "Measure (calibrated values)",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Measure like Measure, but with Mean / StdDev / Min / Max / Median / Mode / IntDen (and Skew, Kurt, XM, YM) computed from the calibrated pixel values (Analyze ▸ Calibrate); RawIntDen stays raw, like ImageJ."
+    },
+    {
+     "label": "Angle",
+     "kbd": "",
+     "submenu": false,
+     "disabled": true,
+     "title": "Angle of a line selection (degrees, counter-clockwise), or the angle at the vertex of a 3-point segmented line (the angle tool)."
+    },
+    {
+     "label": "Curve Fitting…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Least-squares fit of x/y data (two Results columns, the last plot, or typed values) to a line, polynomial, exponential, power, log, Gaussian, error function, sigmoid, Rodbard, rational, Michaelis-Menten … or a user-defined equation (ImageJ CurveFitter parity)."
+    },
+    {
+     "label": "Fractal Box Count…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Box-counting fractal dimension of the binary (or thresholded) current plane: slope of log(count) vs log(1/size)."
+    },
+    {
+     "label": "Surface Plot…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "3-D surface rendering of the current plane (or the selection) as a new RGB image."
+    },
+    {
+     "label": "Stack Histogram…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Histogram (and statistics) of every slice and frame of the current channel, within the selection."
+    },
+    {
+     "label": "Multi Measure (ROI Manager)…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Measure every ROI of the ROI Manager on every slice / frame of the current channel (ROI Manager ▸ Multi Measure)."
+    },
+    {
+     "label": "Labels… (ROI names / values as overlay)…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Add a text overlay item to every ROI-Manager ROI (or the selection, or every ROI-shaped overlay item) showing its index, name, a measurement or the pixel value, with ImageJ's Overlay ▸ Labels… options (use names, font size, bold, colour, background, centroid / bounding box). Labels of ROIs pinned to a plane stay on that plane."
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Gels",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Tools",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    }
+   ],
+   "Plugins": [
+    {
+     "label": "Batch",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Registration",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Scripting",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Segmentation",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Tracking",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Shortcuts",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Utilities",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "3D",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Bio-Formats",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Feature Extraction",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Macros",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "MorphoLibJ",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Time Lapse",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Tools",
+     "kbd": "",
+     "submenu": true,
+     "disabled": false,
+     "title": ""
+    }
+   ],
+   "View": [
+    {
+     "label": "Command Palette",
+     "kbd": "⌘K",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Toggle Inspector",
+     "kbd": "⌘\\",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Toggle Theme",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Zoom In",
+     "kbd": "+",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Zoom Out",
+     "kbd": "−",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Fit to Window",
+     "kbd": "0",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Actual Size (100%)",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Zoom to Selection",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Synchronize Views",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Split View (Compare Two Images)",
+     "kbd": "⇧⌘\\",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Show Overlay",
+     "kbd": "⇧O",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Show Track Labels",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Show Future Track Points",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Show ROI Manager overlay",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    }
+   ],
+   "Help": [
+    {
+     "label": "Keyboard Shortcuts",
+     "kbd": "?",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "Lumen README",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Command Reference",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Fiji Parity",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Design & Research Notes",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "ImageJ Website ↗",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "https://imagej.net/ij/"
+    },
+    {
+     "label": "ImageJ User Guide ↗",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "https://imagej.net/ij/docs/guide/"
+    },
+    {
+     "label": "Fiji Wiki ↗",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "https://imagej.net/software/fiji/"
+    },
+    {
+     "label": "image.sc Forum ↗",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "https://forum.image.sc/"
+    },
+    {
+     "sep": true
+    },
+    {
+     "label": "About Plugins",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "List every loaded command module (built-in and ~/.lumen/plugins) with its command count, plus modules that failed to import."
+    },
+    {
+     "label": "About Lumen",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": ""
+    },
+    {
+     "label": "Lumen / ImageJ Links",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "A table of documentation links for Lumen, ImageJ, Fiji and the Python imaging stack."
+    },
+    {
+     "label": "Command Help…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Describe a command: its id, menu, kind, shortcut and a table of its parameters with types, defaults and choices."
+    },
+    {
+     "label": "Check for Updates…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Compare the running Lumen version with the source tree's pyproject.toml and, when the network is allowed, with the latest lumen-imaging release on PyPI. Nothing is installed: upgrade with `pip install -U lumen-imaging` (or `git pull` in a checkout)."
+    },
+    {
+     "label": "Update Lumen…",
+     "kbd": "",
+     "submenu": false,
+     "disabled": false,
+     "title": "Update the running Lumen in place: `git pull --ff-only` in a git checkout, `python -m pip install --upgrade lumen-imaging` for a package install (a plain source folder without git cannot be updated automatically). The command's output goes to the Log and an 'Update' table. The server is never restarted – restart `lumen` afterwards to run the new version (ImageJ's Help ▸ Update ImageJ… / Fiji's Update…)."
+    }
+   ]
+  },
+  "sections": {
+   "titles": [
+    "Display",
+    "Threshold",
+    "Workflows",
+    "3-D View",
+    "Orthogonal Views",
+    "ROI Manager",
+    "Pixel Classifier",
+    "Results",
+    "Particle Summary",
+    "Image Info",
+    "History",
+    "Script & Recorder",
+    "Log"
+   ],
+   "open": [
+    "Display",
+    "Threshold",
+    "Workflows",
+    "3-D View",
+    "Orthogonal Views",
+    "ROI Manager",
+    "Pixel Classifier",
+    "Results",
+    "Particle Summary"
+   ]
+  },
+  "hint:Display": [
+   "Display changes never modify pixel values. Use Apply LUT / RGB Color to bake them in."
+  ],
+  "hint:Threshold": [
+   "Red pixels are inside the range. Drag the handles, or pick a method and press Auto. Local (adaptive) methods: ⌘K → “Auto Local Threshold”."
+  ],
+  "hint:3-D View": [
+   "256 × 256 × 60 voxels · z/xy 1.12 · Drag to orbit, wheel to zoom, ⇧-drag / right-drag to pan, double-click to reset."
+  ],
+  "hint:Orthogonal Views": [
+   "Sections through the image centre; draw a point or area selection to move them. Click or drag in a section to change the current slice. Z is"
+  ],
+  "hint:ROI Manager": [
+   "Click to select, ⇧/⌘-click for multiple, double-click to rename. Selecting a ROI jumps to its slice."
+  ],
+  "hint:Pixel Classifier": [
+   "Traces are ROI-manager entries named class:<name> on the plane they were drawn on. Weka loop: trace → Train → look at the overlay → add trac"
+  ],
+  "hint:History": [
+   "No changes yet. Every applied command can be undone."
+  ],
+  "inspector_scroll": {
+   "scrollHeight": 5295,
+   "clientHeight": 664,
+   "viewport": {
+    "width": 1366,
+    "height": 768
+   }
+  },
+  "prefs": {
+   "groups": [
+    "APPEARANCE",
+    "FONTS",
+    "POINTS",
+    "ARROWS",
+    "COLOURS",
+    "PLOTS",
+    "SAVING & EDITING",
+    "DICOM",
+    "ADVANCED"
+   ],
+   "rows": 28,
+   "active": {
+    "tag": "div",
+    "cls": "dialog prefs",
+    "role": null,
+    "name": "Preferencessaved on the server as you ch",
+    "region": "modal",
+    "outline": "none",
+    "visible": true
+   }
+  },
+  "help_overlay": {
+   "chars": 1659,
+   "has_cmdk": true,
+   "has_cmdw": false,
+   "head": "Keyboard shortcuts\nLumen keeps ImageJ's single-letter command shortcuts and adds a command palette for everything else.\nGENERAL\nCommand palette\n⌘K\nOpen file\n⌘O\nSave / Save as\n⌘S / ⇧⌘S\nUndo / Redo\n⌘Z / ⇧⌘Z\nRepeat last command\n⇧R\nPreferences\n⌘,\nToggle inspector\n⌘\\\nSplit view\n⇧⌘\\\nPrint\n⌘P\nScript editor"
+  }
+ },
+ "console": []
+}

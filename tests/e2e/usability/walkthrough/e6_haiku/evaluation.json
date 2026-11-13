@@ -1,0 +1,136 @@
+{
+  "evaluator": "E6 – Claude Haiku 5.5, persona: PhD cell biologist, two years of Fiji through menus, never scripted, impatient",
+  "method": "Headless Google Chrome via Playwright (single browser, closed after use) against http://127.0.0.1:8766. Closed all open images first (confirm dialog: Close without saving). Walked: Open Sample (Synthetic nuclei, 3 channels) and channel adjust; Threshold and Analyze Particles; rectangle plus Measure; Open Sample T1 head and Z Project; LUT via inspector; Gaussian Blur with Preview and Undo; New Image 20 frames and Track wizard; palette search for CLAHE; Preferences, ?, [, Shift+K, Shift+Cmd+\\, 3-D VIEW section; modified-image close (x, middle-click, Cmd+W); F10 menubar keyboard navigation; error with no selection. Accessibility: toolbar accessible-name audit and a computed-contrast pass over 477 text nodes. Severity on Nielsen 0-4. Screenshots in eval_e6. Did not read docs or other evaluators' output.",
+  "problems": [
+    {
+      "id": "E6-1",
+      "heuristic": "Consistency and standards (H4); Match between system and real world (H2)",
+      "location": "Command palette, query 'Open Sample' (Cmd+K)",
+      "observation": "Two near-identical sample commands: 'Open ImageJ Sample…' (downloads from imagej.net) and 'Open Sample' (bundled scikit-image data). The query 'Open Sample' ranks 'Open ImageJ Sample…' first, so Enter opens the wrong one. Nothing in the names says which needs network access.",
+      "severity": 2,
+      "evidence": "03_open_sample_selected.png"
+    },
+    {
+      "id": "E6-2",
+      "heuristic": "Error prevention / Help users recognize, diagnose, recover (H9)",
+      "location": "Analyze Particles sheet, after Run on an unthresholded image",
+      "observation": "Error text is useful ('needs a thresholded or binary image ... or tick Auto-threshold'), but it is a red toast placed over the sheet footer, covering the Cancel button. The fix is only in prose; no inline button applies the threshold from the error.",
+      "severity": 2,
+      "evidence": "08_particles_result.png"
+    },
+    {
+      "id": "E6-3",
+      "heuristic": "Visibility of system status (H1); Error prevention (H5); Reproducibility",
+      "location": "ROI Manager and Results sections in the inspector (global, not per image)",
+      "observation": "After processing synthetic_cells, a new 20-frame 'Untitled' image still shows ROI MANAGER (41) and RESULTS rows labelled synthetic_cells.tif-1:n. The inspector lists are not scoped to the active image, so a measurement table can silently belong to a different image.",
+      "severity": 3,
+      "evidence": "17b_timeseries.png"
+    },
+    {
+      "id": "E6-4",
+      "heuristic": "Match between system and real world (H2); Help users recover (H9)",
+      "location": "Close-image confirm dialog ('Close “synthetic_cells.tif”?')",
+      "observation": "Text reads 'It has 1 unsaved change (the undo history). Closing discards them.' Calling undo history an 'unsaved change' is jargon and confusing to a user who has not thought of undo as a save state. The dialog itself (Cancel / Save… / red Close without saving) is clear and does not default to the destructive action.",
+      "severity": 1,
+      "evidence": "26_close_modified.png"
+    },
+    {
+      "id": "E6-5",
+      "heuristic": "Flexibility and efficiency of use (H7); Recognition over recall (H6)",
+      "location": "Image tabs (tab strip, top of viewport)",
+      "observation": "The tab close button is hidden for inactive tabs and is only reachable by hover; the tab tooltip says middle-click or Delete closes. Cmd+W does close the active image, but Fiji users will look for the x. A modified tab on the strip gives no visible marker beyond a small dot.",
+      "severity": 1,
+      "evidence": "26_close_modified.png"
+    },
+    {
+      "id": "E6-6",
+      "heuristic": "Consistency and standards (H4)",
+      "location": "Inspector fields (threshold, CLAHE, Track wizard, Preferences)",
+      "observation": "Numeric fields use decimal commas in an English UI: CLAHE clip limit shows '0,01', Track spot radius shows '2,5', Preferences selection stroke shows '1,5'. Mixed or unexpected locale formatting invites input errors and conflicts with the '.' used in the status bar.",
+      "severity": 2,
+      "evidence": "19_clahe_palette.png"
+    },
+    {
+      "id": "E6-7",
+      "heuristic": "Visibility of system status (H1); Recognition over recall (H6)",
+      "location": "Edit menu, Undo item",
+      "observation": "Edit > Undo shows only 'Undo ⌘Z'; it does not name the step ('Undo Gaussian Blur'). The HISTORY section lists the steps, but the menu gives no feedback on what will be undone, which matters after several operations.",
+      "severity": 2,
+      "evidence": "28_menu_keys.png"
+    },
+    {
+      "id": "E6-8",
+      "heuristic": "Aesthetic and minimalist design (H8); Consistency (H4)",
+      "location": "Command palette, query 'LUT'",
+      "observation": "Results show duplicate entries ('LUT…' twice, 'Apply LUT' twice) with no grouping or category, which makes the palette look broken.",
+      "severity": 1,
+      "evidence": "14_lut_palette.png"
+    },
+    {
+      "id": "E6-9",
+      "heuristic": "Flexibility and efficiency of use (H7); Aesthetic and minimalist design (H8)",
+      "location": "Inspector DISPLAY section, channel LUT select",
+      "observation": "The LUT drop-down is a flat native select with about 70 entries (Grays, Fire, ..., Glasbey, Random) and no grouping (sequential, diverging, categorical). Finding a specific LUT means scrolling a long list; the palette is no faster for this.",
+      "severity": 2,
+      "evidence": "14b_lut_fire.png"
+    },
+    {
+      "id": "E6-10",
+      "heuristic": "Accessibility (WCAG 1.4.3)",
+      "location": "Menubar triggers (File, Edit, ... Help)",
+      "observation": "Menu trigger text is 13px light grey on the grey button background, measured at 4.43:1, just under the 4.5:1 AA threshold. Other measured text passed in the sample of 477 text nodes; the menubar is the only group below AA.",
+      "severity": 1,
+      "evidence": "00_initial.png"
+    },
+    {
+      "id": "E6-11",
+      "heuristic": "Aesthetic and minimalist design (H8)",
+      "location": "Inspector RESULTS table",
+      "observation": "The results table is wider than the inspector, so the Mean and later columns are clipped at the right edge with no horizontal scroll cue.",
+      "severity": 1,
+      "evidence": "19_clahe_palette.png"
+    },
+    {
+      "id": "E6-12",
+      "heuristic": "Visibility of system status (H1); Flexibility (H7)",
+      "location": "Inspector TRACKS section (below the fold)",
+      "observation": "On a time series the TRACKS panel is at the bottom of the inspector and only visible after scrolling; the wizard itself is clear and complete, but nothing in the viewport points to it after the time series is created.",
+      "severity": 1,
+      "evidence": "18_tracks_wizard.png"
+    },
+    {
+      "id": "E6-13",
+      "heuristic": "Help and documentation (H10); Recognition over recall (H6)",
+      "location": "Keyboard shortcuts overlay (?)",
+      "observation": "The overlay is complete and well organized, but keys are small chips and descriptions are dim, so it is hard to scan. It also needs scrolling to reach the bottom groups (Crop, Fill, Nudge).",
+      "severity": 1,
+      "evidence": "21_help_overlay.png"
+    },
+    {
+      "id": "E6-14",
+      "heuristic": "Help users recognize, diagnose, recover (H9)",
+      "location": "Error on missing selection (Plot Profile with no line)",
+      "observation": "Toast 'Plot Profile needs a selection' is clear but does not say how to make one (e.g. the line tool shortcut 5). The toast also disappears without a persistent log entry.",
+      "severity": 1,
+      "evidence": "30_error_no_selection.png"
+    }
+  ],
+  "positives": [
+    "Command palette is strong: 'CLAHE' and 'contrast' queries find the right commands at once. CLAHE is also under Process > CLAHE (Local Contrast)… so both routes work.",
+    "Multi-channel workflow is clear: DISPLAY section with per-channel range fields, Auto/Reset/Inv buttons, LUT select and an Enhance dialog with live Preview.",
+    "Sheets (Z Project, Gaussian Blur, Analyze Particles, New Image, Track wizard, CLAHE) share one layout: description, labelled fields, Cancel/primary Apply; Preview where it matters.",
+    "Z Project on the T1 head creates MAX_t1-head.tif as a new tab and keeps the original, with a clear 'Max Intensity' method list.",
+    "Rectangle tool (1) plus Measure added a result row; the status bar shows the rectangle geometry (x, y, w, h) live.",
+    "Undo works for Gaussian Blur; the HISTORY section lists the steps and the current state, and the recorder shows each step as lumen.run(...) calls, which supports reproducibility.",
+    "Script & Recorder is a real strength for reproducibility: Python and JavaScript conversion, Run selection, and API help are in the inspector.",
+    "Split view works: 'active' and 'compare' panes with their own image pickers, plus an image-level close/swap control.",
+    "Time series: New Image with Frames creates a 20-frame stack with a visible scrubber and play button; the Track (detect + link) wizard has sensible defaults and explanations.",
+    "Keyboard: F10 focuses the menubar, arrows move across menus and into items, Enter runs, Esc backs out. All 23 toolbar buttons have accessible names that include the shortcut.",
+    "Confirm dialog for unsaved changes is good: it names the image, offers Cancel / Save / Close without saving, and does not default to the destructive action.",
+    "Error handling for a missing selection is a toast with a clear message, not a silent failure or a modal.",
+    "Preferences are saved as you change them and show shortcut hints; the 3-D VIEW section appears for stacks with its slice count.",
+    "The status bar (size, calibration, bit depth, fg/bg, memory, zoom) and the tool hint in the viewport header give useful ongoing feedback."
+  ],
+  "overall": "Lumen is well organized for a Fiji user: the menus, palette, tool rail and inspector map cleanly onto what the persona already knows, and the core tasks (sample, channel adjust, threshold, measure, Z project, blur with undo, time series, tracks wizard, palette search for CLAHE) all completed without scripting. The most serious problem is state scope: the ROI Manager and Results tables are global rather than per image, so a 20-frame blank image still shows 41 ROIs and rows from another image (severity 3). Several smaller issues will bother an impatient user: two near-identical sample commands that the palette ranks in the wrong order, an error toast that covers the Cancel button, decimal commas in an English UI, an unnamed Undo entry, a flat 70-entry LUT list, and tab close buttons that only appear on hover. Accessibility is mostly sound (every toolbar button is labelled, tabs carry ARIA state, F10 menu keyboard navigation works), with one borderline contrast issue in the menubar. Not evaluated: large-data behaviour (no large stack opened), undo depth beyond one step, batch processing (Apply Recorded Macro to Folder was not opened), and the Analyze Particles run on a properly thresholded image.",
+  "note": "Evaluation produced by a separate agent (see 'evaluator') against the running build on 8 Nov 2026; screenshots named in 'evidence' were written to the agent's scratch folder and are not committed (the earlier walkthrough screenshots are regenerated the same way). Evidence paths are relative to that folder."
+}

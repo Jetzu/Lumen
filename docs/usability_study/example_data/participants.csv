@@ -1,0 +1,11 @@
+participant,group,order,fiji_years,scripting,os,screen,input_device,assistive_tech,notes
+X01,fiji-weekly,fiji-first,6,none,Windows,13-inch 1440x900,mouse,no,SYNTHETIC EXAMPLE DATA
+X02,fiji-weekly,lumen-first,2,python,macOS,13-inch 1440x900,trackpad,no,SYNTHETIC EXAMPLE DATA
+X03,fiji-weekly,fiji-first,10,none,Linux,13-inch 1440x900,mouse,no,SYNTHETIC EXAMPLE DATA
+X04,fiji-weekly,lumen-first,1,none,Windows,13-inch 1440x900,trackpad,no,SYNTHETIC EXAMPLE DATA
+X05,fiji-weekly,fiji-first,2,none,macOS,13-inch 1440x900,trackpad,no,SYNTHETIC EXAMPLE DATA
+X06,fiji-weekly,lumen-first,1,python,macOS,13-inch 1440x900,mouse,no,SYNTHETIC EXAMPLE DATA
+X07,fiji-weekly,fiji-first,11,python,Linux,13-inch 1440x900,mouse,no,SYNTHETIC EXAMPLE DATA
+X08,fiji-weekly,lumen-first,10,python,Windows,13-inch 1440x900,mouse,no,SYNTHETIC EXAMPLE DATA
+X09,fiji-weekly,fiji-first,4,none,Linux,13-inch 1440x900,mouse,no,SYNTHETIC EXAMPLE DATA
+X10,fiji-weekly,lumen-first,5,macros,macOS,13-inch 1440x900,mouse,no,SYNTHETIC EXAMPLE DATA

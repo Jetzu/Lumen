@@ -1,0 +1,29 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+/build/
+dist/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Desktop build (desktop/build/ holds the PyInstaller specs and is tracked)
+desktop/.venv-build/
+desktop/dist/
+
+# Test artefacts written next to the scripts
+tests/e2e/usability/walkthrough/*/screenshots/
+tests/e2e/usability/*.png
+tests/crossval/_work/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+*.swp

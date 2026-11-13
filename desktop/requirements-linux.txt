@@ -1,0 +1,8 @@
+# Desktop extras for the Linux build (Lumen's own dependencies come from pyproject.toml via desktop/_buildenv.py).
+# Qt (PyQt6 + QtWebEngine, Chromium based) instead of WebKitGTK so the one-folder build carries its own
+# browser engine and does not depend on the distribution's webkit2gtk packages.
+pywebview[qt]>=6.2,<7
+PyQt6>=6.7,<7
+PyQt6-WebEngine>=6.7,<7
+qtpy>=2.4
+pyinstaller>=6.16,<7

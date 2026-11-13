@@ -1,0 +1,146 @@
+# Desktop builds: Lumen.app + DMG (macOS arm64 and x86_64), a Windows zip and a Linux tar.gz (+ AppImage),
+# all produced by desktop/build.py.  Runs on every v* tag (and by hand); on a tag the artifacts are attached
+# to a GitHub Release.  Each job smoke-tests its own binary (LUMEN_DESKTOP_SMOKE=1: start the embedded
+# server, check /api/health and a backup zip, exit without opening a window).
+name: Desktop release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Create a GitHub release from the current ref (needs a tag-like ref name)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  PYTHONUTF8: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: macOS (Apple silicon), os: macos-latest,    tag: macos-arm64,   exe: desktop/dist/Lumen.app/Contents/MacOS/Lumen }
+          - { name: macOS (Intel),         os: macos-15-intel,  tag: macos-x86_64,  exe: desktop/dist/Lumen.app/Contents/MacOS/Lumen }
+          - { name: Windows,               os: windows-latest,  tag: windows-x86_64, exe: desktop/dist/Lumen/Lumen.exe }
+          - { name: Linux,                 os: ubuntu-22.04,    tag: linux-x86_64,  exe: desktop/dist/Lumen/Lumen }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            desktop/requirements-*.txt
+
+      - name: Linux build dependencies (Qt platform plugins, AppImage tooling)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libegl1 libgl1 libxkbcommon0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 \
+            libxcb-keysyms1 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 libxcb-xkb1 libxkbcommon-x11-0 libnss3 libasound2 \
+            libfuse2
+          curl -fsSL -o "$RUNNER_TEMP/appimagetool" https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x "$RUNNER_TEMP/appimagetool"
+          echo "LUMEN_APPIMAGETOOL=$RUNNER_TEMP/appimagetool" >> "$GITHUB_ENV"
+
+      - name: Frontend
+        working-directory: frontend
+        run: |
+          npm ci --no-fund --no-audit
+          npm run build
+
+      - name: Build the desktop app
+        run: python desktop/build.py --skip-frontend
+
+      - name: Smoke test (server, commands, image round trip, bundled libraries and docs - no window)
+        shell: bash
+        env:
+          LUMEN_DESKTOP_SMOKE: "1"
+        run: |
+          # a path both bash and the native exe understand (Windows: D:/a/_temp/... instead of D:\a\_temp)
+          if command -v cygpath >/dev/null 2>&1; then base="$(cygpath -m "$RUNNER_TEMP")"; else base="$RUNNER_TEMP"; fi
+          export LUMEN_HOME="$base/lumen-smoke"
+          export LUMEN_DESKTOP_SMOKE_OUT="$LUMEN_HOME/result.txt"
+          mkdir -p "$LUMEN_HOME"
+          code=0
+          "${{ matrix.exe }}" || code=$?
+          echo "exit code: $code"
+          echo "--- result ---";      cat "$LUMEN_DESKTOP_SMOKE_OUT" 2>/dev/null || true
+          echo "--- desktop.log ---"; cat "$LUMEN_HOME/desktop/desktop.log" 2>/dev/null || true
+          [ "$code" = "0" ] && grep -q "LUMEN_DESKTOP_SMOKE_OK" "$LUMEN_DESKTOP_SMOKE_OUT"
+
+      - name: Collect artifacts
+        shell: bash
+        run: |
+          mkdir -p upload
+          shopt -s nullglob
+          for f in desktop/dist/*.dmg desktop/dist/*.zip desktop/dist/*.tar.gz desktop/dist/*.AppImage; do
+            mv "$f" upload/
+          done
+          ls -la upload
+          for f in upload/*; do
+            (cd upload && shasum -a 256 "$(basename "$f")" >> "../upload/SHA256SUMS-${{ matrix.tag }}.txt") || true
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lumen-${{ matrix.tag }}
+          path: upload/*
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: GitHub release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Checksums
+        run: |
+          cd artifacts
+          rm -f SHA256SUMS-*.txt
+          sha256sum *.dmg *.zip *.tar.gz *.AppImage 2>/dev/null > SHA256SUMS.txt || true
+          ls -la
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Lumen ${{ github.ref_name }}
+          generate_release_notes: true
+          draft: false
+          files: artifacts/*
+          body: |
+            Desktop builds of Lumen (unsigned - see docs/sections/desktop.md for the first-launch steps):
+
+            * **macOS**: `Lumen-<version>-macos-arm64.dmg` (Apple silicon) / `Lumen-<version>-macos-x86_64.dmg` (Intel).
+              Drag Lumen to Applications; first launch: right-click → Open (or `xattr -d com.apple.quarantine /Applications/Lumen.app`).
+            * **Windows**: `Lumen-<version>-windows-x86_64.zip` - unzip anywhere and run `Lumen\Lumen.exe`
+              (needs the Microsoft Edge WebView2 runtime, included in Windows 10/11; SmartScreen: *More info → Run anyway*).
+            * **Linux**: `Lumen-<version>-linux-x86_64.tar.gz` (unpack, run `Lumen/Lumen`) or the `.AppImage` (`chmod +x`, run).
+
+            Your workspace lives in the per-user application data directory (File → Open Data Folder).

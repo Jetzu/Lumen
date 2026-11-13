@@ -1,0 +1,4 @@
+# Desktop extras for the macOS build (Lumen's own dependencies come from pyproject.toml via desktop/_buildenv.py).
+# pywebview pulls pyobjc-core + the Cocoa / WebKit / Quartz framework wrappers on macOS.
+pywebview>=6.2,<7
+pyinstaller>=6.16,<7

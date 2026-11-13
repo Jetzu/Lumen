@@ -1,0 +1,6 @@
+# Desktop extras for the Windows build (Lumen's own dependencies come from pyproject.toml via desktop/_buildenv.py).
+# pywebview on Windows uses pythonnet + WinForms + the Microsoft Edge WebView2 control (DLLs ship inside the
+# wheel; the WebView2 *runtime* is part of Windows 10/11 and otherwise a free download from Microsoft).
+pywebview>=6.2,<7
+pythonnet>=3.0.3
+pyinstaller>=6.16,<7

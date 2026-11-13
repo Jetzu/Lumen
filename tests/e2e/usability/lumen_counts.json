@@ -1,0 +1,593 @@
+[
+  {
+    "task": 1,
+    "title": "Open a multi-channel image and adjust each channel",
+    "setup": {
+      "clicks": 0,
+      "keys": 0,
+      "texts": 0,
+      "actions": 0,
+      "dialogs": 0,
+      "modal": 0,
+      "dialog_names": [],
+      "log": []
+    },
+    "measured": {
+      "clicks": 7,
+      "keys": 1,
+      "texts": 1,
+      "actions": 9,
+      "dialogs": 2,
+      "modal": 1,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Open Sample'"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'open sample' (11 chars, counted as 1)",
+        "click      palette entry 'Open Sample'",
+        "dialog     parameter sheet 'Open Sample' (non-modal panel)",
+        "dropdown   sample -> Synthetic nuclei (3 channels) (2 clicks)",
+        "click      Apply (open the sample)",
+        "click      Auto display range, channel 1 (all three channels' sliders are visible at once)",
+        "click      Auto display range, channel 2 (all three channels' sliders are visible at once)",
+        "click      Auto display range, channel 3 (all three channels' sliders are visible at once)"
+      ]
+    },
+    "verified": "3 channels; per-channel display ranges [(198.0, 3235.0), (126.0, 947.0), (171.0, 1785.0)] -> [(195, 3237), (125, 949.2), (166.7, 1794.3)]; mode=composite",
+    "preview": "yes: range/LUT changes composite instantly in the client (no server round trip)",
+    "undo": "display changes are not undo steps (history after task: []); 'Reset'/'Reset all' buttons restore the data range",
+    "note": "Composite mode shows all three channels' histogram sliders at once; no channel switching needed",
+    "recorded": [
+      "lumen.run(\"file.sample\", name='Synthetic nuclei (3 channels)')"
+    ],
+    "seconds": 2.9
+  },
+  {
+    "task": 2,
+    "title": "Threshold + Analyze Particles with results",
+    "setup": {
+      "clicks": 4,
+      "keys": 1,
+      "texts": 1,
+      "actions": 6,
+      "dialogs": 2,
+      "modal": 1,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Open Sample'"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'open sample' (11 chars, counted as 1)",
+        "click      palette entry 'Open Sample'",
+        "dialog     parameter sheet 'Open Sample' (non-modal panel)",
+        "dropdown   sample -> Blobs (2 clicks)",
+        "click      Apply (open the sample)"
+      ]
+    },
+    "measured": {
+      "clicks": 4,
+      "keys": 0,
+      "texts": 0,
+      "actions": 4,
+      "dialogs": 1,
+      "modal": 0,
+      "dialog_names": [
+        "parameter sheet 'Analyze Particles'"
+      ],
+      "log": [
+        "click      expand the inspector section 'Threshold'",
+        "click      Threshold section: Auto (Default method, red overlay)",
+        "click      Threshold section: Particles\u2026",
+        "dialog     parameter sheet 'Analyze Particles' (non-modal panel)",
+        "click      Run (Analyze Particles)"
+      ]
+    },
+    "verified": "threshold 118-255; 55 ROIs in the docked ROI Manager (55 rows visible), 55 result rows (55 visible) in the docked Results section; summary in the Table section",
+    "preview": "threshold: yes (red overlay follows the slider live); Analyze Particles sheet: no (analysis command)",
+    "undo": "history after task: [] (analysis results are not undo steps; pixels untouched)",
+    "recorded": [
+      "lumen.run(\"threshold.compute\", method='Default', dark_background=True)",
+      "lumen.run(\"analyze.particles\", min_size=0.0, max_size=0.0, min_circularity=0.0, max_circularity=1.0, show='Nothing', display_results=True, clear_results=False, summarize=True, add_to_manager=True, exclude_on_edges=False, include_holes=True, all_planes=False, pixel_units=False, record_starts=False, in_situ_show=False, composite_rois=True)"
+    ],
+    "seconds": 0.8
+  },
+  {
+    "task": 3,
+    "title": "Measure a drawn ROI",
+    "setup": {
+      "clicks": 4,
+      "keys": 1,
+      "texts": 1,
+      "actions": 6,
+      "dialogs": 2,
+      "modal": 1,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Open Sample'"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'open sample' (11 chars, counted as 1)",
+        "click      palette entry 'Open Sample'",
+        "dialog     parameter sheet 'Open Sample' (non-modal panel)",
+        "dropdown   sample -> Blobs (2 clicks)",
+        "click      Apply (open the sample)"
+      ]
+    },
+    "measured": {
+      "clicks": 1,
+      "keys": 2,
+      "texts": 0,
+      "actions": 3,
+      "dialogs": 0,
+      "modal": 0,
+      "dialog_names": [],
+      "log": [
+        "key        1  rectangle tool",
+        "click-drag draw the rectangle on the canvas",
+        "key        m  Measure"
+      ]
+    },
+    "verified": "1 result row(s) in the docked Results section (1 visible): ['blobs.tif', 5696.0, 84.75825140449439, 14.0, 244.0]",
+    "preview": "n/a (selection geometry shown live in the status bar while dragging)",
+    "undo": "n/a (measurement does not change pixels)",
+    "recorded": [
+      "lumen.run(\"analyze.measure\", roi={'type': 'rect', 'x': 75.0, 'y': 84.0, 'w': 89.0, 'h': 64.0})"
+    ],
+    "seconds": 1.4
+  },
+  {
+    "task": 4,
+    "title": "Z-projection of a stack",
+    "setup": {
+      "clicks": 4,
+      "keys": 1,
+      "texts": 1,
+      "actions": 6,
+      "dialogs": 2,
+      "modal": 1,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Open Sample'"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'open sample' (11 chars, counted as 1)",
+        "click      palette entry 'Open Sample'",
+        "dialog     parameter sheet 'Open Sample' (non-modal panel)",
+        "dropdown   sample -> Cells (3-D, 2 channels) (2 clicks)",
+        "click      Apply (open the sample)"
+      ]
+    },
+    "measured": {
+      "clicks": 1,
+      "keys": 2,
+      "texts": 1,
+      "actions": 4,
+      "dialogs": 2,
+      "modal": 1,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Z Project'"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'z proj' (6 chars, counted as 1)",
+        "key        Enter  run the selected entry 'Z Project'",
+        "dialog     parameter sheet 'Z Project' (non-modal panel)",
+        "click      Apply (Max Intensity, all slices = defaults)"
+      ]
+    },
+    "verified": "new image 'MAX_cells3d.tif' with shape {'t': 1, 'z': 1, 'c': 2, 'y': 256, 'x': 256} opened as a tab (tabs counted: 2)",
+    "preview": "no (whole-image command: the sheet has no Preview switch)",
+    "undo": "the projection is a new image; closing the tab discards it",
+    "recorded": [
+      "lumen.run(\"stacks.z_project\", method='Max Intensity', start=1, stop=0, axis='Z')"
+    ],
+    "seconds": 0.4
+  },
+  {
+    "task": 5,
+    "title": "3-channel composite with LUTs (a: LUT per channel of an open composite)",
+    "setup": {
+      "clicks": 4,
+      "keys": 1,
+      "texts": 1,
+      "actions": 6,
+      "dialogs": 2,
+      "modal": 1,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Open Sample'"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'open sample' (11 chars, counted as 1)",
+        "click      palette entry 'Open Sample'",
+        "dialog     parameter sheet 'Open Sample' (non-modal panel)",
+        "dropdown   sample -> Synthetic nuclei (3 channels) (2 clicks)",
+        "click      Apply (open the sample)"
+      ]
+    },
+    "measured": {
+      "clicks": 6,
+      "keys": 0,
+      "texts": 0,
+      "actions": 6,
+      "dialogs": 0,
+      "modal": 0,
+      "dialog_names": [],
+      "log": [
+        "dropdown   LUT of channel 1 -> Cyan (2 clicks)",
+        "dropdown   LUT of channel 2 -> Magenta (2 clicks)",
+        "dropdown   LUT of channel 3 -> Yellow (2 clicks)"
+      ]
+    },
+    "verified": "LUTs ['Cyan', 'Magenta', 'Yellow']; mode=composite (composite is the default for multi-channel images)",
+    "preview": "yes: the composite re-renders instantly on the client",
+    "undo": "display state; 'Reset all' restores defaults; not an undo step",
+    "recorded": [],
+    "seconds": 0.7
+  },
+  {
+    "task": 5.5,
+    "title": "3-channel composite with LUTs (b: merge three single-channel images)",
+    "setup": {
+      "clicks": 4,
+      "keys": 3,
+      "texts": 2,
+      "actions": 9,
+      "dialogs": 3,
+      "modal": 2,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Open Sample'",
+        "command palette"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'open sample' (11 chars, counted as 1)",
+        "click      palette entry 'Open Sample'",
+        "dialog     parameter sheet 'Open Sample' (non-modal panel)",
+        "dropdown   sample -> Synthetic nuclei (3 channels) (2 clicks)",
+        "click      Apply (open the sample)",
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'split' (5 chars, counted as 1)",
+        "key        Enter  run the selected entry 'Split Channels'"
+      ]
+    },
+    "measured": {
+      "clicks": 7,
+      "keys": 2,
+      "texts": 1,
+      "actions": 10,
+      "dialogs": 2,
+      "modal": 1,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Merge Channels'"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'merge' (5 chars, counted as 1)",
+        "key        Enter  run the selected entry 'Merge Channels'",
+        "dialog     parameter sheet 'Merge Channels' (non-modal panel)",
+        "dropdown   C1 source image -> 93e6d7511a (2 clicks)",
+        "dropdown   C2 source image -> 5efb159c04 (2 clicks)",
+        "dropdown   C3 source image -> 3166edad01 (2 clicks)",
+        "click      Apply (Create composite = default)"
+      ]
+    },
+    "verified": "merged image 'Composite' shape {'t': 1, 'z': 1, 'c': 3, 'y': 512, 'x': 512} (c=3), LUTs ['Red', 'Green', 'Blue']",
+    "preview": "no (whole-image command)",
+    "undo": "new image; sources kept only if 'Keep source' is ticked",
+    "recorded": [
+      "lumen.run(\"color.merge\", c1='93e6d7511a', c2='5efb159c04', c3='3166edad01', create_composite=True, keep_source=False)"
+    ],
+    "seconds": 0.8
+  },
+  {
+    "task": 6,
+    "title": "Run a filter and undo it",
+    "setup": {
+      "clicks": 4,
+      "keys": 1,
+      "texts": 1,
+      "actions": 6,
+      "dialogs": 2,
+      "modal": 1,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Open Sample'"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'open sample' (11 chars, counted as 1)",
+        "click      palette entry 'Open Sample'",
+        "dialog     parameter sheet 'Open Sample' (non-modal panel)",
+        "dropdown   sample -> Blobs (2 clicks)",
+        "click      Apply (open the sample)"
+      ]
+    },
+    "measured": {
+      "clicks": 1,
+      "keys": 3,
+      "texts": 2,
+      "actions": 6,
+      "dialogs": 2,
+      "modal": 1,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Gaussian Blur'"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'gauss' (5 chars, counted as 1)",
+        "key        Enter  run the selected entry 'Gaussian Blur'",
+        "dialog     parameter sheet 'Gaussian Blur' (non-modal panel)",
+        "text       sigma: '3' (1 chars, counted as 1)",
+        "click      Apply",
+        "key        Control+z  Undo"
+      ]
+    },
+    "verified": "history: ['Gaussian Blur'] -> undo -> redo ['Gaussian Blur']; the preview request fired while typing sigma",
+    "preview": "yes (Preview switch in the sheet; on by default: True); previews the current plane while editing",
+    "undo": "see depth check",
+    "recorded_task_only": [
+      "lumen.run(\"filters.gaussian\", sigma=3.0, scope='slice')"
+    ],
+    "undo_depth_check": {
+      "stack_before_undo": [
+        "Smooth",
+        "Smooth",
+        "Invert"
+      ],
+      "history_rows_visible": 4,
+      "after_3_undo_redo_list_len": 3,
+      "redo_works": true
+    },
+    "undo_depth_check_actions": 8,
+    "recorded": [
+      "lumen.run(\"filters.gaussian\", sigma=3.0, scope='slice')",
+      "lumen.run(\"process.smooth\", scope='plane')",
+      "lumen.run(\"process.smooth\", scope='plane')",
+      "lumen.run(\"edit.invert\", scope='plane')"
+    ],
+    "seconds": 1.2
+  },
+  {
+    "task": 7,
+    "title": "Track cells and export tracks",
+    "setup": {
+      "clicks": 4,
+      "keys": 1,
+      "texts": 1,
+      "actions": 6,
+      "dialogs": 2,
+      "modal": 1,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Open Sample'"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'open sample' (11 chars, counted as 1)",
+        "click      palette entry 'Open Sample'",
+        "dialog     parameter sheet 'Open Sample' (non-modal panel)",
+        "dropdown   sample -> Nuclei timelapse (synthetic) (2 clicks)",
+        "click      Apply (open the sample)"
+      ]
+    },
+    "measured": {
+      "clicks": 3,
+      "keys": 2,
+      "texts": 2,
+      "actions": 7,
+      "dialogs": 3,
+      "modal": 1,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Track (detect + link)'",
+        "parameter sheet 'Export Tracks (CSV)'"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'track' (5 chars, counted as 1)",
+        "key        Enter  run the selected entry 'Track (detect + link)'",
+        "dialog     parameter sheet 'Track (detect + link)' (non-modal panel)",
+        "click      Run (defaults: LoG, radius 2.5, automatic threshold, LAP linking)",
+        "click      Tracks section: Export CSV\u2026",
+        "dialog     parameter sheet 'Export Tracks (CSV)' (non-modal panel)",
+        "text       output path: '<scratch>/usability/tracks_export.csv' (127 chars, counted as 1)",
+        "click      Run (export)"
+      ]
+    },
+    "verified": "113 tracks in the docked Tracks section (113 table rows, time-coloured overlays); CSV written: 946 lines, header ID,TRACK_ID,FRAME,POSITION_X,POSITION_Y,POSITION_Z,POSITION_T,RADIUS,QUALITY,MEA",
+    "preview": "no (analysis command; results appear as overlays + Tracks table after Run)",
+    "undo": "tracks live in a Tracks table (delete selected / Clear Tracks); not pixel undo",
+    "recorded": [
+      "lumen.run(\"tracking.track\", detector='LoG', radius=2.5, threshold=0.0, subpixel=True, median_filter=False, units='pixels', z_mode='Current slice', max_displacement=10.0, gap_closing_frames=2, max_gap_distance=15.0, min_track_length=2, add_to_manager=False, add_to_results=False)",
+      "lumen.run(\"tracking.export_tracks\", path='<scratch>/usability/tracks_export.csv', layout='TrackMate', include_unlinked=False)"
+    ],
+    "seconds": 0.8
+  },
+  {
+    "task": 8,
+    "title": "Find a command whose menu location you do not know",
+    "setup": {
+      "clicks": 4,
+      "keys": 1,
+      "texts": 1,
+      "actions": 6,
+      "dialogs": 2,
+      "modal": 1,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Open Sample'"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'open sample' (11 chars, counted as 1)",
+        "click      palette entry 'Open Sample'",
+        "dialog     parameter sheet 'Open Sample' (non-modal panel)",
+        "dropdown   sample -> Blobs (2 clicks)",
+        "click      Apply (open the sample)"
+      ]
+    },
+    "measured": {
+      "clicks": 0,
+      "keys": 2,
+      "texts": 1,
+      "actions": 3,
+      "dialogs": 1,
+      "modal": 1,
+      "dialog_names": [
+        "command palette"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'clahe' (5 chars, counted as 1)",
+        "key        Enter  run 'CLAHE (Local Contrast)'"
+      ]
+    },
+    "verified": "first match 'CLAHE (Local Contrast)' [Process] - 'Contrast-limited adaptive histogram equalization.'; Enter opened the sheet 'CLAHE (Local Contrast)'. Probe 'local contrast' -> ['CLAHE (Local Contrast)', 'Normalize Local Contrast', 'Auto Local Threshold', 'Retinex', 'Search ImageJ wiki for \u201clocal contrast\u201d']; no-match text: 'No command matches \u201czzqx-nothing\u201d \u2013 search the ImageJ wiki or the image.sc forum below'",
+    "preview": "n/a",
+    "undo": "n/a",
+    "recorded": [],
+    "seconds": 0.4
+  },
+  {
+    "task": 9,
+    "title": "Batch-process a folder with the recorded steps",
+    "setup": {
+      "clicks": 4,
+      "keys": 1,
+      "texts": 1,
+      "actions": 6,
+      "dialogs": 2,
+      "modal": 1,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Open Sample'"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'open sample' (11 chars, counted as 1)",
+        "click      palette entry 'Open Sample'",
+        "dialog     parameter sheet 'Open Sample' (non-modal panel)",
+        "dropdown   sample -> Blobs (2 clicks)",
+        "click      Apply (open the sample)"
+      ]
+    },
+    "measured": {
+      "clicks": 4,
+      "keys": 4,
+      "texts": 3,
+      "actions": 11,
+      "dialogs": 4,
+      "modal": 2,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Gaussian Blur'",
+        "command palette",
+        "parameter sheet 'Apply Recorded Macro to Folder...'"
+      ],
+      "log": [
+        "click      expand the inspector section 'Script & Recorder'",
+        "click      Recorder: Clear (start a fresh recording)",
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'gauss' (5 chars, counted as 1)",
+        "key        Enter  run the selected entry 'Gaussian Blur'",
+        "dialog     parameter sheet 'Gaussian Blur' (non-modal panel)",
+        "click      Apply (sigma 2 = default)",
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'recorded macro' (14 chars, counted as 1)",
+        "key        Enter  run the selected entry 'Apply Recorded Macro to Folder...'",
+        "dialog     parameter sheet 'Apply Recorded Macro to Folder...' (non-modal panel)",
+        "text       input folder: '<scratch>/usability/batch_in' (118 chars, counted as 1)",
+        "click      Run (output format tif = default)"
+      ]
+    },
+    "verified": "recorded: ['lumen.run(\"filters.gaussian\", sigma=2.0, scope=\\'slice\\')']; batch output: ['cell_0.tif', 'cell_1.tif', 'cell_2.tif'] in <scratch>/usability/batch_in/lumen_output; log tail: [{'t': 1794069557.760698, 'level': 'info', 'msg': 'Saved <scratch>/usability/batch_in/lumen_output/cell_1.tif'}, {'t': 1794069557.76156, 'level': 'info', 'msg': 'Opened cell_2.tif (1, 1, 1, 128, 128) 8-bit'}, {'t': 1794069557.7619479, 'level': 'info', 'msg': 'Gaussian Blur (0 ms)'}, {'t': 1794069557.762342, 'level': 'info', 'msg': 'Saved <scratch>/usability/batch_in/lumen_output/cell_2.tif'}, {'t': 1794069557.762547, 'level': 'info', 'msg': 'Macro batch: 3 ok, 0 failed of 3 file(s) in 0.0 s \u2192 <scratch>/usability/batch_in/lumen_output'}, {'t': 1794069557.7625659, 'level': 'info', 'msg': 'Apply Recorded Macro to Folder... (7 ms)'}]",
+    "preview": "no",
+    "undo": "the originals are untouched; outputs go to <input>/lumen_output",
+    "record_part_actions": 6,
+    "recorded_lines": [
+      "lumen.run(\"filters.gaussian\", sigma=2.0, scope='slice')"
+    ],
+    "recorded": [],
+    "seconds": 0.8
+  },
+  {
+    "task": 10,
+    "title": "Compare two images side by side",
+    "setup": {
+      "clicks": 8,
+      "keys": 2,
+      "texts": 2,
+      "actions": 12,
+      "dialogs": 4,
+      "modal": 2,
+      "dialog_names": [
+        "command palette",
+        "parameter sheet 'Open Sample'",
+        "command palette",
+        "parameter sheet 'Open Sample'"
+      ],
+      "log": [
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'open sample' (11 chars, counted as 1)",
+        "click      palette entry 'Open Sample'",
+        "dialog     parameter sheet 'Open Sample' (non-modal panel)",
+        "dropdown   sample -> Blobs (2 clicks)",
+        "click      Apply (open the sample)",
+        "key        Control+k  open the command palette",
+        "dialog     command palette (modal overlay)",
+        "text       palette query: 'open sample' (11 chars, counted as 1)",
+        "click      palette entry 'Open Sample'",
+        "dialog     parameter sheet 'Open Sample' (non-modal panel)",
+        "dropdown   sample -> Coins (2 clicks)",
+        "click      Apply (open the sample)"
+      ]
+    },
+    "measured": {
+      "clicks": 0,
+      "keys": 1,
+      "texts": 0,
+      "actions": 1,
+      "dialogs": 0,
+      "modal": 0,
+      "dialog_names": [],
+      "log": [
+        "key        Control+Shift+Backslash  Split view"
+      ]
+    },
+    "verified": "2 panes in one window showing ['coins.png', 'blobs.tif']; pan/zoom of the compare pane follows the active pane",
+    "preview": "n/a",
+    "undo": "n/a",
+    "recorded": [],
+    "seconds": 0.8
+  }
+]
