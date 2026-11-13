@@ -10,6 +10,8 @@ const DOCS: { name: DocName; title: string }[] = [
   { name: "README", title: "README" },
   { name: "COMMANDS", title: "Commands" },
   { name: "FIJI_PARITY", title: "Fiji parity" },
+  { name: "SCRIPTING", title: "Scripting" },
+  { name: "MCP", title: "AI assistants" },
   { name: "DESIGN", title: "Design" },
   { name: "RESEARCH", title: "Research" },
 ];

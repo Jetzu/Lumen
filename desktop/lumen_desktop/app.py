@@ -103,6 +103,9 @@ def _say(line: str) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
+    raw = list(sys.argv[1:] if argv is None else argv)
+    if "--mcp" in raw or "--mcp-config" in raw:
+        return run_mcp(raw)
     args = parse_args(argv)
     if args.home:
         os.environ["LUMEN_HOME"] = args.home
@@ -152,6 +155,36 @@ def main(argv: list[str] | None = None) -> int:
 
     shell = Shell(server=server, state=state, version=version, log_file=log_file, debug=debug, files=args.files)
     return shell.run()
+
+
+# ----------------------------------------------------------------------------- MCP server mode
+def _win_stdio() -> None:
+    """A windowed (no-console) Windows build starts with sys.stdin / sys.stdout = None even when the MCP client hands
+    it pipes: rebuild them from the inherited OS handles."""
+    if sys.platform != "win32" or (sys.stdin is not None and sys.stdout is not None):
+        return
+    import ctypes
+    import io as _io
+    import msvcrt
+    k32 = ctypes.windll.kernel32
+    for name, std, mode in (("stdin", -10, "rb"), ("stdout", -11, "wb"), ("stderr", -12, "wb")):
+        if getattr(sys, name) is not None:
+            continue
+        h = k32.GetStdHandle(std)
+        if not h or h == ctypes.c_void_p(-1).value:
+            continue
+        fd = msvcrt.open_osfhandle(h, os.O_BINARY | (os.O_RDONLY if mode == "rb" else 0))
+        raw = open(fd, mode, buffering=0)  # noqa: SIM115
+        buf = _io.BufferedReader(raw) if mode == "rb" else _io.BufferedWriter(raw)
+        setattr(sys, name, _io.TextIOWrapper(buf, encoding="utf-8", line_buffering=(mode != "rb"), write_through=True))
+
+
+def run_mcp(raw: list[str]) -> int:
+    """``Lumen --mcp``: the Lumen MCP server over stdio (lumen.mcp_server) from the desktop app, no window.  It drives
+    the running Lumen window (and starts this app when asked to); ``--mcp-config`` prints the client configuration."""
+    _win_stdio()
+    from lumen.mcp_server import main as mcp_main
+    return mcp_main(["--config"] if "--mcp-config" in raw else [])
 
 
 # ----------------------------------------------------------------------------- smoke mode (CI, tests)

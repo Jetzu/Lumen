@@ -1,6 +1,6 @@
 # Lumen
 
-**The ImageJ / Fiji toolbox behind a single-window, keyboard-first interface.**
+**The ImageJ / Fiji toolbox behind a single-window, keyboard-first interface.** · [github.com/Jetzu/Lumen](https://github.com/Jetzu/Lumen)
 
 Lumen re-implements the scientific image-analysis functionality of Fiji on top of numpy,
 scipy, scikit-image and scikit-learn, and wraps it in a modern browser UI: one window, image
@@ -50,7 +50,9 @@ instance, a quit warning for unsaved images. Build it with `python3 desktop/buil
 `desktop/dist/`; Windows and Linux builds through `.github/workflows/desktop-release.yml`), or run the window from source
 with `python3 desktop/run_dev.py`. See [docs/DESKTOP.md](docs/DESKTOP.md).
 
-Optional extras: `.[dev]` (pytest, httpx, playwright), `.[formats-extra]` (astropy, pynrrd, bioio, SimpleITK),
+**AI assistants (MCP).** Lumen includes an MCP server, so Claude Code, Claude Desktop, Codex or any other MCP client can work in the Lumen you have open. It can open images, run any command, ImageJ macro or script, measure, manage ROIs and read results, and everything it does appears live in your window. It also sees your selection, tool and open dialog. Run `lumen-mcp` (`pip install -e ".[mcp]"`) or the desktop app's `Lumen --mcp`; `lumen-mcp --config` prints the client configuration. See [docs/MCP.md](docs/MCP.md).
+
+Optional extras: `.[dev]` (pytest, httpx, playwright, mcp), `.[mcp]` (the MCP server), `.[formats-extra]` (astropy, pynrrd, bioio, SimpleITK),
 `.[ml]` (cellpose, stardist), `.[window]` (pywebview). `pip install -e ".[formats]"` adds Nikon ND2, Zeiss CZI, Leica LIF, Olympus OIB/OIF,
 DICOM, NIfTI, MRC, HDF5/Imaris, OME-Zarr, XLSX export and `olefile` (faster Zeiss ZVI). Gatan DM3/DM4, Zeiss ZVI and
 Leica LEI are read natively; every remaining proprietary format (Olympus VSI, SlideBook, Amira, …) opens through the
@@ -89,7 +91,7 @@ cd frontend && npm install && npm run build            # output goes to lumen/st
 npm run dev                                             # hot-reloading dev server on :5173 (proxies to :8765)
 ```
 
-Tests: `pip install -e ".[dev]"` then `pytest` (1232 tests covering the engine, formats, tracking, registration, segmentation, 3-D analysis, MorphoLibJ-style label tools, batch, workflows, performance bounds, ImageJ compatibility and the HTTP API, in about a minute; 3 skip without the optional format libraries). Browser end-to-end tests live in `tests/e2e` and run against the installed Google Chrome (see [tests/e2e/README.md](tests/e2e/README.md)); they skip when Playwright is absent.
+Tests: `pip install -e ".[dev]"` then `pytest` (1242 tests covering the engine, formats, tracking, registration, segmentation, 3-D analysis, MorphoLibJ-style label tools, batch, workflows, performance bounds, ImageJ compatibility and the HTTP API, in about a minute; 3 skip without the optional format libraries). Browser end-to-end tests live in `tests/e2e` and run against the installed Google Chrome (see [tests/e2e/README.md](tests/e2e/README.md)); they skip when Playwright is absent.
 
 ## What's in the box
 

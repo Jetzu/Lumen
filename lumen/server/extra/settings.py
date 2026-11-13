@@ -289,6 +289,8 @@ _DOCS: dict[str, tuple[str, str]] = {  # name -> (title, relative path from the 
     "README": ("Lumen README", "README.md"),
     "COMMANDS": ("Command reference", "docs/COMMANDS.md"),
     "FIJI_PARITY": ("Fiji parity", "docs/FIJI_PARITY.md"),
+    "SCRIPTING": ("Scripting", "docs/SCRIPTING.md"),
+    "MCP": ("AI assistants (MCP)", "docs/MCP.md"),
     "RESEARCH": ("Research notes", "docs/RESEARCH.md"),
     "DESIGN": ("Design notes", "docs/DESIGN.md"),
 }

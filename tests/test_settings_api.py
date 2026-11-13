@@ -183,7 +183,7 @@ def test_docs_routes():
     r = c.get("/api/docs")
     assert r.status_code == 200
     names = [d["name"] for d in r.json()["docs"]]
-    assert names == ["README", "COMMANDS", "FIJI_PARITY", "RESEARCH", "DESIGN"]
+    assert names == ["README", "COMMANDS", "FIJI_PARITY", "SCRIPTING", "MCP", "RESEARCH", "DESIGN"]
     assert all(d["available"] for d in r.json()["docs"])
     r = c.get("/api/docs/COMMANDS")
     assert r.status_code == 200

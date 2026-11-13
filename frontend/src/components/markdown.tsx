@@ -21,7 +21,7 @@ function macroCall(c: string): string {
   return /^[A-Za-z_][A-Za-z0-9_.]*\s*\(/.test(s) ? s : `run("${s.replace(/"/g, '\\"')}")`;
 }
 
-const DOC_NAMES = new Set(["README", "COMMANDS", "FIJI_PARITY", "RESEARCH", "DESIGN"]);
+const DOC_NAMES = new Set(["README", "COMMANDS", "FIJI_PARITY", "SCRIPTING", "MCP", "RESEARCH", "DESIGN"]);
 
 export function docOfHref(href: string): DocName | null {
   const m = /(?:^|\/)([A-Za-z_]+)\.md(?:#.*)?$/.exec(href.trim());

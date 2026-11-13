@@ -9,7 +9,7 @@ import { DEFAULT_GROUPS, fetchLutGroups, groupLuts, type LutGroup, type LutGroup
 import { displayName } from "./menus";
 import { runNativeFileDialog, startNativeHooks } from "./native";
 
-export type DocName = "README" | "COMMANDS" | "FIJI_PARITY" | "RESEARCH" | "DESIGN";
+export type DocName = "README" | "COMMANDS" | "FIJI_PARITY" | "SCRIPTING" | "MCP" | "RESEARCH" | "DESIGN";
 
 /** A button inside a toast ("Undo clear", "Auto-threshold and run"); the toast closes once it ran. */
 export interface ToastAction {
@@ -621,6 +621,7 @@ export const useStore = create<Store>((set, get) => ({
       // the server's LUT grouping (Image ▸ Lookup Tables, the Display select); the client's copy until it answers
       void fetchLutGroups().then((g) => set({ lutGrouping: g, lutGroups: groupLuts(get().meta?.luts || meta.luts, g) }));
       connectEvents(() => scheduleRefresh());
+      void import("./agentBridge").then((m) => m.startAgentBridge()); // the AI-assistant bridge reports what the window shows
       // the desktop shell's hooks (native Help menu, quit confirmation while images are unsaved); inert in a browser
       startNativeHooks({
         openDocs: () => get().setDocsOpen({ name: "README" }),
@@ -711,24 +712,7 @@ export const useStore = create<Store>((set, get) => ({
       // Preferences sheet, the colour picker and the viewport's overlay options follow
       if (spec?.menu === "Edit/Options" || spec?.category === "Edit/Options" || /options|set_colors|set_foreground|set_background/.test(opId)) await get().loadPrefs();
       const after = get();
-      const target = res.new_images && res.new_images.length ? after.image(res.new_images[res.new_images.length - 1]) : img;
-      if (res.roi && target) after.setSelection(target.id, res.roi);
-      if (res.clear_roi && target) after.setSelection(target.id, null);
-      if (res.plot) {
-        set({ plot: res.plot });
-        after.togglePanel("plot", true);
-      }
-      if (res.histogram && res.histogram.edges) {
-        set({ histogram: res.histogram });
-        after.togglePanel("histogram", true);
-      }
-      if (res.table) {
-        set({ table: res.table });
-        after.togglePanel("table", true);
-      }
-      if (res.results_added) after.togglePanel("results", true);
-      if (res.rois_added) after.togglePanel("rois", true);
-      if (res.threshold) after.togglePanel("threshold", true);
+      showRunResult(res, img?.id ?? null);
       if (res.message && !opts.silent) after.toast(res.message, "info");
       if (spec) {
         const recent = [opId, ...after.recent.filter((r) => r !== opId)].slice(0, 12);
@@ -1269,6 +1253,32 @@ function stopMemorySampling() {
   memoryRun++; // a request still in flight must not add a sample after Stop
 }
 
+/** Show a command's result in the window: the selection it made or cleared, its table / plot / histogram and the
+ *  panels its output landed in.  Used by runOp and by the AI-assistant bridge (agentBridge.ts) for commands the
+ *  assistant ran through the API. */
+export function showRunResult(res: OpRunResult, imageId: string | null) {
+  const after = useStore.getState();
+  const img = imageId ? after.image(imageId) : after.activeImage();
+  const target = res.new_images && res.new_images.length ? after.image(res.new_images[res.new_images.length - 1]) : img;
+  if (res.roi && target) after.setSelection(target.id, res.roi);
+  if (res.clear_roi && target) after.setSelection(target.id, null);
+  if (res.plot) {
+    useStore.setState({ plot: res.plot });
+    after.togglePanel("plot", true);
+  }
+  if (res.histogram && res.histogram.edges) {
+    useStore.setState({ histogram: res.histogram });
+    after.togglePanel("histogram", true);
+  }
+  if (res.table) {
+    useStore.setState({ table: res.table });
+    after.togglePanel("table", true);
+  }
+  if (res.results_added) after.togglePanel("results", true);
+  if (res.rois_added) after.togglePanel("rois", true);
+  if (res.threshold) after.togglePanel("threshold", true);
+}
+
 function scheduleRefresh() {
   if (refreshTimer) return;
   refreshTimer = window.setTimeout(() => {
@@ -1293,6 +1303,11 @@ function connectEvents(onEvent: () => void) {
       }
       if (evt && evt.type === "progress" && evt.job) {
         applyProgress(evt.job as JobInfo); // progress never changes the session state: no refresh
+        return;
+      }
+      if (evt && evt.type === "ui") {
+        // a command from the AI assistant (lumen.mcp_server via POST /api/ui/command)
+        void import("./agentBridge").then((m) => m.applyAgentCommand(evt));
         return;
       }
       if (evt && evt.type === "ops") {

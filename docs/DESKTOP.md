@@ -37,6 +37,9 @@ ffmpeg): the window is the system's own WebKit.
 - **Bundled readers**: the optional format readers (`[formats]`: ND2, CZI, LIF, DICOM, NIfTI, MRC, HDF5, Zarr, Olympus,
   Excel) are inside the app; Bio-Formats and the JVM script languages work as in the browser version when a Fiji
   installation and a JDK are present (docs/PLATFORMS.md).
+- **An MCP server for AI assistants**: `Lumen --mcp` (macOS: `/Applications/Lumen.app/Contents/MacOS/Lumen --mcp`) runs
+  Lumen's MCP server over stdio from the app itself, so Claude Code, Claude Desktop or Codex can work in the open window.
+  `Lumen --mcp-config` prints the configuration (docs/MCP.md).
 
 The app runs the Lumen server inside itself on a private loopback port (`127.0.0.1`, 8770 by default); nothing is
 reachable from the network. *File ▸ Open in Browser* opens the same session in your browser if you want both.
@@ -92,10 +95,17 @@ Verified with the real system panels and alert (from source with `--debug`, thro
   the shell used to stop its server in the window's *closing* event, which pywebview fires *before* the question - so
   Cancel would have left a window without an engine. The server now stops only once closing is certain.
 
+Verified on GitHub's runners (`.github/workflows/desktop-release.yml`, run of 13 Nov 2026,
+https://github.com/Jetzu/Lumen/actions/runs/43462244777): the **Windows**, **Linux** and **macOS (Intel)** builds were
+built from the repository and their packaged apps passed the same smoke check (503 commands, the image round trip, the
+lazily imported libraries, the bundled readers and docs) - ready after 702 ms (Windows), 277 ms (Linux) and 1134 ms (Intel
+Mac). The Apple-silicon job of that run waited for a runner and was re-run. The re-run passed too: ready after 570 ms with
+503 commands. All four builds are now verified on GitHub's runners.
+
 Not verified: choosing a file *inside* the Open panel by automation - macOS draws file panels in a separate system
 process that only real input reaches (scripting it needs the Accessibility permission, which would prompt you); the
-Windows and Linux builds (the specs and the release workflow exist, but this Mac cannot build them - the workflow runs
-their smoke checks on GitHub's runners once the repository is pushed); the Intel macOS build.
+Windows and Linux *windows* themselves (the smoke check runs the packaged app without a window: the server, the commands,
+the libraries and the bundled UI, not WebView2 / Qt WebEngine on a screen).
 
 Debug hooks for these checks (only in a shell started with `--debug`, behind the control socket's token):
 `python desktop/dev_eval.py "<javascript>"`, `--key cmd+o`, `--open file…`, and the raw commands `__FOCUS__`,

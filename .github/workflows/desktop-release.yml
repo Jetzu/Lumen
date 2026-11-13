@@ -90,6 +90,15 @@ jobs:
           echo "--- desktop.log ---"; cat "$LUMEN_HOME/desktop/desktop.log" 2>/dev/null || true
           [ "$code" = "0" ] && grep -q "LUMEN_DESKTOP_SMOKE_OK" "$LUMEN_DESKTOP_SMOKE_OUT"
 
+      - name: MCP smoke test (the frozen app's --mcp mode answers the MCP handshake over stdio)
+        shell: bash
+        run: |
+          if command -v cygpath >/dev/null 2>&1; then base="$(cygpath -m "$RUNNER_TEMP")"; else base="$RUNNER_TEMP"; fi
+          export LUMEN_HOME="$base/lumen-mcp-smoke"
+          mkdir -p "$LUMEN_HOME"
+          python desktop/build/mcp_smoke.py "${{ matrix.exe }}" --mcp | tee "$LUMEN_HOME/mcp.txt"
+          grep -q "LUMEN_MCP_SMOKE_OK" "$LUMEN_HOME/mcp.txt"
+
       - name: Collect artifacts
         shell: bash
         run: |

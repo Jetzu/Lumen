@@ -106,7 +106,7 @@ the open error names the install steps.
 
 ## JVM script bridge (optional, all platforms)
 
-Fiji's JVM script languages – Groovy, BeanShell, Rhino JavaScript, JRuby and (with extra jars) Clojure – and compiled ImageJ-1 plugin jars named on `LUMEN_JVM_CLASSPATH` (`IJ.runPlugIn` from a script) run with
+Fiji's JVM script languages – Groovy, BeanShell, Rhino JavaScript, JRuby and (with two extra jars, verified) Clojure – and compiled ImageJ-1 plugin jars named on `LUMEN_JVM_CLASSPATH` (`IJ.runPlugIn` from a script) run with
 the real ImageJ 1.x through a second bridge with two modes (`LUMEN_JVM_MODE=auto|subprocess|inprocess`):
 
 * **subprocess – no Python package** (`lumen.core.ijshim.jvm_subprocess`): one `java` process per script over the

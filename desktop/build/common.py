@@ -88,6 +88,12 @@ def hiddenimports() -> list[str]:
     mods += ["lumen_desktop", "lumen_desktop.app", "lumen_desktop.bridge", "lumen_desktop.instance", "lumen_desktop.menu",
              "lumen_desktop.paths", "lumen_desktop.server", "lumen_desktop.splash", "lumen_desktop.state", "lumen_desktop.macos"]
     mods += collect_submodules("uvicorn")
+    try:  # the MCP server (Lumen --mcp; lumen.mcp_server imports the SDK lazily); its CLI extra (typer) is not shipped
+        mods += collect_submodules("mcp", filter=lambda name: not name.startswith("mcp.cli"))
+        import importlib.util
+        mods += [m for m in ("httpx2", "httpx", "sse_starlette", "jsonschema", "pydantic_settings") if importlib.util.find_spec(m)]
+    except Exception:  # noqa: BLE001
+        pass
     for pkg in ("skimage", "imagecodecs", "tifffile", "imageio.plugins", "sklearn.ensemble", "sklearn.tree", "sklearn.utils", "sklearn.neighbors",
                 "scipy.ndimage", "scipy.signal", "scipy.optimize", "scipy.spatial", "scipy.interpolate", "scipy.stats", "scipy.fft"):
         try:

@@ -138,7 +138,7 @@ export const api = {
   /** Preferences (lumen/server/extra/settings.py). PUT is used because the core app owns POST /api/settings. */
   getSettings: () => fetch("/api/settings").then((r) => handle<Record<string, unknown>>(r)),
   putSettings: (patch: Record<string, unknown>) => fetch("/api/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch) }).then((r) => handle<Record<string, unknown>>(r)),
-  /** Raw markdown of a bundled document (README | COMMANDS | FIJI_PARITY | RESEARCH | DESIGN). */
+  /** Raw markdown of a bundled document (README | COMMANDS | FIJI_PARITY | SCRIPTING | MCP | RESEARCH | DESIGN). */
   doc: async (name: string): Promise<string> => {
     const res = await fetch(`/api/docs/${encodeURIComponent(name)}`);
     if (!res.ok) {

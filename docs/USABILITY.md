@@ -1651,7 +1651,10 @@ E10's six items (E11, §3.14).
   bridge, also from ImageJ macros by name. Fiji's bundled plugins folder alone declares 349 commands Lumen does not
   implement natively; with a JDK and Fiji's jars present, any of them can now be installed and run
   (`tests/test_fiji_plugins.py` runs Fiji's Auto_Threshold - identical to Lumen's Otsu - and Kuwahara jars from a local
-  update site). Interactive Swing plugins and ImageJ2 / SciJava commands remain out of reach.
+  update site). Interactive Swing plugins and ImageJ2 / SciJava commands remain out of reach. A real install of MorphoLibJ 1.6.5 from its update site
+  then served as a reference for Lumen's own MorphoLibJ port: its disk element, its off-centre octagon and diamond and
+  its Laplacian differed from the plugin and were corrected (38 of 64 operation × element × radius configurations now
+  pixel-identical, the rest identical away from a thin border band).
 
 *Verification:* the unit suite (1227 passed, 281 opt-in skipped), the e2e suite (10 passed), both browser guards (all
 checks pass).

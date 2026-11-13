@@ -22,9 +22,9 @@ STATIC = ROOT / "lumen" / "static"
 VENV = DESKTOP / ".venv-build"
 IS_WIN = os.name == "nt"
 PYTHON_WANTED = os.environ.get("LUMEN_BUILD_PYTHON_VERSION", "3.14")
-#: the optional readers bundled with the desktop app (all wheels; the JVM / Bio-Formats bridges stay opt-in because
+#: the optional extras bundled with the desktop app: the [formats] readers and the [mcp] SDK for ``Lumen --mcp`` (all wheels; the JVM / Bio-Formats bridges stay opt-in because
 #: they need a JDK, and [video] because imageio-ffmpeg ships an unsigned ffmpeg binary)
-EXTRAS = os.environ.get("LUMEN_BUILD_EXTRAS", "formats")
+EXTRAS = os.environ.get("LUMEN_BUILD_EXTRAS", "formats,mcp")
 
 
 def log(msg: str) -> None:
@@ -100,8 +100,13 @@ def ensure_build_venv(python: str | None = None, recreate: bool = False) -> Path
     py = venv_python()
     if recreate and VENV.exists():
         shutil.rmtree(VENV)
-    if _venv_ok(py) and not recreate:
-        return py
+    req = VENV / "lumen-requirements.txt"
+    wanted = "\n".join(lumen_requirements()) + "\n"
+    extras = requirements_file()
+    stamp = VENV / "requirements.stamp"
+    stamp_text = wanted + (extras.read_text(encoding="utf-8") if extras.is_file() else "")
+    if _venv_ok(py) and not recreate and stamp.is_file() and stamp.read_text(encoding="utf-8") == stamp_text:
+        return py  # up to date (a changed extra, e.g. the new [mcp], reinstalls below)
     uv = find_uv()
     if not VENV.exists():
         if uv:
@@ -109,9 +114,7 @@ def ensure_build_venv(python: str | None = None, recreate: bool = False) -> Path
         else:
             base = python or shutil.which(f"python{PYTHON_WANTED}") or sys.executable
             run_step([base, "-m", "venv", str(VENV)], DESKTOP, "creating desktop/.venv-build")
-    req = VENV / "lumen-requirements.txt"
-    req.write_text("\n".join(lumen_requirements()) + "\n", encoding="utf-8")
-    extras = requirements_file()
+    req.write_text(wanted, encoding="utf-8")
     if not extras.is_file():
         raise SystemExit(f"[lumen-desktop] {extras} is missing")
     if uv:
@@ -121,6 +124,7 @@ def ensure_build_venv(python: str | None = None, recreate: bool = False) -> Path
         run_step([str(py), "-m", "pip", "install", "--disable-pip-version-check", "-r", str(req), "-r", str(extras)], DESKTOP, "installing build dependencies with pip")
     if not _venv_ok(py):
         raise SystemExit("[lumen-desktop] desktop/.venv-build is still missing packages after the install step")
+    stamp.write_text(stamp_text, encoding="utf-8")
     return py
 
 

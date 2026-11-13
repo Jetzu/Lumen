@@ -138,6 +138,8 @@ const CLIENT_ITEMS: Record<string, MenuItem[]> = {
     { label: "Lumen README", action: "docs", arg: "README" },
     { label: "Command Reference", action: "docs", arg: "COMMANDS" },
     { label: "Fiji Parity", action: "docs", arg: "FIJI_PARITY" },
+    { label: "Scripting Guide", action: "docs", arg: "SCRIPTING" },
+    { label: "Connect an AI Assistant (MCP)", action: "docs", arg: "MCP" },
     { label: "Design & Research Notes (background)", action: "docs", arg: "DESIGN" },
     { sep: true, label: "" },
     ...DOC_LINKS.map((l) => ({ label: l.label + " ↗", action: "link", arg: l.url, title: l.url })),
