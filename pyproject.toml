@@ -1,6 +1,6 @@
 [project]
 name = "lumen-imaging"
-version = "0.1.0"
+version = "0.1.1"
 description = "Lumen: a modern, single-window scientific image analysis app with the ImageJ/Fiji toolbox."
 readme = "README.md"
 license = {text = "PolyForm-Noncommercial-1.0.0"}
