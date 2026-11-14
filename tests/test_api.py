@@ -241,3 +241,16 @@ def test_script_endpoint_routes_jvm_languages_to_the_bridge(monkeypatch):
         assert r.json() == {"stdout": "1\n", "error": None}
     finally:
         jvm_bridge.reset()
+
+
+def test_page_is_always_revalidated():
+    """The page names the hashed asset files of the current build: a web view that cached it heuristically kept
+    showing the previous interface after an app update, so it is sent with Cache-Control: no-cache."""
+    import pytest
+    from lumen.server.app import STATIC_DIR
+    if not (STATIC_DIR / "index.html").is_file():
+        pytest.skip("frontend not built")
+    c, _ = client()
+    for path in ("/", "/index.html", "/some/route"):
+        r = c.get(path)
+        assert r.status_code == 200 and r.headers.get("cache-control") == "no-cache", path

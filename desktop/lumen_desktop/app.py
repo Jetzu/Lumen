@@ -157,6 +157,16 @@ def main(argv: list[str] | None = None) -> int:
     return shell.run()
 
 
+def _ui_build_stamp() -> str:
+    """Changes with every frontend build: the window loads ``/?build=<stamp>``, so the web view cannot reuse a page it
+    cached from a previous version of the app (that page names asset files the new build no longer has)."""
+    try:
+        import lumen
+        return str(int((Path(lumen.__file__).parent / "static" / "index.html").stat().st_mtime))
+    except Exception:  # noqa: BLE001
+        return str(int(time.time()))
+
+
 # ----------------------------------------------------------------------------- MCP server mode
 def _win_stdio() -> None:
     """A windowed (no-console) Windows build starts with sys.stdin / sys.stdout = None even when the MCP client hands
@@ -448,7 +458,7 @@ class Shell:
     def load_app(self) -> None:
         log.info("loading %s", self.server.url)
         self.loaded_app = True
-        self.window.load_url(self.server.url + "/")
+        self.window.load_url(self.server.url + "/?build=" + _ui_build_stamp())
 
     # ------------------------------------------------------------------ files
     def open_paths(self, files: list[str], focus: bool = True) -> None:
@@ -696,7 +706,7 @@ class Shell:
             try:
                 self.window.evaluate_js("location.reload()")
             except Exception:  # noqa: BLE001
-                self.window.load_url(self.server.url + "/")
+                self.window.load_url(self.server.url + "/?build=" + _ui_build_stamp())
 
     def act_zoom(self, direction: int) -> None:
         if direction == 0:
