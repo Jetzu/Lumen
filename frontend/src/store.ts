@@ -1211,6 +1211,18 @@ try {
   } catch {
     /* ignore a corrupt entry */
   }
+  // A new session (a fresh window, not a reload of the same one) opens the Workflows panel on "Choose a workflow…":
+  // the guided workflow of an earlier session is not carried over (user request, Nov 2026).
+  try {
+    if (!sessionStorage.getItem("lumen-session-started")) {
+      sessionStorage.setItem("lumen-session-started", "1");
+      useStore.setState({ panels: { ...useStore.getState().panels, workflows: true } });
+      const raw = JSON.parse(localStorage.getItem("lumen.workflow") || "null");
+      if (raw && typeof raw === "object" && raw.id) localStorage.setItem("lumen.workflow", JSON.stringify({ id: null, done: [], skipped: [], params: {}, sourceImage: null, sourceName: null }));
+    }
+  } catch {
+    /* storage blocked: the defaults apply */
+  }
   useStore.subscribe((s, prev) => {
     if (s.panels !== prev.panels) {
       try {

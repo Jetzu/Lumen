@@ -447,10 +447,10 @@ function InfoPanel({ img }: { img: ImageSummary }) {
         <span className="k">Pixel size</span><span className="v">{fmt(cal.pixel_width)} × {fmt(cal.pixel_height)} {cal.unit}{img.shape.z > 1 ? ` · z ${fmt(cal.pixel_depth)}` : ""}</span>
         {cal.frame_interval > 0 && <><span className="k">Frame interval</span><span className="v">{cal.frame_interval} {cal.time_unit}</span></>}
         <span className="k">Memory</span><span className="v">{(img.nbytes / 1048576).toFixed(1)} MB</span>
-        {img.path && <><span className="k">Path</span><span className="v" style={{ fontSize: 10.5 }}>{img.path}</span></>}
+        {img.path && <><span className="k">Path</span><span className="v" style={{ fontSize: 12 }}>{img.path}</span></>}
         {/* provenance (E7-16): what this image was derived from and the file it came from, ahead of the raw metadata */}
         {img.metadata.derived_from !== undefined && <><span className="k">Derived from</span><span className="v">{String(img.metadata.derived_from)}</span></>}
-        {img.metadata.source_path !== undefined && <><span className="k">Source</span><span className="v" style={{ fontSize: 10.5 }}>{String(img.metadata.source_path)}</span></>}
+        {img.metadata.source_path !== undefined && <><span className="k">Source</span><span className="v" style={{ fontSize: 12 }}>{String(img.metadata.source_path)}</span></>}
         {Object.entries(img.metadata).filter(([k]) => k !== "derived_from" && k !== "source_path").slice(0, 12).map(([k, v]) => <React.Fragment key={k}><span className="k">{k}</span><span className="v">{String(v)}</span></React.Fragment>)}
       </div>
       <div className="btn-row">

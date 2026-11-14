@@ -31,7 +31,7 @@ const GROUP_BEFORE: Partial<Record<Tool, string>> = { pointer: "Navigate", rect:
 
 /** Collapsed = the compact icon column; remembered per browser (a convenience, so storage may fail silently). */
 const RAIL_KEY = "lumen-rail-collapsed";
-const RAIL_W = { expanded: "184px", collapsed: "52px" };
+const RAIL_W = { expanded: "196px", collapsed: "54px" };
 function loadCollapsed(): boolean {
   try {
     return localStorage.getItem(RAIL_KEY) === "1";
