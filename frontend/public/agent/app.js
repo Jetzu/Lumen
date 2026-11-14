@@ -1,0 +1,1253 @@
+/* Agent Chat for Lumen - the Agent panel (top bar ▸ Agent).
+ *
+ * Ported from the ChemDraw MCP's Agent Chat add-in (same look, same bridge contract).  Lumen serves the bridge itself
+ * under /api/agent (lumen/server/extra/agent_chat.py): no token file, no separate bridge process.  The page runs in an
+ * iframe of the Lumen window (same origin); the window's state (active image, selection) is read from /api/ui/state
+ * and attached to every prompt by the server.  ?theme=light|dark and postMessage {type:'lumen-theme'} set the theme;
+ * the close button posts {type:'lumen-agent-close'} to the Lumen window.
+ *
+ * Bridge contract: GET /health, POST /run {backend, prompt, context?}, GET /events/<run_id> (SSE),
+ * POST /cancel/<run_id>, GET/POST /settings, POST /clear {backend}, GET /sessions.  POSTs carry X-Lumen-Agent: 1.
+ */
+(function () {
+'use strict';
+
+// ------------------------------------------------------------------------------------------------
+// constants
+// ------------------------------------------------------------------------------------------------
+var DEFAULT_PORT = 47325;
+var SPINNER = ['·', '✢', '✳', '✶', '✻', '✽', '✻', '✶', '✳', '✢'];
+var VERBS = ['Thinking', 'Pondering', 'Working', 'Inspecting', 'Measuring', 'Segmenting', 'Reasoning'];
+var BACKENDS = ['claude', 'codex'];
+var LABELS = { claude: 'Claude Code', codex: 'Codex' };
+var MODELS = {
+  claude: [['', 'default'], ['claude-opus-5-5', 'opus-5-5'], ['claude-sonnet-5-5', 'sonnet-5-5'],
+           ['claude-haiku-5-5', 'haiku-5-5'], ['claude-fable-5-1', 'fable-5-1']],
+  codex: [['', 'default'], ['gpt-6-sol', 'gpt-6-sol'], ['gpt-6', 'gpt-6']]
+};
+var EFFORT_DEFAULTS = {   // overridden by the bridge's settings snapshot (effort_choices)
+  claude: ['', 'low', 'medium', 'high', 'xhigh', 'max'],
+  codex: ['', 'minimal', 'low', 'medium', 'high', 'xhigh']
+};
+var SLASH = [
+  ['/model', 'choose provider, model and effort'],
+  ['/clear', 'new conversation'],
+  ['/claude', 'switch to Claude Code'],
+  ['/codex', 'switch to Codex'],
+  ['/skills', 'ask the agent what it can do in Lumen'],
+  ['/stop', 'interrupt the current run'],
+  ['/help', 'shortcuts and commands']
+];
+var HELP = '/model   provider · model · effort (or the button bottom right)\n' +
+  '/claude  /codex   switch provider        /clear   new conversation\n' +
+  '/skills  what the agent can do in Lumen    /stop    interrupt\n' +
+  'Enter sends · Shift+Enter newline · Esc interrupts · ↑/↓ history · Tab accepts a / suggestion\n' +
+  'The active image, your selection and the Results / ROI counts in Lumen are attached to every prompt.';
+var MAX_ENTRIES = 200;
+var MAX_HISTORY = 100;
+var HEALTH_EVERY_MS = 5000;
+var CONTEXT_LIMIT = 200000;
+var STORE_PREFIX = 'lumen.agent.';
+var START_BRIDGE = 'The Agent panel is served by Lumen itself; reopen it from the top bar, or restart Lumen.';
+var CONFIGURE = 'Install Claude Code or Codex, then register Lumen with it once: `Lumen --mcp-install` (or `lumen-mcp --install`).';
+var INSERT_METHODS = {
+  smiles: 'addSMILES', smi: 'addSMILES',
+  cdxml: 'addCDXML',
+  mol: 'addMolV2000', molfile: 'addMolV2000', sdf: 'addMolV2000', molv2000: 'addMolV2000',
+  molv3000: 'addMolV3000', mol3000: 'addMolV3000',
+  inchi: 'addInChI',
+  rxn: 'addRXNV2000', rxnv2000: 'addRXNV2000', rxnv3000: 'addRXNV3000'
+};
+
+// ------------------------------------------------------------------------------------------------
+// configuration (config.js is optional; without it: port 47325, no token -> the bridge answers 401)
+// ------------------------------------------------------------------------------------------------
+var cfg = { port: window.location.port || '80', token: '' };
+var hasConfig = true;
+var BASE = window.location.origin + '/api/agent';
+var EMBEDDED = window.parent && window.parent !== window;
+(function theme() {
+  var m = /[?&]theme=(light|dark)/.exec(window.location.search);
+  if (m) document.documentElement.setAttribute('data-theme', m[1]);
+  window.addEventListener('message', function (ev) {
+    if (ev.origin !== window.location.origin || !ev.data || ev.data.type !== 'lumen-theme') return;
+    document.documentElement.setAttribute('data-theme', ev.data.theme === 'light' ? 'light' : 'dark');
+  });
+})();
+
+// ------------------------------------------------------------------------------------------------
+// DOM
+// ------------------------------------------------------------------------------------------------
+function $(sel) { return document.querySelector(sel); }
+var el = {
+  bridge: $('#bridge'), dot: $('#bridge-dot'), bridgeText: $('#bridge-text'), help: $('#bridge-help'),
+  transcript: $('#transcript'), status: $('#status'), suggest: $('#suggest'), prompt: $('#prompt'),
+  modelBtn: $('#model-btn'), selChip: $('#sel-chip'), version: $('#version'), chooser: $('#chooser'),
+  close: $('#btn-close')
+};
+
+// ------------------------------------------------------------------------------------------------
+// state
+// ------------------------------------------------------------------------------------------------
+var backend = 'claude';
+var entries = [];            // transcript of the current backend: {k, t, name, args, c, ctx}
+var welcomeEl = null;
+var run = null;              // active run: {id, es, t0, verb, spin, stats, draft, finished, cancelled, timer}
+var history = [];
+var histPos = 0;
+var suggestItems = [];
+var suggestIdx = 0;
+var chooserBackend = null;
+var stickToBottom = true;
+var helpDismissedFor = '';
+var everConnected = false;
+var saveTimer = null;
+var draftTimer = null;
+var codeSeq = 0;
+var codeStore = {};          // id -> {method, code} for the "insert into document" buttons
+var bridge = {
+  state: 'unknown',          // unknown | ok | down | unauthorized
+  version: '', backends: {}, default_backend: '', runs_active: 0, sessions: {}, effort_choices: {},
+  settings: { claude: { model: '', effort: '' }, codex: { model: '', effort: '' } }
+};
+
+// ------------------------------------------------------------------------------------------------
+// small helpers
+// ------------------------------------------------------------------------------------------------
+var store = {
+  get: function (key, fallback) {
+    try {
+      var v = window.localStorage.getItem(STORE_PREFIX + key);
+      return v === null ? fallback : JSON.parse(v);
+    } catch (e) { return fallback; }
+  },
+  set: function (key, value) {
+    try { window.localStorage.setItem(STORE_PREFIX + key, JSON.stringify(value)); } catch (e) { /* no storage */ }
+  },
+  del: function (key) {
+    try { window.localStorage.removeItem(STORE_PREFIX + key); } catch (e) { /* no storage */ }
+  }
+};
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function escAttr(s) {
+  return esc(s).replace(/"/g, '&quot;');
+}
+function isHidden(node) { return node.classList.contains('hidden'); }
+function show(node) { node.classList.remove('hidden'); }
+function hide(node) { node.classList.add('hidden'); }
+function shortModel(m) { return (m || 'default').replace(/^claude-/, ''); }
+function settingsFor(b) { return bridge.settings[b] || { model: '', effort: '' }; }
+function effortChoices(b) {
+  var fromBridge = bridge.effort_choices && bridge.effort_choices[b];
+  return (Array.isArray(fromBridge) && fromBridge.length) ? fromBridge : (EFFORT_DEFAULTS[b] || EFFORT_DEFAULTS.claude);
+}
+function modelLabel(b) {
+  b = b || backend;
+  var st = settingsFor(b);
+  return b + ' · ' + shortModel(st.model) + (st.effort ? ' · ' + st.effort : '');
+}
+function parseData(s) {
+  if (typeof s !== 'string') return s;
+  try { return JSON.parse(s); } catch (e) { return s; }
+}
+
+// ------------------------------------------------------------------------------------------------
+// the Lumen window (same origin): its state comes from /api/ui/state, close / theme go through postMessage
+// ------------------------------------------------------------------------------------------------
+var windowState = null;      // the last /api/ui/state answer
+function setupWindow() {
+  if (EMBEDDED) show(el.close);
+  return true;
+}
+
+function hookSelection() {
+  function poll() {
+    window.fetch(window.location.origin + '/api/ui/state', { cache: 'no-store' }).then(function (r) { return r.json(); })
+      .then(function (s) { windowState = s; updateSelectionChip(); }).catch(function () { /* engine restarting */ });
+  }
+  poll();
+  setInterval(poll, 2000);
+}
+
+function selectionText() {
+  var s = windowState;
+  if (!s || !s.connected || !s.active_image) return null;
+  var a = s.active_image;
+  var sel = s.selections && s.selections[a.id];
+  return { image: a.name || a.id, sel: sel ? (sel.type || 'selection') : '' };
+}
+
+function updateSelectionChip() {
+  var st = selectionText();
+  if (!st) { el.selChip.textContent = 'no image'; el.selChip.title = 'No image is open in Lumen'; show(el.selChip); return; }
+  var text = st.image + (st.sel ? ' · ' + st.sel + ' selection' : '');
+  el.selChip.textContent = text.length > 44 ? text.slice(0, 43) + '…' : text;
+  el.selChip.title = 'Attached to the next prompt: the active image ' + st.image + (st.sel ? ' and your ' + st.sel + ' selection' : '');
+  show(el.selChip);
+}
+
+function collectContext() {
+  // the server attaches the window state itself; the label only tells the user what goes along
+  var st = selectionText();
+  if (!st) return null;
+  return { text: '', label: st.image + (st.sel ? ' · ' + st.sel + ' selection' : '') };
+}
+
+var RUNNERS = { ijm: 'macro', imagej: 'macro', macro: 'macro', python: 'python', py: 'python', jython: 'python' };
+function insertMethodFor(lang) {
+  return RUNNERS[String(lang || '').toLowerCase()] || null;
+}
+
+function insertCode(id) {
+  var item = codeStore[id];
+  if (!item) return;
+  var url, body;
+  if (item.method === 'macro') {
+    url = '/api/ops/script.run_ij_macro/run';
+    body = { params: { macro: item.code }, scope: 'stack' };
+  } else {
+    url = '/api/script/run';
+    body = { code: item.code, language: 'python' };
+  }
+  window.fetch(window.location.origin + url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+    .then(function (res) {
+      if (!res.ok || res.d.error) pushEntry({ k: 'error', t: 'Lumen: ' + (res.d.error || 'the ' + item.method + ' failed') });
+      else pushEntry({ k: 'note', t: '▶ ran the ' + item.method + ' in Lumen' + (res.d.log ? '\n' + String(res.d.log).trim() : res.d.stdout ? '\n' + String(res.d.stdout).trim() : '') });
+    })
+    .catch(function (e) { pushEntry({ k: 'error', t: 'Lumen refused the ' + item.method + ': ' + ((e && e.message) || e) }); });
+}
+
+// ------------------------------------------------------------------------------------------------
+// bridge API
+// ------------------------------------------------------------------------------------------------
+function api(method, path, body) {
+  var headers = { 'X-Lumen-Agent': '1' };
+  var init = { method: method, headers: headers, cache: 'no-store' };
+  if (body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+    init.body = JSON.stringify(body);
+  }
+  return window.fetch(BASE + path, init).then(function (r) {
+    return r.text().then(function (t) {
+      var data = null;
+      try { data = t ? JSON.parse(t) : null; } catch (e) { data = { raw: t }; }
+      if (!r.ok) {
+        var msg = (data && (data.error || data.message || data.detail)) || (method + ' ' + path + ' → HTTP ' + r.status);
+        var err = new Error(String(msg));
+        err.status = r.status;
+        err.data = data;
+        throw err;
+      }
+      return data;
+    });
+  });
+}
+
+function describeError(e) {
+  if (e && (e.status === 401 || e.status === 403)) {
+    return 'Lumen refused the request (HTTP ' + e.status + ')';
+  }
+  if (e && e.status) return e.message || ('HTTP ' + e.status);
+  return 'cannot reach the Lumen engine — ' + START_BRIDGE;
+}
+
+function applySettings(s) {
+  if (!s || typeof s !== 'object') return;
+  var src = (s.settings && typeof s.settings === 'object') ? s.settings : s;
+  BACKENDS.forEach(function (b) {
+    var st = src[b];
+    if (st && typeof st === 'object') {
+      bridge.settings[b] = {
+        model: typeof st.model === 'string' ? st.model : (bridge.settings[b].model || ''),
+        effort: typeof st.effort === 'string' ? st.effort : (bridge.settings[b].effort || '')
+      };
+    }
+  });
+  if (typeof src.default_backend === 'string') bridge.default_backend = src.default_backend;
+  if (src.effort_choices && typeof src.effort_choices === 'object') bridge.effort_choices = src.effort_choices;
+}
+
+function sessionIdOf(data) {
+  if (!data) return '';
+  if (typeof data === 'string') return data;
+  if (typeof data !== 'object') return String(data);
+  return String(data.session_id || data.id || data.session || '');
+}
+
+function fetchSessions() {
+  return api('GET', '/sessions').then(function (s) {
+    var src = (s && s.sessions && typeof s.sessions === 'object') ? s.sessions : s;
+    var out = {};
+    if (src && typeof src === 'object') {
+      BACKENDS.forEach(function (b) { out[b] = sessionIdOf(src[b]); });
+    }
+    bridge.sessions = out;
+    renderWelcome();
+  }).catch(function () { /* optional endpoint */ });
+}
+
+function checkHealth() {
+  return api('GET', '/health').then(function (h) {
+    var was = bridge.state;
+    bridge.state = 'ok';
+    bridge.version = (h && h.version) ? String(h.version) : '';
+    bridge.backends = (h && h.backends && typeof h.backends === 'object') ? h.backends : {};
+    bridge.runs_active = (h && h.runs_active) || 0;
+    if (h && typeof h.default_backend === 'string') bridge.default_backend = h.default_backend;
+    applySettings(h && h.settings);
+    var hadSessions = !!(h && h.sessions && typeof h.sessions === 'object');
+    if (hadSessions) BACKENDS.forEach(function (b) { bridge.sessions[b] = sessionIdOf(h.sessions[b]); });
+    if (!everConnected) { everConnected = true; firstConnect(); if (!hadSessions) fetchSessions(); }
+    if (was !== 'ok') { renderBridge(); renderWelcome(); }
+    updateFooter();
+  }).catch(function (e) {
+    var was = bridge.state;
+    bridge.state = (e && (e.status === 401 || e.status === 403)) ? 'unauthorized' : 'down';
+    if (was !== bridge.state) { renderBridge(); renderWelcome(); }
+  });
+}
+
+function isInstalled(b) {
+  if (bridge.state !== 'ok') return true;            // unknown until the bridge answers
+  return !!bridge.backends[b];
+}
+
+function firstConnect() {
+  var stored = store.get('backend', '');
+  if (!stored && bridge.default_backend && BACKENDS.indexOf(bridge.default_backend) >= 0) {
+    setBackend(bridge.default_backend);
+  } else if (!isInstalled(backend)) {
+    var other = BACKENDS.filter(isInstalled)[0];
+    if (other) {
+      setBackend(other);
+      pushEntry({ k: 'note', t: 'agent: ' + modelLabel() + ' (the previous provider is not installed on this machine)' });
+    }
+  }
+  renderWelcome();
+}
+
+// ------------------------------------------------------------------------------------------------
+// bridge status in the header
+// ------------------------------------------------------------------------------------------------
+function problemText(state) {
+  if (state === 'down') return 'The Lumen engine is not answering. ' + START_BRIDGE + ' Retrying every 5 s…';
+  if (state === 'unauthorized') return 'Lumen refused the Agent panel (open it from the Lumen window itself).';
+  return 'Connecting to Lumen…';
+}
+
+function availableLabel() {
+  var names = BACKENDS.filter(function (b) { return !!bridge.backends[b]; });
+  return names.length ? names.join(' · ') : 'no agent CLI found';
+}
+
+function renderBridge() {
+  var s = bridge.state;
+  el.dot.className = 'dot ' + (s === 'ok' ? 'ok' : s === 'unauthorized' ? 'warn' : s === 'down' ? 'down' : '');
+  el.bridgeText.textContent = s === 'ok' ? 'connected · ' + availableLabel()
+    : s === 'unauthorized' ? 'refused'
+    : s === 'down' ? 'Lumen unreachable' : 'connecting…';
+  el.version.textContent = bridge.version ? 'Lumen v' + bridge.version : '';
+  el.help.className = (s === 'unauthorized') ? 'warn' : '';
+  if (s === 'ok') { hide(el.help); return; }
+  el.help.innerHTML = mdInline(problemText(s)).replace(/\n/g, '<br>');
+  if (helpDismissedFor === s) hide(el.help); else show(el.help);
+}
+
+function toggleHelp() {
+  if (isHidden(el.help)) {
+    el.help.className = bridge.state === 'unauthorized' ? 'warn' : (bridge.state === 'ok' ? 'ok' : '');
+    el.help.innerHTML = mdInline(bridge.state === 'ok'
+      ? 'Built into Lumen' + (bridge.version ? ' v' + bridge.version : '') + ' · agents: ' + availableLabel() +
+        ' · active runs: ' + bridge.runs_active + '. The agent works through the lumen MCP tools; ' +
+        (availableLabel() === 'no agent CLI found' ? CONFIGURE : 'everything it does appears in this window.')
+      : problemText(bridge.state)).replace(/\n/g, '<br>');
+    helpDismissedFor = '';
+    show(el.help);
+  } else {
+    helpDismissedFor = bridge.state;
+    hide(el.help);
+  }
+}
+
+// ------------------------------------------------------------------------------------------------
+// markdown-ish rendering (inline code, bold, italics, bullet lists, headings, fenced code windows)
+// ------------------------------------------------------------------------------------------------
+function mdInline(s) {
+  s = esc(s);
+  s = s.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  s = s.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>');
+  s = s.replace(/(^|[^\w*])\*([^*\n]+)\*(?![\w*])/g, '$1<i>$2</i>');
+  return s;
+}
+
+function codeWindow(code, lang, title) {
+  var lines = String(code).replace(/\n+$/, '').split('\n');
+  var rows = '';
+  for (var i = 0; i < lines.length; i++) {
+    rows += '<tr><td class="n">' + (i + 1) + '</td><td>' + esc(lines[i]) + '</td></tr>';
+  }
+  var method = insertMethodFor(lang);
+  var head = '';
+  if (title || lang || method) {
+    head = '<div class="code-title">' + esc(title || '') + (title && lang ? ' · ' : '') + esc(lang || '');
+    if (method) {
+      var id = ++codeSeq;
+      codeStore[id] = { method: method, code: lines.join('\n') };
+      head += '<button type="button" class="insert" data-code="' + id + '" title="Run this ' + method + ' on the active image">▶ run in Lumen</button>';
+    }
+    head += '</div>';
+  }
+  return head + '<div class="code"><table>' + rows + '</table></div>';
+}
+
+function mdText(chunk) {
+  var lines = chunk.replace(/^\n+|\n+$/g, '').split('\n');
+  if (lines.length === 1 && !lines[0].trim()) return '';
+  var html = '';
+  var list = null;
+  var para = [];
+  function flushPara() { if (para.length) { html += '<p>' + para.join('<br>') + '</p>'; para = []; } }
+  function flushList() { if (list) { html += '</' + list + '>'; list = null; } }
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    var m = /^\s*(?:[-*•]|\d+[.)])\s+(.*)$/.exec(line);
+    if (m) {
+      flushPara();
+      var kind = /^\s*\d/.test(line) ? 'ol' : 'ul';
+      if (list !== kind) { flushList(); list = kind; html += '<' + kind + '>'; }
+      html += '<li>' + mdInline(m[1]) + '</li>';
+      continue;
+    }
+    m = /^\s*#{1,6}\s+(.*)$/.exec(line);
+    if (m) { flushPara(); flushList(); html += '<strong class="h">' + mdInline(m[1]) + '</strong>'; continue; }
+    if (!line.trim()) { flushPara(); flushList(); continue; }
+    flushList();
+    para.push(mdInline(line));
+  }
+  flushPara();
+  flushList();
+  return html;
+}
+
+function mdBlock(text) {
+  // split on ``` fences: [text, lang, code, text, lang, code, ...]
+  var parts = String(text).split(/```([a-zA-Z0-9_+-]*)[ \t]*\n?/);
+  var out = '';
+  for (var i = 0; i < parts.length; i++) {
+    if (i % 3 === 0) {
+      out += mdText(parts[i]);
+    } else {
+      out += codeWindow(parts[i + 1] || '', parts[i], '');
+      i += 1;
+    }
+  }
+  return out;
+}
+
+function preview(text, maxLines, width) {
+  maxLines = maxLines || 2;
+  width = width || 110;
+  text = String(text == null ? '' : text);
+  var stripped = text.trim();
+  var first = stripped.charAt(0);
+  if (first === '{' || first === '[') {
+    try {
+      var compact = JSON.stringify(JSON.parse(stripped));
+      var total = text.split('\n').length;
+      var cut = compact.length > width;
+      return { shown: [cut ? compact.slice(0, width - 1) + '…' : compact], more: Math.max(0, total - 1), truncated: cut || total > 1 };
+    } catch (e) { /* not JSON */ }
+  }
+  var lines = text.split('\n').filter(function (l) { return l.trim(); });
+  var truncated = false;
+  var shown = lines.slice(0, maxLines).map(function (l) {
+    if (l.length <= width) return l;
+    truncated = true;
+    return l.slice(0, width - 1) + '…';
+  });
+  return { shown: shown, more: lines.length - shown.length, truncated: truncated || lines.length > shown.length };
+}
+
+function toolCallHtml(name, args) {
+  var obj = null;
+  var argText = '';
+  if (args && typeof args === 'object') {
+    obj = args;
+    argText = JSON.stringify(args);
+  } else {
+    argText = String(args == null ? '' : args).trim();
+    try { obj = argText ? JSON.parse(argText) : {}; } catch (e) { obj = null; }
+  }
+  var windows = '';
+  var compact = argText;
+  if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+    var rest = {};
+    Object.keys(obj).forEach(function (k) {
+      var v = obj[k];
+      if (typeof v === 'string' && (v.length > 160 || v.indexOf('\n') >= 0)) {
+        windows += codeWindow(v, k === 'code' ? 'python' : '', k);
+      } else if (Array.isArray(v) && k === 'commands') {
+        windows += codeWindow(v.map(String).join('\n'), '', k);
+      } else {
+        rest[k] = v;
+      }
+    });
+    compact = Object.keys(rest).length ? JSON.stringify(rest) : '';
+  }
+  var html = '<span class="bullet">⏺</span><div class="body"><span class="name">' + esc(name) + '</span>';
+  if (compact || !windows) {
+    var shortText = compact.length > 400 ? compact.slice(0, 399) + '…' : compact;
+    html += '<span class="args" data-full="' + escAttr(compact) + '" title="click to expand">(' + esc(shortText) + ')</span>';
+  }
+  return html + windows + '</div>';
+}
+
+// ------------------------------------------------------------------------------------------------
+// transcript
+// ------------------------------------------------------------------------------------------------
+function renderEntry(e) {
+  var div = document.createElement('div');
+  div.className = 'entry';
+  switch (e.k) {
+    case 'user':
+      div.className += ' e-user';
+      div.innerHTML = '<span class="gt">&gt;</span> ' + mdInline(e.t) +
+        (e.ctx ? ' <span class="ctx">⌁ ' + esc(e.ctx) + '</span>' : '');
+      break;
+    case 'assistant':
+      div.className += ' e-assistant';
+      div.innerHTML = '<span class="bullet">⏺</span><div class="md">' + mdBlock(e.t) +
+        (e.live ? '<span class="cursor">▌</span>' : '') + '</div>';
+      break;
+    case 'tool':
+      div.className += ' e-tool';
+      div.innerHTML = toolCallHtml(e.name, e.args);
+      break;
+    case 'tool_result': {
+      div.className += ' e-result';
+      var p = preview(e.t);
+      var body = p.shown.map(esc).join('\n   ') || '(no output)';
+      if (p.more > 0) body += '\n   <span class="more">… +' + p.more + ' lines</span>';
+      div.innerHTML = '⎿  ' + body;
+      div.title = p.truncated ? 'click to expand' : '';
+      break;
+    }
+    case 'note':
+      div.className += ' e-note' + (e.c ? ' ' + e.c : '');
+      if (e.c === 'ok') div.innerHTML = '<span class="tick">✓</span>' + esc(String(e.t).replace(/^✓/, ''));
+      else div.textContent = e.t;
+      break;
+    case 'error':
+      div.className += ' e-error';
+      div.textContent = '! ' + e.t;
+      break;
+    default:
+      div.textContent = String(e.t || '');
+  }
+  div._entry = e;
+  return div;
+}
+
+function plainEntry(e) {
+  var out = {};
+  ['k', 't', 'name', 'args', 'c', 'ctx'].forEach(function (key) { if (e[key] !== undefined) out[key] = e[key]; });
+  return out;
+}
+
+function validEntry(e) {
+  return e && typeof e === 'object' && typeof e.k === 'string' &&
+    ['user', 'assistant', 'tool', 'tool_result', 'note', 'error'].indexOf(e.k) >= 0;
+}
+
+function scrollToBottom(force) {
+  if (!force && !stickToBottom) return;
+  el.transcript.scrollTop = el.transcript.scrollHeight;
+}
+
+function pushEntry(e) {
+  entries.push(e);
+  var node = renderEntry(e);
+  e.el = node;
+  el.transcript.appendChild(node);
+  while (entries.length > MAX_ENTRIES) {
+    var old = entries.shift();
+    if (old.el && old.el.parentNode) old.el.parentNode.removeChild(old.el);
+  }
+  scrollToBottom();
+  saveTranscript();
+  return e;
+}
+
+function rerenderEntry(e) {
+  var node = renderEntry(e);
+  if (e.el && e.el.parentNode) e.el.parentNode.replaceChild(node, e.el);
+  else el.transcript.appendChild(node);
+  e.el = node;
+  scrollToBottom();
+}
+
+function saveTranscript(now) {
+  if (now) {
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    store.set('transcript.' + backend, entries.map(plainEntry));
+    return;
+  }
+  if (saveTimer) return;
+  saveTimer = setTimeout(function () { saveTimer = null; store.set('transcript.' + backend, entries.map(plainEntry)); }, 300);
+}
+
+function loadTranscript() {
+  var saved = store.get('transcript.' + backend, []);
+  entries = Array.isArray(saved) ? saved.filter(validEntry).slice(-MAX_ENTRIES) : [];
+}
+
+function welcomeHtml() {
+  var who;
+  if (bridge.state === 'ok') {
+    who = isInstalled(backend) ? LABELS[backend] + ' (' + modelLabel() + ')' : LABELS[backend] + ' is not installed on this machine';
+  } else if (bridge.state === 'unauthorized') {
+    who = 'Lumen refused the panel';
+  } else if (bridge.state === 'down') {
+    who = 'the Lumen engine is not answering';
+  } else {
+    who = LABELS[backend] + ' · connecting to the bridge';
+  }
+  var session = bridge.sessions && bridge.sessions[backend];
+  var sessionText = session ? '<br>session ' + esc(String(session).slice(0, 8)) + '… continues (' + entries.length + ' entries restored)'
+    : (entries.length ? '<br>' + entries.length + ' entries restored — the next prompt starts a new conversation' : '');
+  return '<span class="accent">✻</span> <b>Welcome to Agent Chat for Lumen</b><br><br>' +
+    mdInline(who) + ' · works on the images open in Lumen' + sessionText +
+    '<br>Type a request below · /model to switch provider or model · /help for shortcuts';
+}
+
+function renderWelcome() {
+  if (!welcomeEl) {
+    welcomeEl = document.createElement('div');
+    welcomeEl.className = 'welcome';
+    el.transcript.insertBefore(welcomeEl, el.transcript.firstChild);
+  }
+  welcomeEl.innerHTML = welcomeHtml();
+}
+
+function renderAll() {
+  el.transcript.innerHTML = '';
+  welcomeEl = null;
+  renderWelcome();
+  entries.forEach(function (e) {
+    e.el = renderEntry(e);
+    el.transcript.appendChild(e.el);
+  });
+  stickToBottom = true;
+  scrollToBottom(true);
+}
+
+// ------------------------------------------------------------------------------------------------
+// backend / settings
+// ------------------------------------------------------------------------------------------------
+function updateFooter() {
+  el.modelBtn.textContent = modelLabel() + ' ▾';
+}
+
+function setBackend(b) {
+  if (BACKENDS.indexOf(b) < 0) return;
+  if (b !== backend) {
+    saveTranscript(true);
+    backend = b;
+    loadTranscript();
+    renderAll();
+  }
+  store.set('backend', backend);
+  updateFooter();
+}
+
+function choose(b, opts) {
+  opts = opts || {};
+  if (BACKENDS.indexOf(b) < 0) return Promise.resolve();
+  var body = { backend: b, default_backend: b };
+  var st = settingsFor(b);
+  if (opts.model !== undefined) { body.model = opts.model; st.model = opts.model; }
+  if (opts.effort !== undefined) { body.effort = opts.effort; st.effort = opts.effort; }
+  bridge.settings[b] = st;
+  bridge.default_backend = b;
+  setBackend(b);
+  return api('POST', '/settings', body).then(function (r) {
+    applySettings(r);
+  }).catch(function (e) {
+    pushEntry({ k: 'error', t: 'settings were not saved on the bridge: ' + describeError(e) });
+  }).then(function () {
+    updateFooter();
+    pushEntry({ k: 'note', t: 'agent: ' + modelLabel() });
+    renderWelcome();
+    renderChooser();
+  });
+}
+
+function clearConversation() {
+  api('POST', '/clear', { backend: backend }).catch(function () { /* bridge may be down */ });
+  entries = [];
+  store.del('transcript.' + backend);
+  if (bridge.sessions) bridge.sessions[backend] = '';
+  renderAll();
+  pushEntry({ k: 'note', t: 'conversation cleared' });
+}
+
+// ------------------------------------------------------------------------------------------------
+// model chooser (provider · model · effort)
+// ------------------------------------------------------------------------------------------------
+function openChooser() {
+  chooserBackend = backend;
+  show(el.chooser);
+  renderChooser();
+}
+function closeChooser() { hide(el.chooser); }
+
+function renderChooser() {
+  if (isHidden(el.chooser)) return;
+  var b = (chooserBackend && BACKENDS.indexOf(chooserBackend) >= 0) ? chooserBackend : backend;
+  var st = settingsFor(b);
+  var html = '<div class="col"><div class="col-title">Provider</div>';
+  BACKENDS.forEach(function (k) {
+    var installed = isInstalled(k);
+    html += '<button type="button" class="row' + (k === b ? ' on' : '') + '" data-provider="' + k + '"' +
+      (installed ? '' : ' disabled') + '>' + (k === backend ? '● ' : '  ') + LABELS[k] +
+      (installed ? '' : '  (not installed)') + '</button>';
+  });
+  html += '<div class="hint">' + (b === backend ? 'current provider' : 'click to switch') + '</div></div>';
+  html += '<div class="col"><div class="col-title">Model</div>';
+  var known = false;
+  MODELS[b].forEach(function (m) {
+    var on = m[0] === st.model;
+    known = known || on;
+    html += '<button type="button" class="row' + (on ? ' on' : '') + '" data-model="' + escAttr(m[0]) + '">' +
+      (on ? '● ' : '  ') + esc(m[1]) + '</button>';
+  });
+  if (!known && st.model) {
+    html += '<button type="button" class="row on" data-model="' + escAttr(st.model) + '">● ' + esc(st.model) + '</button>';
+  }
+  html += '<div class="hint">other: /model &lt;name&gt;</div></div>';
+  html += '<div class="col"><div class="col-title">Effort</div>';
+  effortChoices(b).forEach(function (e) {
+    var on = e === (st.effort || '');
+    html += '<button type="button" class="row' + (on ? ' on' : '') + '" data-effort="' + escAttr(e) + '">' +
+      (on ? '● ' : '  ') + (e || 'default') + '</button>';
+  });
+  html += '</div>';
+  el.chooser.innerHTML = html;
+}
+
+el.chooser.addEventListener('click', function (ev) {
+  var btn = ev.target.closest('button');
+  if (!btn || btn.disabled) return;
+  var b = (chooserBackend && BACKENDS.indexOf(chooserBackend) >= 0) ? chooserBackend : backend;
+  if (btn.dataset.provider !== undefined) {
+    chooserBackend = btn.dataset.provider;
+    if (chooserBackend !== backend) choose(chooserBackend); else renderChooser();
+  } else if (btn.dataset.model !== undefined) {
+    choose(b, { model: btn.dataset.model });
+  } else if (btn.dataset.effort !== undefined) {
+    choose(b, { effort: btn.dataset.effort });
+  }
+});
+
+el.modelBtn.addEventListener('click', function (ev) {
+  ev.stopPropagation();
+  if (isHidden(el.chooser)) openChooser(); else closeChooser();
+});
+
+document.addEventListener('click', function (ev) {
+  if (!isHidden(el.chooser) && !el.chooser.contains(ev.target) && ev.target !== el.modelBtn) closeChooser();
+});
+
+// ------------------------------------------------------------------------------------------------
+// slash-command suggestions
+// ------------------------------------------------------------------------------------------------
+function hideSuggest() { suggestItems = []; hide(el.suggest); }
+
+function renderSuggest() {
+  el.suggest.innerHTML = suggestItems.map(function (it, i) {
+    return '<div class="item' + (i === suggestIdx ? ' sel' : '') + '" role="option" data-i="' + i + '">' +
+      '<span class="cmd">' + esc(it[0]) + '</span> <span class="desc">' + esc(it[1]) + '</span></div>';
+  }).join('');
+}
+
+function updateSuggestions() {
+  var t = el.prompt.value;
+  if (t.charAt(0) === '/' && t.indexOf('\n') < 0 && t.indexOf(' ') < 0) {
+    suggestItems = SLASH.filter(function (it) { return it[0].indexOf(t) === 0; });
+    if (suggestItems.length) {
+      suggestIdx = Math.min(suggestIdx, suggestItems.length - 1);
+      renderSuggest();
+      show(el.suggest);
+      return;
+    }
+  }
+  hideSuggest();
+}
+
+function acceptSuggestion() {
+  if (!suggestItems.length) return false;
+  el.prompt.value = suggestItems[suggestIdx][0] + ' ';
+  hideSuggest();
+  autogrow();
+  el.prompt.focus();
+  return true;
+}
+
+el.suggest.addEventListener('mousedown', function (ev) {
+  var item = ev.target.closest('.item');
+  if (!item) return;
+  ev.preventDefault();
+  suggestIdx = parseInt(item.dataset.i, 10) || 0;
+  acceptSuggestion();
+});
+
+// ------------------------------------------------------------------------------------------------
+// prompt input
+// ------------------------------------------------------------------------------------------------
+function autogrow() {
+  el.prompt.style.height = 'auto';
+  el.prompt.style.height = Math.min(160, Math.max(54, el.prompt.scrollHeight + 2)) + 'px';
+}
+
+function caretOnFirstLine() {
+  return el.prompt.value.lastIndexOf('\n', Math.max(0, el.prompt.selectionStart - 1)) < 0;
+}
+function caretOnLastLine() {
+  return el.prompt.value.indexOf('\n', el.prompt.selectionEnd) < 0;
+}
+
+function historyStep(step) {
+  if (!history.length) return;
+  histPos = Math.max(0, Math.min(history.length, histPos + step));
+  el.prompt.value = histPos < history.length ? history[histPos] : '';
+  el.prompt.selectionStart = el.prompt.selectionEnd = el.prompt.value.length;
+  autogrow();
+  updateSuggestions();
+}
+
+function onSubmit() {
+  var text = el.prompt.value;
+  el.prompt.value = '';
+  hideSuggest();
+  autogrow();
+  submit(text);
+}
+
+el.prompt.addEventListener('keydown', function (ev) {
+  var sVis = !isHidden(el.suggest) && suggestItems.length > 0;
+  if (ev.key === 'Enter' && !ev.shiftKey) {
+    ev.preventDefault();
+    if (sVis && el.prompt.value.trim() !== suggestItems[suggestIdx][0]) { acceptSuggestion(); return; }
+    onSubmit();
+    return;
+  }
+  if (ev.key === 'Tab' && sVis) { ev.preventDefault(); acceptSuggestion(); return; }
+  if (ev.key === 'Escape') {
+    ev.preventDefault();
+    if (!isHidden(el.chooser)) closeChooser();
+    else if (sVis) hideSuggest();
+    else stop();
+    return;
+  }
+  if (ev.key === 'ArrowUp') {
+    if (sVis) { ev.preventDefault(); suggestIdx = (suggestIdx - 1 + suggestItems.length) % suggestItems.length; renderSuggest(); return; }
+    if (caretOnFirstLine()) { ev.preventDefault(); historyStep(-1); }
+    return;
+  }
+  if (ev.key === 'ArrowDown') {
+    if (sVis) { ev.preventDefault(); suggestIdx = (suggestIdx + 1) % suggestItems.length; renderSuggest(); return; }
+    if (caretOnLastLine()) { ev.preventDefault(); historyStep(+1); }
+  }
+});
+el.prompt.addEventListener('input', function () { updateSuggestions(); autogrow(); });
+el.prompt.addEventListener('focus', function () { updateSelectionChip(); });
+
+document.addEventListener('keydown', function (ev) {
+  if (ev.key === 'Escape' && document.activeElement !== el.prompt) {
+    if (!isHidden(el.chooser)) closeChooser(); else stop();
+  }
+});
+
+// ------------------------------------------------------------------------------------------------
+// transcript interactions: expand tool args / results, insert buttons
+// ------------------------------------------------------------------------------------------------
+el.transcript.addEventListener('click', function (ev) {
+  var insert = ev.target.closest('button.insert');
+  if (insert) { ev.preventDefault(); insertCode(insert.dataset.code); return; }
+  var args = ev.target.closest('.args');
+  if (args) {
+    var full = args.classList.toggle('full');
+    var text = args.dataset.full || '';
+    args.textContent = '(' + (full || text.length <= 400 ? text : text.slice(0, 399) + '…') + ')';
+    return;
+  }
+  var result = ev.target.closest('.e-result');
+  if (result && result._entry) {
+    if (window.getSelection && String(window.getSelection()).length) return;   // let the user copy text
+    var open = result.classList.toggle('open');
+    if (open) {
+      result.textContent = '⎿  ' + String(result._entry.t || '(no output)');
+    } else {
+      var fresh = renderEntry(result._entry);
+      result.parentNode.replaceChild(fresh, result);
+      result._entry.el = fresh;
+    }
+  }
+});
+
+el.transcript.addEventListener('scroll', function () {
+  stickToBottom = el.transcript.scrollHeight - el.transcript.scrollTop - el.transcript.clientHeight < 40;
+});
+
+el.bridge.addEventListener('click', toggleHelp);
+el.close.addEventListener('click', function () {
+  saveTranscript(true);
+  try { window.parent.postMessage({ type: 'lumen-agent-close' }, window.location.origin); } catch (e) { /* ignore */ }
+});
+
+// ------------------------------------------------------------------------------------------------
+// running a prompt
+// ------------------------------------------------------------------------------------------------
+function submit(text) {
+  text = (text || '').trim();
+  if (!text) return;
+  if (text.charAt(0) === '/') { slash(text); return; }
+  if (run) { pushEntry({ k: 'note', t: '(still working — Esc to interrupt)' }); return; }
+  history.push(text);
+  if (history.length > MAX_HISTORY) history = history.slice(-MAX_HISTORY);
+  histPos = history.length;
+  store.set('history', history);
+  var ctx = collectContext();
+  pushEntry({ k: 'user', t: text, ctx: ctx ? ctx.label : '' });
+  beginRun(text, ctx ? ctx.text : null);
+}
+
+function tick() {
+  if (!run) return;
+  run.spin = (run.spin + 1) % SPINNER.length;
+  var secs = Math.floor((Date.now() - run.t0) / 1000);
+  el.status.innerHTML = '<span class="accent">' + SPINNER[run.spin] + ' ' + run.verb + '…</span> ' +
+    '<span class="dim">(esc to interrupt · ' + secs + 's)</span>';
+}
+
+function beginRun(prompt, context) {
+  var me = { id: null, es: null, t0: Date.now(), verb: VERBS[history.length % VERBS.length], spin: 0,
+             stats: null, draft: null, lastDraft: null, finished: false, cancelled: false, timer: null };
+  run = me;
+  show(el.status);
+  tick();
+  me.timer = setInterval(tick, 120);
+  var body = { backend: backend, prompt: prompt };
+  if (context) body.context = context;
+  api('POST', '/run', body).then(function (r) {
+    var id = r && (r.run_id || r.id);
+    if (!id) throw new Error('the bridge did not return a run_id');
+    me.id = String(id);
+    if (me.cancelled || me.finished) {
+      api('POST', '/cancel/' + encodeURIComponent(me.id)).catch(function () { /* ignore */ });
+      return;
+    }
+    openEvents(me);
+  }).catch(function (e) {
+    if (me.finished) return;
+    pushEntry({ k: 'error', t: describeError(e) });
+    finishRun(true, me);
+    if (bridge.state !== 'ok' || (e && e.status === 401)) checkHealth();
+  });
+}
+
+function openEvents(me) {
+  var url = BASE + '/events/' + encodeURIComponent(me.id);
+  var es;
+  try { es = new window.EventSource(url); } catch (e) {
+    pushEntry({ k: 'error', t: 'cannot open the event stream: ' + ((e && e.message) || e) });
+    finishRun(true, me);
+    return;
+  }
+  me.es = es;
+  ['session', 'delta', 'text', 'tool', 'tool_result', 'stats', 'done', 'end'].forEach(function (kind) {
+    es.addEventListener(kind, function (ev) { onEvent(me, kind, parseData(ev.data)); });
+  });
+  // "error" is both the SSE kind from the bridge (has .data) and the EventSource connection error
+  es.addEventListener('error', function (ev) {
+    if (ev && typeof ev.data === 'string') { onEvent(me, 'error', parseData(ev.data)); return; }
+    if (me.finished) { es.close(); return; }
+    if (es.readyState === window.EventSource.CLOSED) {
+      pushEntry({ k: 'error', t: 'lost the event stream from the bridge' });
+      finishRun(true, me);
+    }
+    // CONNECTING: the browser reconnects by itself
+  });
+  es.onmessage = function (ev) {
+    // unnamed events: {event|kind|type, data|payload} envelopes
+    var d = parseData(ev.data);
+    if (d && typeof d === 'object') {
+      var kind = d.event || d.kind || d.type;
+      if (kind) onEvent(me, String(kind), d.data !== undefined ? d.data : (d.payload !== undefined ? d.payload : d));
+    }
+  };
+}
+
+var TEXT_KEYS = ['text', 'delta', 'content', 'message', 'error', 'output', 'result', 'value', 'data', 'payload'];
+function textOf(data, fallbackJson) {
+  if (data == null) return '';
+  if (typeof data === 'string') return data;
+  if (typeof data !== 'object') return String(data);
+  if (Array.isArray(data)) return data.map(function (p) { return textOf(p, true); }).join('\n');
+  if (data.type === 'image' || data.type === 'image_url' || data.type === 'input_image') return '[image]';
+  for (var i = 0; i < TEXT_KEYS.length; i++) {
+    var v = data[TEXT_KEYS[i]];
+    if (typeof v === 'string') return v;
+    if (Array.isArray(v)) return textOf(v, true);
+  }
+  return fallbackJson ? JSON.stringify(data, null, 1) : '';
+}
+
+function resultTextOf(data) {
+  var t = textOf(data, true);
+  if (data && typeof data === 'object' && !Array.isArray(data) &&
+      (data.image || data.images || data.png || data.png_base64 || data.image_base64)) {
+    t = (t ? t + '\n' : '') + '[image]';
+  }
+  t = t.replace(/data:image\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=]+/g, '[image]');
+  if (/^[A-Za-z0-9+/=\s]{1500,}$/.test(t)) t = '[image]';
+  return t;
+}
+
+function toolOf(data) {
+  if (typeof data === 'string') {
+    var sp = data.indexOf(' ');
+    return sp < 0 ? [data, ''] : [data.slice(0, sp), data.slice(sp + 1).trim()];
+  }
+  if (data && typeof data === 'object') {
+    var name = data.name || data.tool || data.tool_name || 'tool';
+    var args = data.args;
+    if (args === undefined) args = data.input;
+    if (args === undefined) args = data.arguments;
+    if (args === undefined) args = data.params;
+    if (args === undefined) args = data.text;
+    return [String(name), args === undefined ? '' : args];
+  }
+  return ['tool', ''];
+}
+
+function onEvent(me, kind, data) {
+  if (me !== run || me.finished) return;
+  var prevKind = me.lastKind;
+  me.lastKind = kind;
+  switch (kind) {
+    case 'session': {
+      var id = sessionIdOf(data);
+      if (id) bridge.sessions[backend] = id;
+      break;
+    }
+    case 'delta':
+      addDelta(me, textOf(data));
+      break;
+    case 'text':
+      finalizeDraft(me, textOf(data));
+      break;
+    case 'tool': {
+      finalizeDraft(me, '');
+      var t = toolOf(data);
+      pushEntry({ k: 'tool', name: t[0], args: t[1] });
+      break;
+    }
+    case 'tool_result':
+      pushEntry({ k: 'tool_result', t: resultTextOf(data) });
+      break;
+    case 'stats':
+      if (data && typeof data === 'object') me.stats = data;
+      break;
+    case 'error':
+      pushEntry({ k: 'error', t: textOf(data, true) || 'unknown error' });
+      break;
+    case 'done': {
+      var text = textOf(data);
+      if (data && typeof data === 'object' && !me.stats && (data.stats || data.usage || data.total_cost_usd !== undefined)) {
+        me.stats = data.stats || data;
+      }
+      // the final text was already delivered as a 'text' event; only an open draft is completed with it
+      if (me.draft) finalizeDraft(me, text);
+      // like the bridge: a turn whose last event before 'done' was an error (crash, cancel) failed
+      finishRun(prevKind === 'error' || me.cancelled, me);
+      break;
+    }
+    case 'end': {
+      var status = (data && typeof data === 'object') ? String(data.status || '') : '';
+      if (status === 'bridge_stopping') {
+        pushEntry({ k: 'error', t: 'the agent bridge is shutting down' });
+        finishRun(true, me);
+        break;
+      }
+      if (data && typeof data === 'object' && data.error && prevKind !== 'error') {
+        pushEntry({ k: 'error', t: String(data.error) });
+      }
+      if (me.draft && data && typeof data === 'object' && typeof data.final_text === 'string' && data.final_text) {
+        finalizeDraft(me, data.final_text);
+      }
+      finishRun(status === 'error' || status === 'cancelled' || !!(data && data.error), me);
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+function addDelta(me, text) {
+  if (!text) return;
+  if (!me.draft) me.draft = pushEntry({ k: 'assistant', t: '', live: true });
+  me.draft.t += text;
+  if (!draftTimer) {
+    draftTimer = setTimeout(function () {
+      draftTimer = null;
+      if (me.draft) { rerenderEntry(me.draft); saveTranscript(); }
+    }, 30);
+  }
+}
+
+function finalizeDraft(me, text) {
+  if (me.draft) {
+    if (text) me.draft.t = text;
+    me.draft.live = false;
+    rerenderEntry(me.draft);
+    me.lastDraft = me.draft;
+    me.draft = null;
+    saveTranscript();
+  } else if (text) {
+    // a complete 'text' for a message whose draft a tool call already closed: never show it twice
+    var prev = me.lastDraft;
+    var prevText = prev && typeof prev.t === 'string' ? prev.t.trim() : '';
+    if (prevText && text.trim() === prevText) return;
+    if (prevText && text.indexOf(prevText) === 0) {
+      prev.t = text;
+      rerenderEntry(prev);
+      saveTranscript();
+      return;
+    }
+    me.lastDraft = pushEntry({ k: 'assistant', t: text });
+  }
+}
+
+function finishRun(failed, me) {
+  me = me || run;
+  if (!me || me.finished) return;
+  me.finished = true;
+  if (me.timer) clearInterval(me.timer);
+  if (me.es) { try { me.es.close(); } catch (e) { /* ignore */ } }
+  if (me.draft) { me.draft.live = false; rerenderEntry(me.draft); me.draft = null; }
+  hide(el.status);
+  el.status.textContent = '';
+  var secs = ((Date.now() - me.t0) / 1000).toFixed(1);
+  if (!failed) {
+    var st = me.stats || {};
+    var usage = st.usage || {};
+    var toks = usage.output_tokens || st.output_tokens;
+    var cost = st.total_cost_usd;
+    if (cost == null) cost = st.cost_usd;
+    if (cost == null) cost = st.cost;
+    var extra = '';
+    if (toks) extra += ' · ' + toks + ' output tokens';
+    if (typeof cost === 'number') extra += ' · $' + cost.toFixed(2);
+    pushEntry({ k: 'note', c: 'ok', t: '✓ ' + modelLabel() + ' · ' + secs + 's' + extra });
+  }
+  if (run === me) run = null;
+  saveTranscript(true);
+  updateSelectionChip();
+  el.prompt.focus();
+}
+
+function stop() {
+  if (!run) return;
+  var me = run;
+  me.cancelled = true;
+  if (me.id) api('POST', '/cancel/' + encodeURIComponent(me.id)).catch(function () { /* ignore */ });
+  pushEntry({ k: 'note', c: 'red', t: 'interrupted' });
+  finishRun(true, me);
+}
+
+// ------------------------------------------------------------------------------------------------
+// slash commands
+// ------------------------------------------------------------------------------------------------
+function slash(text) {
+  var sp = text.indexOf(' ');
+  var cmd = (sp < 0 ? text : text.slice(0, sp)).toLowerCase();
+  var rest = sp < 0 ? '' : text.slice(sp + 1).trim();
+  switch (cmd) {
+    case '/clear':
+      clearConversation();
+      break;
+    case '/claude':
+    case '/codex':
+      choose(cmd.slice(1)).then(function () { if (rest) submit(rest); });
+      break;
+    case '/model':
+      if (!rest) { openChooser(); break; }
+      var toks = rest.split(/\s+/);
+      var b = backend;
+      toks.forEach(function (tok) { if (BACKENDS.indexOf(tok) >= 0) b = tok; });
+      var opts = {};
+      toks.forEach(function (tok) {
+        if (BACKENDS.indexOf(tok) >= 0) return;
+        if (tok && effortChoices(b).indexOf(tok) > 0) opts.effort = tok;
+        else if (tok === 'default' || tok === 'none') opts.model = '';
+        else if (tok) opts.model = tok;
+      });
+      choose(b, opts);
+      break;
+    case '/skills':
+      submit('Briefly list what you can do in Lumen through the lumen MCP tools (one line per group).');
+      break;
+    case '/stop':
+      stop();
+      break;
+    case '/help':
+    case '/?':
+      pushEntry({ k: 'note', t: HELP });
+      break;
+    default:
+      pushEntry({ k: 'error', t: 'unknown command ' + cmd + ' — /help' });
+  }
+}
+
+// ------------------------------------------------------------------------------------------------
+// start
+// ------------------------------------------------------------------------------------------------
+function init() {
+  var storedBackend = store.get('backend', '');
+  backend = BACKENDS.indexOf(storedBackend) >= 0 ? storedBackend : 'claude';
+  var savedHistory = store.get('history', []);
+  history = Array.isArray(savedHistory) ? savedHistory.filter(function (h) { return typeof h === 'string'; }).slice(-MAX_HISTORY) : [];
+  histPos = history.length;
+  bridge.sessions = {};
+  loadTranscript();
+  renderAll();
+  updateFooter();
+  renderBridge();
+  if (!hasConfig) { el.help.innerHTML = mdInline(problemText('unknown')); show(el.help); }
+  checkHealth();
+  setInterval(checkHealth, HEALTH_EVERY_MS);
+  setupWindow();
+  hookSelection();
+  window.addEventListener('pagehide', function () { saveTranscript(true); });
+  window.addEventListener('beforeunload', function () { saveTranscript(true); });
+  autogrow();
+  el.prompt.focus();
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+
+// a few internals for development / debugging in a plain browser
+window.AgentChat = {
+  submit: submit, stop: stop, choose: choose, checkHealth: checkHealth, bridge: bridge, slash: slash,
+  entries: function () { return entries; }, backend: function () { return backend; }, run: function () { return run; },
+  event: function (kind, data) { if (run) onEvent(run, kind, data); },
+  render: { mdBlock: mdBlock, mdInline: mdInline, toolCallHtml: toolCallHtml, preview: preview, textOf: textOf,
+            resultTextOf: resultTextOf, toolOf: toolOf }
+};
+})();

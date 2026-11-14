@@ -238,3 +238,85 @@ def test_installer_entries_are_recognised():
     assert _is_ours({"command": "/x/bin/python", "args": ["-m", "lumen.mcp_server"]})
     assert not _is_ours({"command": "/Applications/Lumen.app/Contents/MacOS/Lumen", "args": []})
     assert not _is_ours({"command": "/other/tool"})
+
+
+def test_more_tools_preview_ortho_mesh_files_rois_workflows(lumen, tmp_path):
+    S, session, url = lumen
+    S.open_sample("Blobs")
+    before = session.active.data.copy()
+    text, img = S.preview_command("filters.gaussian", {"sigma": 3})
+    assert "not applied" in text and img.data[:4] == b"\x89PNG"
+    assert np.array_equal(session.active.data, before)  # a preview never changes the image
+    S.open_sample("Cells (3-D, 2 channels)")
+    text, img = S.view_orthogonal(channel=2)
+    assert "XZ" in text and img.data[:4] == b"\x89PNG"
+    out = S.export_mesh(str(tmp_path / "cells.stl"))
+    assert (tmp_path / "cells.stl").stat().st_size > 1000 and "STL" in out
+    assert "count_nuclei" in S.workflows()
+    assert "1." in S.workflows("count_nuclei")
+    assert "lumen" in S.workflows("count_nuclei", script=True)
+    (tmp_path / "a.tif").write_bytes(b"x")
+    assert "a.tif" in S.list_files(str(tmp_path))
+    S.activate_image("blobs.tif")
+    S.roi_manager("add", roi={"type": "rect", "x": 1, "y": 2, "w": 10, "h": 12}, name="r1")
+    S.roi_file("export", str(tmp_path / "set.zip"))
+    S.roi_manager("clear")
+    assert "restored" in S.restore_cleared("rois").lower() or session.roi_manager.rois
+    S.roi_manager("clear")
+    S.roi_file("import", str(tmp_path / "set.zip"))
+    assert len(session.roi_manager.rois) == 1
+    S.roi_manager("measure")
+    S.export_results(str(tmp_path / "r.csv"))
+    assert "Area" in (tmp_path / "r.csv").read_text()
+    assert "Fire" in S.list_luts()
+    S.text_file(str(tmp_path / "m.ijm"), 'print("hi");')
+    assert 'print("hi")' in S.text_file(str(tmp_path / "m.ijm"))
+    assert "Display reset" in S.set_display(reset=True) or "lut=" in S.set_display(reset=True)
+    S.scene({"mode": "mip"})
+    assert '"mip"' in S.scene()
+
+
+# every HTTP endpoint of Lumen is reachable through an MCP tool, or is part of the window's own plumbing
+COVERAGE = {
+    "/api/meta": "status", "/api/luts": "list_luts", "/api/luts/groups": "list_luts", "/api/state": "status", "/api/fs": "list_files",
+    "/api/images/open": "open_image", "/api/images/{image_id}/save": "save_image", "/api/images/{image_id}/download": "save_image",
+    "/api/images": "list_images", "/api/images/{image_id}": "image_info|close_image", "/api/images/{image_id}/select": "activate_image",
+    "/api/images/{image_id}/plane": "get_statistics|get_pixels", "/api/images/{image_id}/value": "get_pixels",
+    "/api/images/{image_id}/display": "set_display", "/api/images/{image_id}/reset_display": "set_display",
+    "/api/images/{image_id}/undo": "undo", "/api/images/{image_id}/redo": "redo", "/api/images/{image_id}/rgb.png": "view_image",
+    "/api/ops": "find_commands|describe_command", "/api/ops/{op_id}/run": "run_command|run_macro", "/api/ops/{op_id}/preview": "preview_command",
+    "/api/jobs": "jobs", "/api/jobs/{job_id}/cancel": "jobs", "/api/rois": "roi_manager", "/api/rois/{roi_id}": "roi_manager",
+    "/api/rois/delete": "roi_manager", "/api/rois/combine": "roi_manager", "/api/rois/measure": "roi_manager",
+    "/api/session/restore_clear": "restore_cleared",
+    "/api/results": "get_results|clear_results", "/api/results.csv": "export_results", "/api/threshold/{image_id}": "clear_threshold",
+    "/api/script/run": "run_script", "/api/macro": "recorded_macro", "/api/recorder": "recorded_macro", "/api/recorder/ijm": "recorded_macro",
+    "/api/settings": "settings", "/api/docs": "help", "/api/docs/{name}": "help", "/api/textfile": "text_file",
+    "/api/workflows": "workflows", "/api/workflows/{workflow_id}": "workflows", "/api/workflows/{workflow_id}/script": "workflows",
+    "/api/tracking/model": "get_tracks", "/api/images/{image_id}/ortho": "view_orthogonal", "/api/images/{image_id}/mesh.{fmt}": "export_mesh",
+    "/api/scene": "scene", "/api/ui/command": "ui|set_selection", "/api/ui/state": "status|get_selection|events", "/api/ui/actions": "ui",
+}
+WINDOW_ONLY = {  # the viewer's / editor's own plumbing: binary streams and uploads a browser makes, not features
+    "/api/events", "/api/images/upload", "/api/images/{image_id}/planes", "/api/recorder/preview", "/api/images/{image_id}/volume",
+    "/api/images/{image_id}/mesh", "/api/images/{image_id}/pick", "/api/scene/animation", "/api/images/{image_id}/animation.gif",
+    "/api/tracking/histogram", "/api/rois/export", "/api/rois/import",  # (roi_file uses the file.*_rois commands)
+    "/api/ijshim/call", "/api/ijshim/session/{token}", "/api/script/params",
+}
+
+
+def test_every_endpoint_is_covered_by_the_mcp():
+    import importlib
+    import pkgutil
+    from lumen.mcp_server import server as S
+    from lumen.server import extra
+    from lumen.server.app import create_app
+    paths = {getattr(r, "path", "") for r in create_app(Session()).routes}
+    for info in pkgutil.iter_modules(extra.__path__):
+        router = getattr(importlib.import_module(f"lumen.server.extra.{info.name}"), "router", None)
+        if router is not None:
+            paths |= {"/api" + r.path for r in router.routes}
+    paths = {p for p in paths if p.startswith("/api") and not p.startswith("/api/agent")}
+    unclassified = sorted(p for p in paths if p not in COVERAGE and p not in WINDOW_ONLY)
+    assert not unclassified, f"endpoints without an MCP tool: {unclassified}"
+    tools = {name for name in dir(S) if callable(getattr(S, name))}
+    missing = sorted({t for v in COVERAGE.values() for t in v.split("|")} - tools)
+    assert not missing, missing

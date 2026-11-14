@@ -609,8 +609,8 @@ def create_app(session: Session = SESSION) -> FastAPI:
                     target = root
                 # never serve anything outside the static directory (path traversal)
                 if target.is_file() and target != root and root in target.parents:
-                    if target.name != "index.html":
-                        return FileResponse(target)
+                    if target != root / "index.html":
+                        return FileResponse(target, headers={"Cache-Control": "no-cache"} if target.suffix == ".html" else None)
             # the page must always be revalidated: it names the hashed asset files of the current build, and a web view
             # that cached an old copy heuristically (no Cache-Control) kept showing the previous interface after an update
             return FileResponse(root / "index.html", headers={"Cache-Control": "no-cache"})

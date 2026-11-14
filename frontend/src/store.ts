@@ -139,6 +139,9 @@ interface Store {
   selections: Record<string, Roi | null>;
   views: Record<string, ViewTransform>;
   paletteOpen: boolean;
+  /** The Agent panel (top bar ▸ Agent, ⌘J): Agent Chat docked on the right. */
+  agentOpen: boolean;
+  setAgentOpen: (open: boolean) => void;
   sheet: Sheet | null;
   previewPlanes: PlaneData | null;
   previewFor: string | null;
@@ -404,6 +407,7 @@ export const useStore = create<Store>((set, get) => ({
   selections: {},
   views: {},
   paletteOpen: false,
+  agentOpen: false,
   sheet: null,
   previewPlanes: null,
   previewFor: null,
@@ -1080,6 +1084,7 @@ export const useStore = create<Store>((set, get) => ({
   setView: (imageId, v) => set({ views: { ...get().views, [imageId]: v } }),
   togglePanel: (key, open) => set({ panels: { ...get().panels, [key]: open === undefined ? !get().panels[key] : open } }),
   setPaletteOpen: (open) => set({ paletteOpen: open, menuOpen: null }),
+  setAgentOpen: (open) => set({ agentOpen: open, menuOpen: null }),
   setTheme: (t) => {
     localStorage.setItem("lumen.theme", t);
     document.documentElement.dataset.theme = t;

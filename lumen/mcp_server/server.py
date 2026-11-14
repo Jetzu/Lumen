@@ -38,6 +38,9 @@ Workflow:
    replayable script).  `events` – what changed since you last looked (the user may work in the window meanwhile).
 7. The window: `ui` (show a panel, set the tool or plane, notify the user, open a command's dialog pre-filled so the
    user can review and apply it), `jobs` (progress / cancel), `settings`, `help` (Lumen's documentation).
+8. More: `preview_command` (try parameters without applying), `view_orthogonal` (XZ / YZ of a stack), `export_mesh`,
+   `scene` (3-D viewer), `workflows` (guided recipes, also as scripts), `get_tracks`, `list_files`, `export_results`,
+   `roi_file` (ImageJ RoiSet import / export), `list_luts`, `clear_threshold`, `restore_cleared`, `text_file`.
 
 Images are addressed by id, by name or by 1-based position in `list_images`; omitted = the active image.
 Pixel coordinates are 0-based image pixels (x right, y down); planes t/z/c are 0-based.
@@ -635,12 +638,18 @@ def get_pixels(x: int, y: int, width: int = 1, height: int = 1, image: str | Non
 @mcp.tool()
 def set_display(image: str | None = None, channel: int | None = None, min: float | None = None, max: float | None = None,
                 lut: str | None = None, visible: bool | None = None, gamma: float | None = None, mode: str | None = None,
-                auto: bool = False, saturated: float = 0.35, t: int | None = None, z: int | None = None, c: int | None = None) -> str:
+                auto: bool = False, saturated: float = 0.35, t: int | None = None, z: int | None = None, c: int | None = None,
+                reset: bool = False) -> str:
     """Change how an image is shown (never its pixel data): contrast min/max (or auto=True with `saturated` % clipped,
     like ImageJ's Auto), LUT (Grays, Fire, Green, Magenta, mpl-viridis, …), channel visibility, gamma, composite mode
-    (composite | single | grayscale) and the shown plane t/z/c.  channel is 1-based (default: the current channel)."""
+    (composite | single | grayscale) and the shown plane t/z/c.  channel is 1-based (default: the current channel).
+    reset=True first returns every channel to the data range (LUTs kept).  LUT names: list_luts."""
     st = _state()
     im = _resolve_image(image, st)
+    if reset:  # back to the data range (LUTs kept), like the Display panel's "Reset all"
+        C.post(f"/api/images/{im['id']}/reset_display", client=_client())
+        st = _state()
+        im = _resolve_image(im["id"], st)
     d = im.get("display") or {}
     patch: dict[str, Any] = {k: v for k, v in (("t", t), ("z", z), ("c", c), ("mode", mode)) if v is not None}
     ci = (channel - 1) if channel else int(d.get("c", 0))
@@ -655,7 +664,7 @@ def set_display(image: str | None = None, channel: int | None = None, min: float
     if chp:
         patch["channels"] = [{} for _ in range(ci)] + [chp]
     if not patch:
-        return "Nothing to change."
+        return "Display reset to the data range." if reset else "Nothing to change."
     r = C.post(f"/api/images/{im['id']}/display", patch, client=_client())
     ch = (r.get("channels") or [{}])[ci] if r.get("channels") else {}
     return f"{im['name']}: mode={r.get('mode')}, plane t={r.get('t')} z={r.get('z')} c={r.get('c')}, channel {ci + 1}: lut={ch.get('lut')} min={ch.get('min')} max={ch.get('max')} visible={ch.get('visible')}"
@@ -920,6 +929,214 @@ def help(topic: str = "") -> str:
     body = text[(k - 1) * chunk:k * chunk]
     more = f"\n… part {k} of {math.ceil(len(text) / chunk)} (help('{name}:{k + 1}'))" if len(text) > k * chunk else ""
     return body + more
+
+
+
+# ============================================================================ the rest of Lumen's API
+def _render_gray(arr: np.ndarray, max_size: int = 768) -> bytes:
+    """A numeric plane / RGB array → PNG (percentile-stretched, like a quick Auto)."""
+    from PIL import Image as PILImage
+    a = np.asarray(arr)
+    while a.ndim > 2 and a.shape[0] == 1:
+        a = a[0]
+    if a.ndim == 3 and a.shape[-1] not in (3, 4):  # (C, Y, X): RGB when three channels, else the first
+        a = np.moveaxis(a, 0, -1) if a.shape[0] == 3 else a[0]
+    if a.ndim == 3 and a.shape[-1] in (3, 4) and a.dtype == np.uint8:
+        img = PILImage.fromarray(a[..., :3])
+    else:
+        f = a.astype(np.float64)
+        fin = f[np.isfinite(f)]
+        lo, hi = (np.percentile(fin, [0.35, 99.65]) if fin.size else (0.0, 1.0))
+        g = np.clip((f - lo) / (hi - lo if hi > lo else 1.0), 0, 1)
+        img = PILImage.fromarray((np.nan_to_num(g) * 255).astype(np.uint8))
+    s = min(1.0, max_size / max(img.size)) if max(img.size) > max_size else (min(4.0, 512 / max(img.size)) if max(img.size) < 256 else 1.0)
+    if s != 1.0:
+        img = img.resize((max(1, round(img.width * s)), max(1, round(img.height * s))), PILImage.Resampling.NEAREST if s > 1 else PILImage.Resampling.LANCZOS)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG", optimize=True)
+    return buf.getvalue()
+
+
+@mcp.tool()
+def preview_command(command: str, params: dict[str, Any] | None = None, image: str | None = None, roi: Any = None,
+                    use_selection: bool = True):
+    """What a command would do to the shown plane, WITHOUT changing the image (the operation sheet's live preview):
+    try parameters before run_command.  Works for commands with a preview (filters, adjustments, …)."""
+    o = _resolve_op(command)
+    im = _resolve_image(image)
+    r = _roi_arg(roi, im["id"])
+    if r is None and use_selection and (o.get("roi_aware") or o.get("requires_roi")):
+        r = _selection_for(im["id"])
+    resp = C.post(f"/api/ops/{o['id']}/preview", {"params": params or {}, "image_id": im["id"], "roi": r, "scope": "stack"})
+    shape = tuple(int(v) for v in resp.headers["x-shape"].split(","))
+    arr = np.frombuffer(resp.content, dtype=np.dtype(resp.headers["x-dtype"])).reshape(shape)
+    v = arr.astype(np.float64)
+    return [f"Preview of {o['name']} on {im['name']} (not applied): shape {shape}, dtype {arr.dtype}, "
+            f"min {np.nanmin(v):.6g} max {np.nanmax(v):.6g} mean {np.nanmean(v):.6g}", Image(data=_render_gray(arr), format="png")]
+
+
+@mcp.tool()
+def view_orthogonal(image: str | None = None, x: int | None = None, y: int | None = None, t: int = 0, channel: int = 1):
+    """Orthogonal views of a Z-stack through the point (x, y) (default: the centre): the XZ and YZ planes, as in
+    Image ▸ Stacks ▸ Orthogonal Views.  channel is 1-based."""
+    im = _resolve_image(image)
+    resp = C.get(f"/api/images/{im['id']}/ortho", x=x, y=y, t=t)
+    h = resp.headers
+    dt = np.dtype(h["x-dtype"])
+    nc = int(h["x-channels"])
+    zx = [int(v) for v in h["x-shape-xz"].split(",")]
+    zy = [int(v) for v in h["x-shape-yz"].split(",")]
+    n_xz = nc * zx[0] * zx[1]
+    buf = np.frombuffer(resp.content, dtype=dt)
+    xz = buf[:n_xz].reshape(nc, zx[0], zx[1])
+    yz = buf[n_xz:n_xz + nc * zy[0] * zy[1]].reshape(nc, zy[0], zy[1])
+    ci = max(0, min(nc - 1, channel - 1))
+    gap = np.full((xz.shape[1], 4), np.nan)
+    width = max(xz.shape[2], yz.shape[2])
+    pad = lambda a: np.pad(a.astype(np.float64), ((0, 0), (0, width - a.shape[1])), constant_values=np.nan)  # noqa: E731
+    combo = np.vstack([pad(xz[ci]), np.full((4, width), np.nan), pad(yz[ci])])
+    del gap
+    return [f"{im['name']}: XZ (top, rows = z, cols = x) and YZ (bottom, rows = z, cols = y) through {h.get('x-point')}, "
+            f"z spacing {h.get('x-spacing')} (relative to x/y), channel {ci + 1}/{nc}", Image(data=_render_gray(combo), format="png")]
+
+
+@mcp.tool()
+def export_mesh(path: str, image: str | None = None, fmt: str = "stl", channel: int | None = None, level: str | None = None,
+                smooth: int = 0, t: int = 0) -> str:
+    """Surface mesh of a 3-D image (marching cubes) saved as STL / OBJ / PLY (for 3-D printing, Blender, ChimeraX).
+    level: the iso level (default: Otsu); channel 1-based."""
+    im = _resolve_image(image)
+    fmt = fmt.lower().lstrip(".")
+    resp = C.get(f"/api/images/{im['id']}/mesh.{fmt}", c=None if channel is None else channel - 1, t=t, level=level, smooth=smooth)
+    with open(path, "wb") as f:
+        f.write(resp.content)
+    return f"Saved the {fmt.upper()} mesh of {im['name']} → {path} ({len(resp.content)} bytes)"
+
+
+@mcp.tool()
+def scene(patch: dict[str, Any] | None = None) -> str:
+    """The 3-D viewer's scene (camera, rendering mode, clipping, landmarks …); patch={...} updates it."""
+    if patch:
+        cur = (C.get("/api/scene") or {}).get("scene") or {}
+        return json.dumps(_trim(C.put("/api/scene", {"scene": {**cur, **patch}}), 40))[:4000]
+    return json.dumps(_trim(C.get("/api/scene"), 40))[:4000]
+
+
+@mcp.tool()
+def workflows(workflow: str | None = None, script: bool = False) -> str:
+    """Lumen's guided workflows (Count nuclei, Measure intensity per cell, Track cells, Train a pixel classifier, …):
+    no argument lists them; workflow=<id> shows its steps; script=True returns the whole workflow as a runnable
+    Python script (run it with run_script, or run the steps one by one with run_command)."""
+    if not workflow:
+        return "\n".join(f"- {w.get('id')}: {w.get('title')} ({w.get('n_steps', '?')} steps; needs {', '.join(w.get('requires') or []) or '-'}) – {w.get('description', '')}"[:320]
+                         for w in C.get("/api/workflows"))
+    if script:
+        r = C.get(f"/api/workflows/{workflow}/script")
+        return r.get("script") or json.dumps(_trim(r))
+    w = C.get(f"/api/workflows/{workflow}")
+    out = [f"{w.get('title')} – {w.get('description') or w.get('summary') or ''}", "Requires: " + ", ".join(w.get("requires") or []) or "-"]
+    for k, s in enumerate(w.get("steps") or []):
+        out.append(f"{k + 1}. {s.get('title') or s.get('name')} → {s.get('op') or s.get('command') or s.get('kind', '')} {json.dumps(_trim(s.get('params') or {}, 12))}"
+                   + (f"  ({s.get('explain') or s.get('help')})" if (s.get("explain") or s.get("help")) else ""))
+    return "\n".join(out)[:8000]
+
+
+@mcp.tool()
+def get_tracks(image: str | None = None, max_tracks: int = 50) -> str:
+    """The tracking model of a time series (after TrackMate-style tracking or manual tracking): tracks with their
+    statistics and spot counts."""
+    im = _resolve_image(image)
+    m = C.get("/api/tracking/model", image_id=im["id"])
+    tracks = m.get("tracks") or []
+    out = [f"{im['name']}: {len(tracks)} track(s), {len(m.get('free_spots') or m.get('spots') or [])} untracked spot(s)"]
+    for tr in tracks[:max_tracks]:
+        stats = ", ".join(f"{k}={v:.4g}" if isinstance(v, (int, float)) else f"{k}={v}" for k, v in list((tr.get("stats") or {}).items())[:8])
+        out.append(f"- {tr.get('name')} [{tr.get('id')}]: {len(tr.get('spots') or [])} spots" + (f"; {stats}" if stats else ""))
+    if len(tracks) > max_tracks:
+        out.append(f"… {len(tracks) - max_tracks} more")
+    return "\n".join(out)
+
+
+@mcp.tool()
+def list_files(path: str = "~") -> str:
+    """List a folder (images Lumen can open are marked) – to find files for open_image."""
+    r = C.get("/api/fs", path=path)
+    entries = r.get("entries") or r.get("items") or []
+    out = [f"{r.get('path', path)}:"]
+    for e in entries[:300]:
+        kind = "dir " if e.get("dir") or e.get("is_dir") or e.get("type") == "dir" else "file"
+        out.append(f"  {kind} {e.get('name')}" + ("  [image]" if e.get("image") else "") + (f"  ({e.get('size')} B)" if e.get("size") is not None and kind == "file" else ""))
+    if len(entries) > 300:
+        out.append(f"  … {len(entries) - 300} more")
+    return "\n".join(out)
+
+
+@mcp.tool()
+def export_results(path: str) -> str:
+    """Save the Results table as CSV."""
+    r = C.get("/api/results.csv")
+    data = r.content if hasattr(r, "content") else str(r).encode()
+    with open(path, "wb") as f:
+        f.write(data)
+    return f"Saved the Results table → {path} ({data.count(b'\n') - 1 if data else 0} rows)"
+
+
+@mcp.tool()
+def roi_file(action: str, path: str, which: str | None = None, clear_first: bool = False) -> str:
+    """ROI Manager files.  action "export": save the ROIs at path – .zip / .roi = ImageJ / Fiji RoiSet, .json = Lumen;
+    "import": read such a file into the ROI Manager (clear_first empties it before)."""
+    is_json = path.lower().endswith(".json")
+    if action == "export":
+        cmd = "file.export_rois_json" if is_json else "file.export_ij_rois"
+        params: dict[str, Any] = {"path": path}
+        if which:
+            params["which"] = which
+    elif action == "import":
+        cmd = "file.import_rois_json" if is_json else "file.import_ij_rois"
+        params = {"path": path, "clear_first": clear_first}
+        if not is_json:
+            params["add_to_manager"] = True
+    else:
+        raise LumenError("action: export or import")
+    return run_command(cmd, params, use_selection=False)
+
+
+@mcp.tool()
+def list_luts() -> str:
+    """The lookup tables (LUT names for set_display), grouped as in Image ▸ Lookup Tables."""
+    g = C.get("/api/luts/groups")
+    groups = g.get("groups") if isinstance(g, dict) else None
+    if isinstance(groups, dict):
+        return "\n".join(f"{k}: {', '.join(v)}" for k, v in groups.items())
+    if isinstance(groups, list):
+        return "\n".join(f"{x.get('name') or x.get('title')}: {', '.join(x.get('luts') or x.get('items') or [])}" for x in groups if isinstance(x, dict))
+    return json.dumps(_trim(g, 80))[:4000]
+
+
+@mcp.tool()
+def clear_threshold(image: str | None = None) -> str:
+    """Remove an image's threshold overlay (the red preview); the pixels are unchanged."""
+    im = _resolve_image(image)
+    C.delete(f"/api/threshold/{im['id']}")
+    return f"Threshold cleared on {im['name']}"
+
+
+@mcp.tool()
+def restore_cleared(kind: str | None = None) -> str:
+    """Bring back the ROI Manager or the Results table after a clear (kind "rois" | "results"; default: the last one)."""
+    r = C.post("/api/session/restore_clear", {"kind": kind} if kind else {})
+    return f"Restored {r.get('restored', 0)} {r.get('kind') or kind or 'entries'}"
+
+
+@mcp.tool()
+def text_file(path: str, content: str | None = None) -> str:
+    """Read a text file (macros, CSVs, notes; content omitted) or write one (content given). Ask before overwriting."""
+    if content is None:
+        r = C.get("/api/textfile", path=path)
+        text = r.get("text", "")
+        return text[:20000] + (f"\n… {len(text) - 20000} more characters" if len(text) > 20000 else "")
+    r = C.post("/api/textfile", {"path": path, "text": content})
+    return f"Wrote {len(content)} characters → {r.get('path', path)}"
 
 
 @mcp.resource("lumen://commands")

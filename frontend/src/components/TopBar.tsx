@@ -212,6 +212,7 @@ export default function TopBar() {
           </div>
         ))}
       </div>
+      <AgentButton />
       <button className="search-btn" onClick={() => useStore.getState().setPaletteOpen(true)}>
         <Search size={14} /> <span className="search-label">Search commands…</span> <span className="kbd">{kbd("⌘K")}</span>
       </button>
@@ -463,5 +464,17 @@ function SubMenu({ open, ...props }: MenuListProps & { open: boolean }) {
     <div className="submenu" ref={wrapRef} style={adjust?.wrap}>
       <MenuList {...props} sub style={adjust?.list} />
     </div>
+  );
+}
+
+/** Top bar ▸ Agent: opens Agent Chat for Lumen (the ChemDraw MCP's Agent Chat, served by Lumen; ⌘J). */
+function AgentButton() {
+  const open = useStore((s) => s.agentOpen);
+  const label = `Agent Chat – ask Claude Code / Codex to work in Lumen (${kbd("⌘J")})`;
+  return (
+    <button className={"agent-btn" + (open ? " on" : "")} title={label} aria-label={label} aria-pressed={open} onClick={() => useStore.getState().setAgentOpen(!open)}>
+      <span className="agent-star" aria-hidden="true">✻</span>
+      <span className="agent-label">Agent</span>
+    </button>
   );
 }

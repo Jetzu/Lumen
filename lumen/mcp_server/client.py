@@ -244,10 +244,10 @@ class LumenClient:
             self._ok_at = time.time()
             return self._check(r)
 
-    def get(self, path: str, client: str | None = None, **params: Any) -> Any:
+    def get(self, path: str, /, client: str | None = None, **params: Any) -> Any:
         return self.request("GET", path, client, params={k: v for k, v in params.items() if v is not None})
 
-    def post(self, path: str, body: Any = None, client: str | None = None, **params: Any) -> Any:
+    def post(self, path: str, /, body: Any = None, client: str | None = None, **params: Any) -> Any:
         return self.request("POST", path, client, json_body=body if body is not None else {}, params={k: v for k, v in params.items() if v is not None})
 
     def patch(self, path: str, body: Any, client: str | None = None) -> Any:
@@ -255,3 +255,6 @@ class LumenClient:
 
     def delete(self, path: str, client: str | None = None) -> Any:
         return self.request("DELETE", path, client)
+
+    def put(self, path: str, body: Any, client: str | None = None) -> Any:
+        return self.request("PUT", path, client, json_body=body)

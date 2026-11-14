@@ -63,6 +63,7 @@ export const CLIENT_ACTIONS: ClientAction[] = [
   { id: "a:zoomFit", name: "Fit to Window", category: "View", description: "", kbd: "0", action: "zoomFit", keywords: ["zoom"] },
   { id: "a:theme", name: "Toggle Theme", category: "View", description: "Dark / light", action: "theme", keywords: ["dark", "light"] },
   { id: "a:inspector", name: "Toggle Inspector", category: "View", description: "", kbd: "⌘\\", action: "inspector", keywords: ["panel", "sidebar"] },
+  { id: "a:agent", name: "Agent Chat", category: "View", description: "Ask Claude Code / Codex to work in Lumen (the lumen MCP tools)", kbd: "⌘J", action: "agent", keywords: ["ai", "assistant", "claude", "codex", "chat", "mcp"] },
   { id: "a:addShortcut", name: "Add Shortcut…", category: "Plugins/Shortcuts", description: "Bind a key combination to any command", action: "addShortcut", keywords: ["keyboard", "hotkey", "binding"] },
   { id: "a:removeShortcut", name: "Remove Shortcut…", category: "Plugins/Shortcuts", description: "Manage custom key bindings", action: "removeShortcut", keywords: ["keyboard", "hotkey"] },
   { id: "a:monitorMemory", name: "Monitor Memory", category: "Plugins/Utilities", description: "Live chart of the memory held by open images and undo history", action: "toggleMemoryMonitor", keywords: ["ram", "usage"] },
@@ -525,6 +526,9 @@ export function doAction(action: string, arg?: any): void {
       break;
     case "palette":
       st.setPaletteOpen(true);
+      break;
+    case "agent":
+      st.setAgentOpen(!st.agentOpen);
       break;
     case "inspector":
       st.setInspectorOpen(!st.inspectorOpen);

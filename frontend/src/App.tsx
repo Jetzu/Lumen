@@ -16,6 +16,7 @@ import HelpOverlay from "./components/HelpOverlay";
 import PreferencesSheet from "./components/PreferencesSheet";
 import DocsModal from "./components/DocsModal";
 import ShortcutsDialog from "./components/ShortcutsDialog";
+import AgentDock from "./components/AgentDock";
 import { useMaterialiseWarning } from "./components/MemoryMonitor";
 
 export default function App() {
@@ -84,6 +85,7 @@ export default function App() {
       {splitOn ? <SplitView /> : <Viewport />}
       {inspectorOpen && <InspectorSplitter onDragChange={setResizing} />}
       {inspectorOpen && <Inspector />}
+      <AgentDock />
       <StatusBar />
       <Toasts />
       {paletteOpen && <CommandPalette />}

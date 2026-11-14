@@ -117,6 +117,7 @@ const CLIENT_ITEMS: Record<string, MenuItem[]> = {
   View: [
     { label: "Command Palette", action: "palette", kbd: "⌘K" },
     { label: "Toggle Inspector", action: "inspector", kbd: "⌘\\" },
+    { label: "Agent Chat", action: "agent", kbd: "⌘J" },
     { label: "Toggle Theme", action: "theme" },
     { sep: true, label: "" },
     { label: "Zoom In", action: "zoomIn", kbd: "+" },

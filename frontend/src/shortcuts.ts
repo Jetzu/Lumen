@@ -80,6 +80,7 @@ export function useShortcuts() {
       if (mod && !e.shiftKey && key.toLowerCase() === "p") { e.preventDefault(); doAction("print"); return; }
       if (mod && e.shiftKey && e.code === "Backslash") { e.preventDefault(); st.toggleSplitView(); return; }
       if (mod && key === "\\") { e.preventDefault(); doAction("inspector"); return; }
+      if (mod && key.toLowerCase() === "j") { e.preventDefault(); doAction("agent"); return; }
       if (mod && key === ",") { e.preventDefault(); st.setPrefsOpen(!st.prefsOpen); return; }
       // ⌘W closes the active image (asks when it is modified), ⇧⌘W closes all – File ▸ Close / Close All.
       // (Some browsers reserve ⌘W for their own tab; where the event reaches the page it is ours.)

@@ -4,6 +4,23 @@ Lumen ships an [MCP](https://modelcontextprotocol.io) server, so an AI assistant
 
 The assistant works on the **same running Lumen you have open**. Every change it makes appears in your window straight away: new images, the Results table, plots and selections. It can also see what you are doing: the active image, the selection you drew, the tool you picked and the dialog you have open.
 
+## Agent Chat inside Lumen
+
+Click **✻ Agent** in the top bar (or press ⌘J / Ctrl+J; also View ▸ Agent Chat) to open **Agent Chat for Lumen** on the right of the window. It is the Agent Chat panel of the ChemDraw MCP, with the same terminal look, in dark and light mode (it follows Lumen's theme):
+
+- Type a request, for example "count the nuclei in this image" or "measure the mean intensity in my selection".
+- Your own Claude Code (or Codex) CLI answers, working in this Lumen through the `lumen` MCP tools. You watch every step happen in the window.
+- The active image, your selection, and the Results and ROI counts go along with each prompt.
+- Enter sends, Shift+Enter adds a new line, Esc interrupts, and ↑/↓ recall earlier prompts.
+- `/model` (or the button at the bottom right) switches the provider, model and effort. `/clear` starts a new conversation and `/help` lists the shortcuts.
+- Conversations continue across turns and are kept when you reopen the panel.
+- An ImageJ macro or Python block in an answer has a **▶ run in Lumen** button.
+- Drag the panel's left edge to resize it (double-click resets). It opens narrow (380 px) so the image keeps most of the window. The inspector's edge resizes the same way.
+
+There is no separate bridge to start: Lumen serves the panel's bridge itself (`/api/agent`, in `lumen/server/extra/agent_chat.py`). Only Lumen's own page on this machine can use it. Claude may use only the `lumen` MCP tools from the panel, with no shell and no file edits.
+
+You need Claude Code or Codex installed, and Lumen registered with it once (`Lumen --mcp-install`, see below).
+
 ## Setup
 
 There are two ways to run the server.
@@ -102,6 +119,15 @@ The server only ever talks to `127.0.0.1`.
 | `events` | What changed since the assistant last looked, including what you did in the window |
 | `ui` | Show a panel, set the tool or plane, show a notice, or open a command's dialog pre-filled for you to review and apply; theme, zoom |
 | `jobs`, `settings`, `help` | Progress and cancelling, preferences, Lumen's bundled documentation |
+| `preview_command` | What a command would do to the shown plane, without applying it |
+| `view_orthogonal`, `export_mesh`, `scene` | XZ / YZ views of a stack, a surface mesh as STL / OBJ / PLY, the 3-D viewer's scene |
+| `workflows` | The guided workflows (Count nuclei, Track cells …), their steps, or the whole workflow as a script |
+| `get_tracks` | The tracking model of a time series |
+| `list_files`, `text_file` | Browse folders for images; read or write macros, CSVs and notes |
+| `export_results`, `roi_file` | The Results table as CSV; ROI Manager import and export (ImageJ RoiSet `.zip` / `.roi`, or JSON) |
+| `list_luts`, `clear_threshold`, `restore_cleared` | LUT names, removing a threshold overlay, bringing back a cleared ROI Manager or Results table |
+
+**Coverage.** `run_command` reaches every one of Lumen's 503 commands, plus installed Fiji plugins and your own plugins. Every other HTTP endpoint is either reachable through a tool or is part of the window's own data streams and uploads (`tests/test_mcp_server.py::test_every_endpoint_is_covered_by_the_mcp` fails when a new endpoint has no tool).
 
 Commands the assistant runs go into **your** macro recorder and undo history. Undo (⌘Z / Ctrl+Z) takes back the assistant's steps like your own, and the Script & Recorder panel shows them as lines you can replay.
 
