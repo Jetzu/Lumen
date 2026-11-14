@@ -50,7 +50,7 @@ instance, a quit warning for unsaved images. Build it with `python3 desktop/buil
 `desktop/dist/`; Windows and Linux builds through `.github/workflows/desktop-release.yml`), or run the window from source
 with `python3 desktop/run_dev.py`. See [docs/DESKTOP.md](docs/DESKTOP.md).
 
-**AI assistants (MCP).** Lumen includes an MCP server, so Claude Code, Claude Desktop, Codex or any other MCP client can work in the Lumen you have open. It can open images, run any command, ImageJ macro or script, measure, manage ROIs and read results, and everything it does appears live in your window. It also sees your selection, tool and open dialog. Run `lumen-mcp` (`pip install -e ".[mcp]"`) or the desktop app's `Lumen --mcp`; `lumen-mcp --config` prints the client configuration. See [docs/MCP.md](docs/MCP.md).
+**AI assistants (MCP).** Lumen includes an MCP server, so Claude Code, Claude Desktop, Codex or any other MCP client can work in the Lumen you have open. It can open images, run any command, ImageJ macro or script, measure, manage ROIs and read results, and everything it does appears live in your window. It also sees your selection, tool and open dialog. Run `lumen-mcp` (`pip install -e ".[mcp]"`) or the desktop app's `Lumen --mcp`; `Lumen --mcp-install` (or `lumen-mcp --install`) registers it with Claude Code, Codex and Claude Desktop. See [docs/MCP.md](docs/MCP.md).
 
 Optional extras: `.[dev]` (pytest, httpx, playwright, mcp), `.[mcp]` (the MCP server), `.[formats-extra]` (astropy, pynrrd, bioio, SimpleITK),
 `.[ml]` (cellpose, stardist), `.[window]` (pywebview). `pip install -e ".[formats]"` adds Nikon ND2, Zeiss CZI, Leica LIF, Olympus OIB/OIF,

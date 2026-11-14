@@ -198,3 +198,43 @@ def test_over_the_mcp_protocol(lumen):
                 assert any(c.type == "image" for c in res.content)
     asyncio.run(go())
     assert session.histories[session.active.id].labels()["undo"]  # the macro's Invert is an undo step
+
+
+def test_installer_registers_claude_codex_and_desktop(tmp_path, monkeypatch):
+    """The installer (lumen/mcp_server/install.py, modelled on the ChemDraw MCP's): idempotent, keeps a backup, never
+    overwrites a foreign entry silently, removes only its own."""
+    from lumen.mcp_server import install as I
+    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "cc"))
+    monkeypatch.setenv("CODEX_HOME", str(tmp_path / "codex"))
+    desk = tmp_path / "desk.json"
+    desk.write_text(json.dumps({"mcpServers": {"lumen": {"command": "/other/tool"}, "pymol": {"command": "x"}}}))
+    monkeypatch.setattr(I, "claude_desktop_config_path", lambda: str(desk))
+    cc = tmp_path / "cc" / ".claude.json"
+    cc.parent.mkdir()
+    cc.write_text(json.dumps({"mcpServers": {"chemdraw": {"command": "c"}}, "other": 1}))
+    assert I.main(["--target", "python"]) == 0
+    data = json.loads(cc.read_text())
+    assert data["other"] == 1 and "chemdraw" in data["mcpServers"]
+    ent = data["mcpServers"]["lumen"]
+    assert ent["type"] == "stdio" and I._is_ours(ent)
+    assert (tmp_path / "cc" / ".claude.json.lumen-backup").is_file()
+    codex = (tmp_path / "codex" / "config.toml").read_text()
+    assert "[mcp_servers.lumen]" in codex
+    d = json.loads(desk.read_text())["mcpServers"]
+    assert d["lumen"] == {"command": "/other/tool"} and I._is_ours(d["lumen-mcp"])  # the foreign entry is kept
+    before = cc.read_text()
+    I.main(["--target", "python"])
+    assert cc.read_text() == before  # idempotent
+    I.main(["--uninstall"])
+    assert "lumen" not in json.loads(cc.read_text())["mcpServers"] and "[mcp_servers.lumen]" not in (tmp_path / "codex" / "config.toml").read_text()
+    d = json.loads(desk.read_text())["mcpServers"]
+    assert "lumen-mcp" not in d and d["lumen"] == {"command": "/other/tool"}
+
+
+def test_installer_entries_are_recognised():
+    from lumen.mcp_server.install import _is_ours
+    assert _is_ours({"command": "/Applications/Lumen.app/Contents/MacOS/Lumen", "args": ["--mcp"]})
+    assert _is_ours({"command": "C:\\Lumen\\Lumen.exe", "args": ["--mcp"]})
+    assert _is_ours({"command": "/x/bin/python", "args": ["-m", "lumen.mcp_server"]})
+    assert not _is_ours({"command": "/Applications/Lumen.app/Contents/MacOS/Lumen", "args": []})
+    assert not _is_ours({"command": "/other/tool"})

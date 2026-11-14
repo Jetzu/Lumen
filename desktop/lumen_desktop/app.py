@@ -104,6 +104,10 @@ def _say(line: str) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     raw = list(sys.argv[1:] if argv is None else argv)
+    if "--mcp-install" in raw:  # register the app's MCP server with Claude Code / Codex / Claude Desktop
+        from lumen.mcp_server.install import main as mcp_install
+        rest = [a for a in raw if a != "--mcp-install"]
+        return mcp_install(rest if "--target" in rest else ["--target", "app", *rest])
     if "--mcp" in raw or "--mcp-config" in raw:
         return run_mcp(raw)
     args = parse_args(argv)

@@ -10,6 +10,9 @@ def main(argv: list[str] | None = None) -> int:
     if args and args[0] in ("--config", "config"):
         from .config import print_config
         return print_config(args[1:])
+    if args and args[0] in ("--install", "install"):
+        from .install import main as install
+        return install(args[1:])
     try:
         from .server import main as run
     except ImportError as e:  # the optional dependency is missing

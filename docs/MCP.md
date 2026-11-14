@@ -28,7 +28,18 @@ lumen-mcp            # or: python -m lumen.mcp_server
 lumen-mcp --config   # prints the configuration snippets for this machine
 ```
 
-### Registering it with an assistant
+### Registering it with an assistant (one command)
+
+The installer registers Lumen with Claude Code, Codex and Claude Desktop in one step. It backs up each file before changing it, never overwrites another server's entry, and does nothing if run twice:
+
+```bash
+/Applications/Lumen.app/Contents/MacOS/Lumen --mcp-install   # desktop app (Windows: Lumen.exe --mcp-install)
+lumen-mcp --install                                          # Python install
+```
+
+Add `--check` to see what it finds, `--dry-run` to see what it would write, or `--uninstall` to remove the entries. Then restart the assistant.
+
+### Registering it by hand
 
 The examples use the Python command. With the desktop app, use the app's command from the table above instead.
 

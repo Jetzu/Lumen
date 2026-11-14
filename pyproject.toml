@@ -51,6 +51,7 @@ mcp = ["mcp>=1.10"]
 [project.scripts]
 lumen = "lumen.__main__:main"
 lumen-mcp = "lumen.mcp_server:main"
+lumen-mcp-install = "lumen.mcp_server.install:main"
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]
