@@ -26,13 +26,16 @@ jobs:
         python: ["3.11", "3.13"]
     env:
       MPLBACKEND: Agg
-      # Keep the suite away from the runner's real ~/.lumen (recent files, plugins, sample cache).
-      LUMEN_HOME: ${{ runner.temp }}/lumen-home
       LUMEN_PLUGINS: ""
       # PYTHONUTF8 is deliberately NOT set: the Windows job must run with the legacy code page
       # (cp1252) so that any text file written without encoding="utf-8" fails here, not on a user's PC.
     steps:
       - uses: actions/checkout@v4
+
+      # Keep the suite away from the runner's real ~/.lumen (recent files, plugins, sample cache).  Set here, not in
+      # the job's env: the runner context is not available there and GitHub rejected the whole workflow file.
+      - name: Isolate the Lumen folder
+        run: echo "LUMEN_HOME=$RUNNER_TEMP/lumen-home" >> "$GITHUB_ENV"
 
       - uses: actions/setup-python@v5
         with:
