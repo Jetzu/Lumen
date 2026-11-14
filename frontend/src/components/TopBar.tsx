@@ -183,7 +183,7 @@ export default function TopBar() {
   const prefsLabel = `Preferences (${kbd("⌘,")})`;
   return (
     <div className="topbar">
-      <div className="logo"><span className="dot" />Lumen</div>
+      <div className="logo"><span className="dot" /><span className="logo-name">Lumen</span></div>
       <div className="menubar" role="menubar" aria-label="Main menu" ref={barRef} onBlur={onBarBlur}>
         {menus.map((m, i) => (
           <div key={m.label} style={{ position: "relative" }}>

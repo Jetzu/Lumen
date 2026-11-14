@@ -89,7 +89,7 @@ a { color: var(--blue); }
   grid-template-columns: var(--rail-w) 1fr var(--inspector-w);
   grid-template-areas:
     "top top top"
-    "tabs tabs tabs"
+    "rail tabs tabs"
     "rail view inspector"
     "status status status";
   height: 100%;
@@ -1176,3 +1176,16 @@ input[data-kind="number"] { width: 80px; font-family: var(--mono); font-size: 12
 .range-vals .bound-input input { width: 100%; min-width: 44px; }
 .range-vals .btn { flex-shrink: 0; }
 .range-vals .bound-input input { min-height: 24px; box-sizing: border-box; }
+
+/* Top bar in MolBench's style: the dark sidebar column starts at the very top with the logo header (a rounded brand
+ * badge + the name, the width of the tool rail), the image tabs sit right of the rail, the search is a 32 px field. */
+.topbar { padding-left: 0; }
+.logo { align-self: stretch; flex: 0 0 auto; width: var(--rail-w); box-sizing: border-box; margin: 0 6px -1px 0; padding: 0 14px 0 16px;
+  background: var(--rail-bg); color: #fff; border-right: 1px solid var(--rail-border); border-bottom: 1px solid var(--rail-border);
+  overflow: hidden; white-space: nowrap; font-size: 14px; letter-spacing: -0.1px; transition: width 0.15s; }
+.logo .dot { flex: 0 0 auto; width: 22px; height: 22px; border-radius: 6px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 0 14px rgba(52, 211, 153, 0.35); }
+.search-btn { min-height: 32px; border-radius: 6px; border-color: var(--border-strong); background: var(--bg0); }
+.search-btn:hover { background: var(--bg1); }
+@media (max-width: 900px) { .logo { display: flex; font-size: 0; gap: 0; justify-content: center; padding: 0; width: var(--rail-w); } }
+.rail-collapsed .logo { justify-content: center; padding: 0; }
+.rail-collapsed .logo .logo-name { display: none; }

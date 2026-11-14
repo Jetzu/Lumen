@@ -63,6 +63,7 @@ export default function ToolRail() {
   const [collapsed, setCollapsed] = useState<boolean>(loadCollapsed);
   useEffect(() => {
     document.documentElement.style.setProperty("--rail-w", collapsed ? RAIL_W.collapsed : RAIL_W.expanded);
+    document.documentElement.classList.toggle("rail-collapsed", collapsed); // the logo header shows only its badge
     try {
       localStorage.setItem(RAIL_KEY, collapsed ? "1" : "0");
     } catch {
