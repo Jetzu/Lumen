@@ -610,13 +610,13 @@ def test_run_macro_passes_the_argument(ij, tmp_path):
     outer = tmp_path / "outer.ijm"
     outer.write_text('print("outer=" + getArgument()); runMacro("%s", "inner"); print("outer again=" + getArgument());\n' % inner.as_posix())
     assert ij.macro('print("before"); runMacro("%s", "hello"); print("after");' % inner.as_posix()) == "before\narg=hello\nafter\n"
-    assert ij.macro('runMacro("%s", "o"); print("top=" + getArgument());' % outer) == "outer=o\narg=inner\nouter again=o\ntop=\n"
-    assert ij.macro('runMacro("%s", 4/2); runMacro("%s");' % (inner, inner)) == "arg=2\narg=\n"  # numeric arguments read like ImageJ strings
+    assert ij.macro('runMacro("%s", "o"); print("top=" + getArgument());' % outer.as_posix()) == "outer=o\narg=inner\nouter again=o\ntop=\n"
+    assert ij.macro('runMacro("%s", 4/2); runMacro("%s");' % (inner.as_posix(), inner.as_posix())) == "arg=2\narg=\n"  # numeric arguments read like ImageJ strings
     assert ij.macro('eval("print(\\"e=\\" + getArgument());", "ev"); print("<" + getArgument() + ">");') == "e=ev\n<>\n"
     bad = tmp_path / "bad.ijm"
     bad.write_text("bogusFn();\n")
     with pytest.raises(ValueError):
-        ij.macro('runMacro("%s", "x");' % bad)
+        ij.macro('runMacro("%s", "x");' % bad.as_posix())
     assert ij._args == [] and ij.macro('print("<" + getArgument() + ">");') == "<>\n"  # no stale argument after an error
 
 

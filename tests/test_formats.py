@@ -612,7 +612,7 @@ def test_write_image_keeps_dotted_stems(tmp_path):
     assert io.write_text_image(img, tmp_path / "m2.csv").replace("\\", "/").endswith("/m2.csv")
     assert io.write_video([np.zeros((8, 8, 3), np.uint8)] * 2, tmp_path / "anim.v2", "gif").replace("\\", "/").endswith("/anim.v2.gif")
     out = io.write_image(img, tmp_path / "vol.v2", "mhd")
-    assert out.endswith("/vol.v2.mhd") and (tmp_path / "vol.v2.raw").exists()
+    assert out.replace("\\", "/").endswith("/vol.v2.mhd") and (tmp_path / "vol.v2.raw").exists()
     assert io.write_ij_rois(ROIS[:2], tmp_path / "rois.v2").replace("\\", "/").endswith("/rois.v2.zip")
     assert io.strip_image_ext("sample.ome.tif") == "sample" and io.strip_image_ext("cells.v2.tif") == "cells.v2"
     assert io.strip_image_ext("cells.v2") == "cells.v2"
