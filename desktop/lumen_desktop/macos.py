@@ -219,6 +219,42 @@ def _open_handler_class():
 _OPEN_HANDLER: Any = None
 
 
+def install_launch_open_handler(on_open: Callable[[list[str]], None]) -> bool:
+    """Catch the ``odoc`` event that *launches* Lumen (double-click on an image, Open With, a drop on the Dock icon
+    while Lumen is not running).  The handler must be installed when AppKit announces
+    ``NSApplicationWillFinishLaunchingNotification`` – earlier, AppKit's own default handlers replace it; later, the
+    launching event has already been delivered.  Call before ``webview.start``.  (This replaces PyInstaller's
+    argv emulation, which made every ``Lumen --mcp`` helper process check in with LaunchServices as "the running
+    Lumen", so clicking the Dock icon activated a windowless helper instead of opening a window.)"""
+    try:
+        import AppKit
+        import Foundation
+    except Exception:  # noqa: BLE001
+        log.debug("pyobjc unavailable - no launch open handler", exc_info=True)
+        return False
+    cls = _open_handler_class()
+    if cls is None:
+        return False
+    cls.callback = staticmethod(on_open)
+
+    class _LaunchObserver(Foundation.NSObject):
+        def willFinish_(self, _note):  # noqa: N802 - Objective-C selector
+            try:
+                handler = cls.alloc().init()
+                _retained.append(handler)
+                Foundation.NSAppleEventManager.sharedAppleEventManager().setEventHandler_andSelector_forEventClass_andEventID_(
+                    handler, "handleOpen:withReply:", _fourcc("aevt"), _fourcc("odoc"))
+                log.info("launch open-documents handler installed")
+            except Exception:  # noqa: BLE001
+                log.warning("installing the launch open handler failed", exc_info=True)
+
+    obs = _LaunchObserver.alloc().init()
+    _retained.append(obs)
+    Foundation.NSNotificationCenter.defaultCenter().addObserver_selector_name_object_(
+        obs, "willFinish:", AppKit.NSApplicationWillFinishLaunchingNotification, None)
+    return True
+
+
 def install_open_documents_handler(on_open: Callable[[list[str]], None]) -> bool:
     """Route the ``odoc`` Apple event (Finder "Open With", double-click on an image whose default app is Lumen, a
     drop on the Dock icon) to ``on_open(paths)``.  Installed after launch: the files of the launching event itself

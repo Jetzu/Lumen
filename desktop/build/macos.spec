@@ -36,7 +36,10 @@ exe = EXE(
     upx=False,
     console=False,
     disable_windowed_traceback=False,
-    argv_emulation=True,  # the files of the launching 'odoc' Apple event arrive in sys.argv (later ones: macos.py)
+    # off: argv emulation made every `Lumen --mcp` helper (started by AI assistants) check in with LaunchServices as
+    # the running app, so the Dock icon activated a windowless helper; the launching 'odoc' event is caught by
+    # lumen_desktop/macos.py install_launch_open_handler instead
+    argv_emulation=False,
     target_arch=None,  # native (arm64 on Apple silicon runners, x86_64 on Intel runners)
     codesign_identity=None,
     entitlements_file=None,

@@ -360,6 +360,10 @@ class Shell:
         storage = ddir / "webview"
         storage.mkdir(parents=True, exist_ok=True)
         self.install_signal_handlers()
+        if self.is_mac:  # files of the launching Finder event wait in pending_files until the engine runs
+            from lumen_desktop import macos
+
+            macos.install_launch_open_handler(self._queue_launch_files)
         code = EXIT_OK
         try:
             webview.start(func=self.bootstrap, menu=menus, private_mode=False, storage_path=str(storage), debug=self.debug,
@@ -411,6 +415,12 @@ class Shell:
         logging.shutdown()
 
     # ------------------------------------------------------------------ startup sequence (worker thread)
+    def _queue_launch_files(self, files: list[str]) -> None:
+        if self.loaded_app:
+            self.open_paths(files)
+        else:
+            self.pending_files.extend(str(Path(f).expanduser().resolve()) for f in files)
+
     def bootstrap(self) -> None:
         from lumen_desktop.splash import set_status_js
 

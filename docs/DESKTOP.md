@@ -30,6 +30,7 @@ ffmpeg): the window is the system's own WebKit.
   on the Dock icon, or run `Lumen file.tif` - the image opens in the running window (TIFF, PNG, JPEG and the microscopy
   formats CZI, ND2, LIF, LSM, OIB, IMS, ZVI, … are declared to Finder).
 - **One instance**: launching Lumen again brings the existing window to the front and hands it the files.
+- **MCP helpers stay invisible**: `Lumen --mcp` processes that AI assistants start in the background never register with macOS as the running app, so the Dock icon always opens or raises the real window. This is why the build does not use PyInstaller's argv emulation: the file that launches Lumen from Finder is caught by an Apple-event handler installed when the app finishes launching (`install_launch_open_handler` in `lumen_desktop/macos.py`).
 - **Quit protection**: quitting while an image has unsaved changes asks first (as Fiji does).
 - **Native menus** around the in-app Fiji menus: *File* (Open Image…, Open Folder as Stack…, Open Lumen Folder, Open in
   Browser), *View* (zoom ⌘= / ⌘− / ⌘0, full screen) and *Help* (documentation, shortcuts, log file, About). Every Lumen
