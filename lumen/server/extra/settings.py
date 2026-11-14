@@ -328,4 +328,22 @@ def get_doc(name: str) -> PlainTextResponse:
     path = _doc_path(key)
     if path is None:
         raise HTTPException(404, f"{_DOCS[key][1]} is not bundled with this installation")
-    return PlainTextResponse(path.read_text(encoding="utf-8", errors="replace"), media_type="text/markdown; charset=utf-8")
+    text = path.read_text(encoding="utf-8", errors="replace")
+    if key == "README":
+        text = _plain_readme(text)
+    return PlainTextResponse(text, media_type="text/markdown; charset=utf-8")
+
+
+def _plain_readme(text: str) -> str:
+    """The README for the in-app viewer: GitHub's HTML header (centred logo), the badges and the screenshots are left
+    out – the viewer renders plain Markdown and the images are not bundled."""
+    keep = []
+    for line in text.splitlines():
+        s = line.strip()
+        if s.startswith(("<div", "</div", "<img", "<p align", "[![", "![")):
+            continue
+        keep.append(line)
+    out = "\n".join(keep).lstrip("\n")
+    while "\n\n\n" in out:
+        out = out.replace("\n\n\n", "\n\n")
+    return out + "\n"

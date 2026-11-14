@@ -72,6 +72,8 @@ def datas() -> list[tuple[str, str]]:
     items = [
         (str(STATIC), os.path.join("lumen", "static")),
         (str(ROOT / "README.md"), "."),
+        (str(ROOT / "LICENSE.md"), "."),  # PolyForm: every copy carries the terms and the Required Notice
+        (str(ROOT / "LEGAL.md"), "."),
         (str(ASSETS), "desktop_assets"),
     ]
     items += [(str(md), "docs") for md in sorted((ROOT / "docs").glob("*.md"))]

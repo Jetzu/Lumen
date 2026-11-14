@@ -144,7 +144,7 @@ jobs:
           draft: false
           files: artifacts/*
           body: |
-            Desktop builds of Lumen (unsigned - see docs/sections/desktop.md for the first-launch steps):
+            Desktop builds of Lumen (unsigned - see docs/DESKTOP.md for the first-launch steps):
 
             * **macOS**: `Lumen-<version>-macos-arm64.dmg` (Apple silicon) / `Lumen-<version>-macos-x86_64.dmg` (Intel).
               Drag Lumen to Applications; first launch: right-click → Open (or `xattr -d com.apple.quarantine /Applications/Lumen.app`).
@@ -152,4 +152,6 @@ jobs:
               (needs the Microsoft Edge WebView2 runtime, included in Windows 10/11; SmartScreen: *More info → Run anyway*).
             * **Linux**: `Lumen-<version>-linux-x86_64.tar.gz` (unpack, run `Lumen/Lumen`) or the `.AppImage` (`chmod +x`, run).
 
-            Your workspace lives in the per-user application data directory (File → Open Data Folder).
+            Plugins, macros, recent files and the sample cache live in `~/.lumen` (File → Open Lumen Folder).
+            AI assistants: ✻ Agent in the top bar; `Lumen --mcp-install` registers the MCP server with Claude Code, Codex and Claude Desktop.
+            License: PolyForm Noncommercial 1.0.0 (LICENSE.md).

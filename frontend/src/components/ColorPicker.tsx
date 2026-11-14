@@ -7,7 +7,7 @@
  * ops `edit.set_foreground` / `edit.set_background` / `edit.set_colors` (so they are recorded); the colour is
  * kept alongside as `foreground_color` / `background_color` (hex) in the settings.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeftRight, Pipette, X } from "lucide-react";
 import { api } from "../api";
 import { useStore } from "../store";
@@ -199,16 +199,32 @@ export default function ColorPicker({ anchor, onClose }: { anchor: DOMRect | nul
       q[i] = t;
       return q;
     });
+  // placed beside its anchor (the swatches at the foot of the tool bar), clamped to the window with its *measured*
+  // size: the box grows with the UI text size, so fixed guesses ran it under the status bar
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [box, setBox] = useState<{ w: number; h: number }>({ w: 320, h: 440 });
+  useLayoutEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const measure = () => setBox((b) => (b.w === el.offsetWidth && b.h === el.offsetHeight ? b : { w: el.offsetWidth, h: el.offsetHeight }));
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const margin = 8;
+  const bottomLimit = window.innerHeight - 34; // above the status bar
   const style: React.CSSProperties = anchor
-    ? { position: "fixed", left: Math.min(anchor.right + 8, window.innerWidth - 300), top: Math.max(8, Math.min(anchor.top - 300, window.innerHeight - 420)) }
-    : { position: "fixed", left: 60, bottom: 40 };
+    ? { position: "fixed", left: Math.max(margin, Math.min(Math.max(anchor.right, document.querySelector(".rail")?.getBoundingClientRect().right ?? 0) + 10, window.innerWidth - box.w - margin)),
+        top: Math.max(margin, Math.min(anchor.bottom - box.h, bottomLimit - box.h)) }
+    : { position: "fixed", left: 60, top: Math.max(margin, bottomLimit - box.h) };
   const fg = Number(settings.foreground ?? prefs.foreground ?? 255);
   const bg = Number(settings.background ?? prefs.background ?? 0);
   const fgHex = typeof settings.foreground_color === "string" ? settings.foreground_color : valueToHex(fg, img);
   const bgHex = typeof settings.background_color === "string" ? settings.background_color : valueToHex(bg, img);
 
   return (
-    <div className="color-picker" role="dialog" aria-label="Color picker" style={style} onPointerDown={(e) => e.stopPropagation()}>
+    <div ref={boxRef} className="color-picker" role="dialog" aria-label="Color picker" style={style} onPointerDown={(e) => e.stopPropagation()}>
       <div className="cp-head">
         <span className="cp-title">Color Picker</span>
         <span className="grow" />
@@ -216,10 +232,10 @@ export default function ColorPicker({ anchor, onClose }: { anchor: DOMRect | nul
       </div>
       <div className="cp-targets">
         <button className={"cp-target" + (target === "foreground" ? " on" : "")} onClick={() => setTarget("foreground")} title="Foreground: Fill, Draw, brush, bucket">
-          <span className="cp-sw" style={{ background: fgHex }} />Foreground <span className="mono">{fmtVal(fg)}</span>
+          <span className="cp-sw" style={{ background: fgHex }} /><span className="cp-tname">Foreground</span> <span className="mono">{fmtVal(fg)}</span>
         </button>
         <button className={"cp-target" + (target === "background" ? " on" : "")} onClick={() => setTarget("background")} title="Background: Clear, Clear Outside, erase">
-          <span className="cp-sw" style={{ background: bgHex }} />Background <span className="mono">{fmtVal(bg)}</span>
+          <span className="cp-sw" style={{ background: bgHex }} /><span className="cp-tname">Background</span> <span className="mono">{fmtVal(bg)}</span>
         </button>
         <button className="icon-btn" title="Swap foreground and background" aria-label="Swap" onClick={swap}><ArrowLeftRight size={14} /></button>
       </div>
@@ -228,7 +244,7 @@ export default function ColorPicker({ anchor, onClose }: { anchor: DOMRect | nul
           <label>Value</label>
           <input type="range" min={lo} max={hi} step={img?.dtype === "float32" ? (hi - lo) / 1000 : 1} value={curValue} onChange={(e) => debouncedValue(Number(e.target.value))} onPointerUp={() => setValue(curValue, true)} aria-label="Value" />
           <input type="number" min={lo} max={hi} step={img?.dtype === "float32" ? 0.001 : 1} value={valText} onChange={(e) => setValText(e.target.value)} onBlur={commitValText} onKeyDown={enterBlurs} aria-label="Value" />
-          <span className="dim small">{img ? img.bit_depth : "8-bit"}</span>
+          <span className="dim small cp-bits">{img ? img.bit_depth : "8-bit"}</span>
         </div>
       )}
       <div ref={sqRef} className="cp-square" style={{ background: `linear-gradient(to top, #000, rgba(0,0,0,0)), linear-gradient(to right, #fff, hsl(${hue}, 100%, 50%))` }}
@@ -236,12 +252,12 @@ export default function ColorPicker({ anchor, onClose }: { anchor: DOMRect | nul
         <span className="cp-dot" style={{ left: `${s * 100}%`, top: `${(1 - v) * 100}%`, background: hex }} />
       </div>
       <input className="cp-hue" type="range" min={0} max={360} step={1} value={Math.round(hue)} aria-label="Hue" onChange={(e) => setHueAndColor(Number(e.target.value), false)} onPointerUp={() => setHueAndColor(hue, true)} onKeyUp={() => setHueAndColor(hue, true)} />
-      <div className="cp-row">
+      <div className="cp-row cp-rgb">
         <label>R</label><input type="number" min={0} max={255} value={rgbText[0]} onChange={(e) => setRgbText1(0, e.target.value)} onBlur={() => commitRgbText(0)} onKeyDown={enterBlurs} aria-label="Red" />
         <label>G</label><input type="number" min={0} max={255} value={rgbText[1]} onChange={(e) => setRgbText1(1, e.target.value)} onBlur={() => commitRgbText(1)} onKeyDown={enterBlurs} aria-label="Green" />
         <label>B</label><input type="number" min={0} max={255} value={rgbText[2]} onChange={(e) => setRgbText1(2, e.target.value)} onBlur={() => commitRgbText(2)} onKeyDown={enterBlurs} aria-label="Blue" />
       </div>
-      <div className="cp-row">
+      <div className="cp-row cp-hex">
         <label>Hex</label>
         <input type="text" className="mono" value={hexText} spellCheck={false} aria-label="Hex colour" onChange={(e) => setHexText(e.target.value)}
           onBlur={() => { const t = hexText.trim().startsWith("#") ? hexText.trim() : "#" + hexText.trim(); if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(t)) setColor(toHex6(t)); else setHexText(hex); }}
@@ -254,8 +270,7 @@ export default function ColorPicker({ anchor, onClose }: { anchor: DOMRect | nul
       </div>
       <div className="cp-row">
         <button className="btn sm" onClick={() => { setTool("picker"); onClose(); }} title={`Value picker tool (${kbd("I")}): click sets the foreground, ⌥-click the background`}><Pipette size={12} /> Pick from image</button>
-        <span className="grow" />
-        <span className="dim small">{isRgb ? "RGB image: colour" : `grayscale: value ${lo}–${fmtVal(hi)}`}</span>
+        <span className="dim small cp-note">{isRgb ? "RGB image: colour" : `grayscale: value ${lo}–${fmtVal(hi)}`}</span>
       </div>
     </div>
   );
