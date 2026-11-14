@@ -403,8 +403,8 @@ def _fake_run(calls, results=None):
         calls.append({"argv": list(argv), "cwd": cwd})
         # never interactive: stdin closed, no controlling terminal (POSIX), git / GCM / ssh / pip told not to prompt
         assert kwargs["stdin"] is system_ops.subprocess.DEVNULL and kwargs["start_new_session"] is (os.name != "nt")
-        assert kwargs["env"]["GIT_TERMINAL_PROMPT"] == "0" and kwargs["env"]["PIP_NO_INPUT"] == "1" and kwargs["env"]["GCM_INTERACTIVE"] == "never"
-        assert kwargs["env"]["SSH_ASKPASS_REQUIRE"] == "never" and "GIT_ASKPASS" not in kwargs["env"] and "GIT_SSH_COMMAND" not in kwargs["env"]
+        assert kwargs["env"]["GIT_TERMINAL_PROMPT"] == "0" and kwargs["env"]["PIP_NO_INPUT"] == "1" and kwargs["env"]["GCM_INTERACTIVE"].lower() == "never"
+        assert kwargs["env"]["SSH_ASKPASS_REQUIRE"].lower() == "never" and "GIT_ASKPASS" not in kwargs["env"] and "GIT_SSH_COMMAND" not in kwargs["env"]
         assert kwargs["stdout"] is system_ops.subprocess.PIPE and kwargs["stderr"] is system_ops.subprocess.PIPE and kwargs["encoding"] == "utf-8"
         return results.pop(0) if results else _Proc(0, "Already up to date.")
 

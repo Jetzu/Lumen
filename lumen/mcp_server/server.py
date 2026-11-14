@@ -1078,7 +1078,8 @@ def export_results(path: str) -> str:
     data = r.content if hasattr(r, "content") else str(r).encode()
     with open(path, "wb") as f:
         f.write(data)
-    return f"Saved the Results table → {path} ({data.count(b'\n') - 1 if data else 0} rows)"
+    rows = data.count(b"\n") - 1 if data else 0
+    return f"Saved the Results table → {path} ({rows} rows)"
 
 
 @mcp.tool()

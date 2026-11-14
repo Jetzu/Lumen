@@ -793,6 +793,7 @@ def _noninteractive_env() -> dict[str, str]:
     env.setdefault("GCM_INTERACTIVE", "never")  # Git Credential Manager: no GUI dialog
     env.setdefault("SSH_ASKPASS_REQUIRE", "never")  # OpenSSH ≥ 8.4: no askpass popup (no controlling tty either, below)
     env.setdefault("PIP_NO_INPUT", "1")  # pip: never prompt for an index password
+    env.setdefault("PYTHONIOENCODING", "utf-8")  # Python children (pip) print UTF-8, as the output is decoded (Windows: cp1252 otherwise)
     return env
 
 

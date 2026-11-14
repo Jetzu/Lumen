@@ -503,7 +503,7 @@ def test_eval_and_runmacro_share_the_log(ij, tmp_path):
     assert ij.macro('print("a"); eval("print(\\"b\\");"); print("c");') == "a\nb\nc\n"
     p = tmp_path / "inner.ijm"
     p.write_text('print("inner");\n')
-    assert ij.macro('print("a"); runMacro("%s"); print("c");' % p) == "a\ninner\nc\n"
+    assert ij.macro('print("a"); runMacro("%s"); print("c");' % p.as_posix()) == "a\ninner\nc\n"
     assert ij.macro('print("a"); eval("print(\\"b\\");"); print(getInfo("log"));').startswith("a\nb\na\nb\n")
     with pytest.raises(ValueError):
         ij.macro('eval("bogusFn();");')
@@ -608,8 +608,8 @@ def test_run_macro_passes_the_argument(ij, tmp_path):
     inner = tmp_path / "inner.ijm"
     inner.write_text('print("arg=" + getArgument());\n')
     outer = tmp_path / "outer.ijm"
-    outer.write_text('print("outer=" + getArgument()); runMacro("%s", "inner"); print("outer again=" + getArgument());\n' % inner)
-    assert ij.macro('print("before"); runMacro("%s", "hello"); print("after");' % inner) == "before\narg=hello\nafter\n"
+    outer.write_text('print("outer=" + getArgument()); runMacro("%s", "inner"); print("outer again=" + getArgument());\n' % inner.as_posix())
+    assert ij.macro('print("before"); runMacro("%s", "hello"); print("after");' % inner.as_posix()) == "before\narg=hello\nafter\n"
     assert ij.macro('runMacro("%s", "o"); print("top=" + getArgument());' % outer) == "outer=o\narg=inner\nouter again=o\ntop=\n"
     assert ij.macro('runMacro("%s", 4/2); runMacro("%s");' % (inner, inner)) == "arg=2\narg=\n"  # numeric arguments read like ImageJ strings
     assert ij.macro('eval("print(\\"e=\\" + getArgument());", "ev"); print("<" + getArgument() + ">");') == "e=ev\n<>\n"
@@ -1130,8 +1130,10 @@ def test_save_as_formats(ij, tmp_path):
     ij.saveAs("Selection", str(tmp_path / "sel.roi"))
     assert (tmp_path / "sel.roi").stat().st_size > 0
     ij.run("Measure")
-    ij.saveAs("Results", str(tmp_path / "r.xlsx"))
-    assert (tmp_path / "r.xlsx").stat().st_size > 0
+    import importlib.util
+    if importlib.util.find_spec("openpyxl"):  # .xlsx needs the optional [formats] extra
+        ij.saveAs("Results", str(tmp_path / "r.xlsx"))
+        assert (tmp_path / "r.xlsx").stat().st_size > 0
     ij.saveAs("Results", str(tmp_path / "r.csv"))
     assert "Mean" in (tmp_path / "r.csv").read_text()
     ij.saveAs("Text", str(tmp_path / "t.txt"))  # nothing printed → the Results table

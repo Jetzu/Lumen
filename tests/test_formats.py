@@ -570,7 +570,7 @@ def test_save_xy_coordinates_and_results(tmp_path):
     s.run_op("file.sample", {"name": "Blobs"})
     s.active.calibration = Calibration(0.5, 0.5, 1.0, "µm")
     s.run_op("file.save_xy_coordinates", {"path": str(tmp_path / "xy")}, roi={"type": "polygon", "points": [[1, 2], [10, 2], [10, 12.5]]})
-    lines = (tmp_path / "xy.csv").read_text().splitlines()
+    lines = (tmp_path / "xy.csv").read_text(encoding="utf-8").splitlines()
     assert lines[0] == "X,Y,X (µm),Y (µm)" and lines[1] == "1,2,0.5,1" and lines[3] == "10,12.5,5,6.25"
     s.run_op("file.save_xy_coordinates", {"path": str(tmp_path / "line.txt")}, roi={"type": "line", "x1": 0, "y1": 0, "x2": 3, "y2": 4})
     assert len((tmp_path / "line.txt").read_text().splitlines()) == 3
@@ -603,17 +603,17 @@ def test_open_url_rejects_non_http():
 def test_write_image_keeps_dotted_stems(tmp_path):
     """Path.with_suffix() used to eat everything after the last dot ('cells.v2' -> 'cells.tif')."""
     img = LumenImage(np.zeros((2, 3, 1, 8, 8), np.uint8), name="cells.v2.tif", axes="TZCYX")
-    assert io.write_image(img, tmp_path / "cells.v2", "tif").endswith("/cells.v2.tif")
-    assert io.write_image(img, tmp_path / "exp-1.5x", "png").endswith("/exp-1.5x.png")
-    assert io.write_image(img, tmp_path / "exp-1.5x", "npy").endswith("/exp-1.5x.npy")
-    assert io.write_image(img, tmp_path / "cells.tiff", "tif").endswith("/cells.tiff")  # alias kept
-    assert io.write_image(img, tmp_path / "cells.png", "tif").endswith("/cells.tif")  # known extension replaced
-    assert io.write_text_image(img, tmp_path / "m.v2").endswith("/m.v2.txt")
-    assert io.write_text_image(img, tmp_path / "m2.csv").endswith("/m2.csv")
-    assert io.write_video([np.zeros((8, 8, 3), np.uint8)] * 2, tmp_path / "anim.v2", "gif").endswith("/anim.v2.gif")
+    assert io.write_image(img, tmp_path / "cells.v2", "tif").replace("\\", "/").endswith("/cells.v2.tif")
+    assert io.write_image(img, tmp_path / "exp-1.5x", "png").replace("\\", "/").endswith("/exp-1.5x.png")
+    assert io.write_image(img, tmp_path / "exp-1.5x", "npy").replace("\\", "/").endswith("/exp-1.5x.npy")
+    assert io.write_image(img, tmp_path / "cells.tiff", "tif").replace("\\", "/").endswith("/cells.tiff")  # alias kept
+    assert io.write_image(img, tmp_path / "cells.png", "tif").replace("\\", "/").endswith("/cells.tif")  # known extension replaced
+    assert io.write_text_image(img, tmp_path / "m.v2").replace("\\", "/").endswith("/m.v2.txt")
+    assert io.write_text_image(img, tmp_path / "m2.csv").replace("\\", "/").endswith("/m2.csv")
+    assert io.write_video([np.zeros((8, 8, 3), np.uint8)] * 2, tmp_path / "anim.v2", "gif").replace("\\", "/").endswith("/anim.v2.gif")
     out = io.write_image(img, tmp_path / "vol.v2", "mhd")
     assert out.endswith("/vol.v2.mhd") and (tmp_path / "vol.v2.raw").exists()
-    assert io.write_ij_rois(ROIS[:2], tmp_path / "rois.v2").endswith("/rois.v2.zip")
+    assert io.write_ij_rois(ROIS[:2], tmp_path / "rois.v2").replace("\\", "/").endswith("/rois.v2.zip")
     assert io.strip_image_ext("sample.ome.tif") == "sample" and io.strip_image_ext("cells.v2.tif") == "cells.v2"
     assert io.strip_image_ext("cells.v2") == "cells.v2"
     s = Session()

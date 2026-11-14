@@ -112,14 +112,14 @@ def test_edit_startup_creates_a_documented_file_and_lists_it(home, session):
     py = home / "startup.py"
     assert py.is_file() and str(py) in res["message"] and "0 code line(s)" in res["message"]
     t = _table(res, "startup.py")
-    assert t["columns"] == ["Line", "Text"] and [r[1] for r in t["rows"]] == py.read_text().splitlines()
-    assert all(ln.startswith("#") for ln in py.read_text().splitlines() if ln.strip())
+    assert t["columns"] == ["Line", "Text"] and [r[1] for r in t["rows"]] == py.read_text(encoding="utf-8").splitlines()
+    assert all(ln.startswith("#") for ln in py.read_text(encoding="utf-8").splitlines() if ln.strip())
     py.write_text('lumen.log("x")\n# comment\nlumen.log("y")\n')
     res = session.run_op("macros.edit_startup", {"create": False})
     assert "2 code line(s)" in res["message"] and len(res["table"]["rows"]) == 3 and 'lumen.log("y")' in res["log"]
     res = session.run_op("macros.edit_startup", {"kind": "ImageJ macro (startup.ijm)"})
     ijm = home / "startup.ijm"
-    assert ijm.is_file() and all(ln.startswith("//") for ln in ijm.read_text().splitlines() if ln.strip())
+    assert ijm.is_file() and all(ln.startswith("//") for ln in ijm.read_text(encoding="utf-8").splitlines() if ln.strip())
     assert res["table"]["name"] == "startup.ijm" and str(ijm) in res["message"]
     # the created templates are inert: running them does nothing and fails nothing
     assert all(r["ok"] for r in P.run_startup_scripts(Session())) and len(P.run_startup_scripts(Session())) == 2
@@ -154,7 +154,7 @@ def test_new_template_is_written_importable_and_runs(home, session, kind):
         return
     if kind == "ImageJ macro":
         assert (pdir / "my_thing.ijm").is_file() and (pdir / "my_thing_macro.py").is_file()
-        assert t["name"] == "my_thing.ijm" and [r[1] for r in t["rows"]] == (pdir / "my_thing.ijm").read_text().splitlines()
+        assert t["name"] == "my_thing.ijm" and [r[1] for r in t["rows"]] == (pdir / "my_thing.ijm").read_text(encoding="utf-8").splitlines()
         oid = "macros.my_thing"
         spec = REGISTRY.ops[oid]
         assert spec.name == "My Thing" and spec.to_dict()["menu"] == "Plugins/Macros" and spec.func.__module__ == "lumen_plugin_my_thing_macro"
@@ -163,11 +163,11 @@ def test_new_template_is_written_importable_and_runs(home, session, kind):
         assert ops_pkg.PLUGIN_OPS[str(pdir / "my_thing_macro.py")] == [oid]
         return
     path = pdir / "my_thing.py"
-    assert path.is_file() and t["name"] == "my_thing.py" and [r[1] for r in t["rows"]] == path.read_text().splitlines()
+    assert path.is_file() and t["name"] == "my_thing.py" and [r[1] for r in t["rows"]] == path.read_text(encoding="utf-8").splitlines()
     oid = "user.my_thing"
     spec = REGISTRY.ops[oid]
     assert spec.name == "My Thing" and spec.func.__module__ == "lumen_plugin_my_thing" and ops_pkg.PLUGIN_OPS[str(path)] == [oid]
-    assert path.read_text().startswith('"""My Thing') and "Reload Plugins" in path.read_text()
+    assert path.read_text(encoding="utf-8").startswith('"""My Thing') and "Reload Plugins" in path.read_text(encoding="utf-8")
     before = session.active.data.copy()
     if kind == "Python command":
         assert spec.kind == "image"
@@ -292,7 +292,7 @@ def test_install_ijm_creates_a_working_command_on_blobs(home, session, tmp_path)
     session.listeners.append(events.append)
     res = session.run_op("macros.install", {"path": str(src)})
     pdir = home / "plugins"
-    assert (pdir / "my blur.ijm").read_text() == src.read_text() and (pdir / "my blur_macro.py").is_file()
+    assert (pdir / "my blur.ijm").read_text(encoding="utf-8") == src.read_text(encoding="utf-8") and (pdir / "my blur_macro.py").is_file()
     assert _table(res, "Installed")["rows"] == [["macros.my_blur", "my blur", "Plugins/Macros"]]
     assert "Installed ImageJ macro my blur.ijm" in res["message"]
     assert any(e["type"] == "ops" for e in events) and session.settings["ops_version"] == 1
@@ -321,7 +321,7 @@ def test_install_python_plugin_module_and_plain_script(home, session, tmp_path):
     mod = tmp_path / "inverter.py"
     mod.write_text('from lumen.core.registry import op\n\n@op("testinstall.invert", "Test Invert", "Plugins/Test")\ndef inv(plane, ctx):\n    return 255 - plane\n')
     res = session.run_op("macros.install", {"path": str(mod)})
-    assert (home / "plugins" / "inverter.py").read_text() == mod.read_text() and "plugin module" in res["message"]
+    assert (home / "plugins" / "inverter.py").read_text(encoding="utf-8") == mod.read_text(encoding="utf-8") and "plugin module" in res["message"]
     assert res["table"]["rows"] == [["testinstall.invert", "Test Invert", "Plugins/Test"]]
     before = session.active.data.copy()
     session.run_op("testinstall.invert")
@@ -435,7 +435,7 @@ def test_record_to_file(home, session, tmp_path):
     res = session.run_op("macros.record_to_file", {"title": "My recording"})
     p = Path(res["message"].split(" to ", 1)[1])
     assert p.parent == home / "macros" and p.name.startswith("Recorded_") and p.suffix == ".py"
-    text = p.read_text()
+    text = p.read_text(encoding="utf-8")
     assert text.startswith("# My recording\n# Recorded by Lumen") and 'lumen.run("file.sample", name=\'Blobs\')' in text
     assert 'lumen.run("filters.gaussian"' in text and "record_to_file" not in text
     assert _table(res, p.name)["rows"][-1][1] == text.splitlines()[-1]
