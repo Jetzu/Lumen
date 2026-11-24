@@ -202,8 +202,8 @@ async def post_settings(request: Request) -> dict:
     if backend is not None and backend not in A.BACKENDS:
         raise HTTPException(400, f"backend must be one of {A.BACKENDS}")
     effort = body.get("effort")
-    if effort is not None and backend and str(effort) not in A.EFFORT_CHOICES[backend]:
-        raise HTTPException(400, f"effort for {backend} must be one of {A.EFFORT_CHOICES[backend]}")
+    if effort is not None and backend and str(effort) not in A.effort_choices(backend):
+        raise HTTPException(400, f"effort for {backend} must be one of {A.effort_choices(backend)}")
     snap = A.update_settings(backend, body.get("model"), None if effort is None else str(effort), body.get("default_backend"))
     return {**snap, "default_backend": HUB.default_backend()}
 

@@ -12,7 +12,7 @@ Click **✻ Agent** in the top bar (or press ⌘J / Ctrl+J; also View ▸ Agent 
 - Your own Claude Code (or Codex) CLI answers, working in this Lumen through the `lumen` MCP tools. You watch every step happen in the window.
 - The active image, your selection, and the Results and ROI counts go along with each prompt.
 - Enter sends, Shift+Enter adds a new line, Esc interrupts, and ↑/↓ recall earlier prompts.
-- `/model` (or the button at the bottom right) switches the provider, model and effort. `/clear` starts a new conversation and `/help` lists the shortcuts.
+- `/model` (or the button at the bottom right) switches the provider, model and effort. The menus are read from the CLIs' own model caches, so new models appear without a Lumen update; Claude models are offered by alias (the newest model of each family), and a saved model that was superseded is switched to its current equivalent on the next run. `/clear` starts a new conversation and `/help` lists the shortcuts.
 - Conversations continue across turns and are kept when you reopen the panel.
 - An ImageJ macro or Python block in an answer has a **▶ run in Lumen** button.
 - Drag the panel's left edge to resize it (double-click resets). It opens narrow (380 px) so the image keeps most of the window. The inspector's edge resizes the same way.

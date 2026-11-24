@@ -42,6 +42,8 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("LUMEN_CLAUDE_EXE", str(exe))
     monkeypatch.setenv("LUMEN_CODEX_EXE", str(tmp_path / "no-codex"))
     monkeypatch.setenv("LUMEN_HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude-config"))   # no real model caches
+    monkeypatch.setenv("CODEX_HOME", str(tmp_path / "codex-home"))
     from lumen.server.extra import agent_chat
     agent_chat.HUB._found = (0.0, {})
     agent_chat.HUB.runs.clear()
@@ -107,6 +109,28 @@ def test_settings_roundtrip_and_validation(client):
     s = client.post("/api/agent/settings", json={"backend": "claude", "model": "claude-opus-5-5", "effort": "high"}, headers=H).json()
     assert s["claude"] == {"model": "claude-opus-5-5", "effort": "high"}
     assert client.post("/api/agent/settings", json={"backend": "claude", "effort": "ludicrous"}, headers=H).status_code == 400
+
+
+def test_model_menus_follow_the_cli_caches(client, tmp_path):
+    """The menus come from the CLIs' own model caches: a new release shows up without a Lumen update, and a saved
+    model that was superseded is replaced by its family alias when the next run starts."""
+    from lumen.core.agent import agentcli as A
+    cat = tmp_path / "claude-config" / "cache" / "model-catalog"
+    cat.mkdir(parents=True)
+    (cat / "org-cc.json").write_text(json.dumps({"fetchedAt": 1, "catalog": {"config": {
+        "models": [{"id": "claude-opus-9", "name": "Opus 9", "section": "main",
+                    "runtime": {"family": "opus", "effort_levels": ["low", "high"]}}],
+        "provider_alias_targets": {"opus": {"default": "claude-opus-9"}}}}}))
+    A._catalog_memo.clear()
+    s = client.get("/api/agent/settings").json()
+    assert s["model_options"]["claude"] == [["", "default"], ["opus", "opus · Opus 9"]]
+    assert s["model_efforts"]["claude"]["opus"] == ["", "low", "high"]
+    assert client.post("/api/agent/settings", json={"backend": "claude", "effort": "max"}, headers=H).status_code == 400
+    A.update_settings("claude", model="claude-opus-5-5", effort="max")   # saved before the catalog changed
+    run = A.AgentRun("claude", "hi", lambda k, p: None)
+    assert (run.model, run.effort) == ("opus", "") and len(run.notes) == 2
+    assert client.get("/api/agent/settings").json()["claude"] == {"model": "opus", "effort": ""}
+    A._catalog_memo.clear()
 
 
 def test_panel_page_is_served(client):

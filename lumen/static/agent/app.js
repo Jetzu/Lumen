@@ -20,10 +20,11 @@ var SPINNER = ['·', '✢', '✳', '✶', '✻', '✽', '✻', '✶', '✳', '�
 var VERBS = ['Thinking', 'Pondering', 'Working', 'Inspecting', 'Measuring', 'Segmenting', 'Reasoning'];
 var BACKENDS = ['claude', 'codex'];
 var LABELS = { claude: 'Claude Code', codex: 'Codex' };
+// Fallback only: the bridge sends the current menus (model_options), read from the CLIs' own model caches, so new
+// models show up without an update here.  Claude aliases always resolve to the newest model of their family.
 var MODELS = {
-  claude: [['', 'default'], ['claude-opus-5-5', 'opus-5-5'], ['claude-sonnet-5-5', 'sonnet-5-5'],
-           ['claude-haiku-5-5', 'haiku-5-5'], ['claude-fable-5-1', 'fable-5-1']],
-  codex: [['', 'default'], ['gpt-6-sol', 'gpt-6-sol'], ['gpt-6', 'gpt-6']]
+  claude: [['', 'default'], ['opus', 'opus'], ['sonnet', 'sonnet'], ['haiku', 'haiku'], ['fable', 'fable']],
+  codex: [['', 'default']]
 };
 var EFFORT_DEFAULTS = {   // overridden by the bridge's settings snapshot (effort_choices)
   claude: ['', 'low', 'medium', 'high', 'xhigh', 'max'],
@@ -108,6 +109,7 @@ var codeStore = {};          // id -> {method, code} for the "insert into docume
 var bridge = {
   state: 'unknown',          // unknown | ok | down | unauthorized
   version: '', backends: {}, default_backend: '', runs_active: 0, sessions: {}, effort_choices: {},
+  model_options: {}, model_efforts: {},
   settings: { claude: { model: '', effort: '' }, codex: { model: '', effort: '' } }
 };
 
@@ -140,7 +142,13 @@ function show(node) { node.classList.remove('hidden'); }
 function hide(node) { node.classList.add('hidden'); }
 function shortModel(m) { return (m || 'default').replace(/^claude-/, ''); }
 function settingsFor(b) { return bridge.settings[b] || { model: '', effort: '' }; }
-function effortChoices(b) {
+function modelOptions(b) {
+  var fromBridge = bridge.model_options && bridge.model_options[b];
+  return (Array.isArray(fromBridge) && fromBridge.length) ? fromBridge : (MODELS[b] || MODELS.claude);
+}
+function effortChoices(b, model) {
+  var perModel = bridge.model_efforts && bridge.model_efforts[b];
+  if (model !== undefined && perModel && Array.isArray(perModel[model]) && perModel[model].length) return perModel[model];
   var fromBridge = bridge.effort_choices && bridge.effort_choices[b];
   return (Array.isArray(fromBridge) && fromBridge.length) ? fromBridge : (EFFORT_DEFAULTS[b] || EFFORT_DEFAULTS.claude);
 }
@@ -269,6 +277,8 @@ function applySettings(s) {
   });
   if (typeof src.default_backend === 'string') bridge.default_backend = src.default_backend;
   if (src.effort_choices && typeof src.effort_choices === 'object') bridge.effort_choices = src.effort_choices;
+  if (src.model_options && typeof src.model_options === 'object') bridge.model_options = src.model_options;
+  if (src.model_efforts && typeof src.model_efforts === 'object') bridge.model_efforts = src.model_efforts;
 }
 
 function sessionIdOf(data) {
@@ -719,7 +729,7 @@ function renderChooser() {
   html += '<div class="hint">' + (b === backend ? 'current provider' : 'click to switch') + '</div></div>';
   html += '<div class="col"><div class="col-title">Model</div>';
   var known = false;
-  MODELS[b].forEach(function (m) {
+  modelOptions(b).forEach(function (m) {
     var on = m[0] === st.model;
     known = known || on;
     html += '<button type="button" class="row' + (on ? ' on' : '') + '" data-model="' + escAttr(m[0]) + '">' +
@@ -730,7 +740,9 @@ function renderChooser() {
   }
   html += '<div class="hint">other: /model &lt;name&gt;</div></div>';
   html += '<div class="col"><div class="col-title">Effort</div>';
-  effortChoices(b).forEach(function (e) {
+  var efforts = effortChoices(b, st.model || '');
+  if (st.effort && efforts.indexOf(st.effort) < 0) efforts = efforts.concat([st.effort]);
+  efforts.forEach(function (e) {
     var on = e === (st.effort || '');
     html += '<button type="button" class="row' + (on ? ' on' : '') + '" data-effort="' + escAttr(e) + '">' +
       (on ? '● ' : '  ') + (e || 'default') + '</button>';
@@ -969,7 +981,7 @@ function openEvents(me) {
     return;
   }
   me.es = es;
-  ['session', 'delta', 'text', 'tool', 'tool_result', 'stats', 'done', 'end'].forEach(function (kind) {
+  ['session', 'delta', 'text', 'tool', 'tool_result', 'note', 'stats', 'done', 'end'].forEach(function (kind) {
     es.addEventListener(kind, function (ev) { onEvent(me, kind, parseData(ev.data)); });
   });
   // "error" is both the SSE kind from the bridge (has .data) and the EventSource connection error
@@ -1047,6 +1059,9 @@ function onEvent(me, kind, data) {
     }
     case 'delta':
       addDelta(me, textOf(data));
+      break;
+    case 'note':
+      pushEntry({ k: 'note', t: textOf(data) });
       break;
     case 'text':
       finalizeDraft(me, textOf(data));
